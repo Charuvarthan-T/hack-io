@@ -73,7 +73,7 @@ export async function getHackathonsWithUserRole(userId?: string) {
             SELECT 
                 h.*, 
                 hp.role as user_role,
-                (SELECT COUNT(*) FROM hackathon_participants WHERE hackathon_id = h.id) as participant_count
+                (SELECT COUNT(*) FROM hackathon_participants WHERE hackathon_id = h.id AND role = 'PARTICIPANT') as participant_count
             FROM hackathons h
             LEFT JOIN hackathon_participants hp 
             ON h.id = hp.hackathon_id AND hp.user_id = ${userId}
@@ -143,6 +143,27 @@ export async function getUserRole(hackathonId: string, userId: string): Promise<
     }
 }
 
+export async function getHackathonParticipants(hackathonId: string) {
+    try {
+        const result = await sql`
+            SELECT 
+                u.id, 
+                u.name, 
+                u.email, 
+                hp.role, 
+                hp.created_at
+            FROM hackathon_participants hp
+            JOIN users u ON hp.user_id = u.id
+            WHERE hp.hackathon_id = ${hackathonId}
+            ORDER BY hp.created_at DESC
+        `;
+        return result;
+    } catch (error) {
+        console.error("Error getting participants:", error);
+        throw error;
+    }
+}
+
 export async function removeHackathonParticipant(hackathonId: string, userId: string) {
     try {
         const result = await sql`
@@ -184,9 +205,68 @@ export async function getSubmissionForBlindJudging(submissionId: string) {
       WHERE id = ${submissionId}
     `;
 
-        return result[0] || null;
     } catch (error) {
         console.error("Error getting blind submission:", error);
+        throw error;
+    }
+}
+
+// ==================== Team Management ====================
+
+export interface CreateTeamDTO {
+    hackathon_id: string;
+    name: string;
+    created_by: string;
+}
+
+export async function createTeam(data: CreateTeamDTO) {
+    try {
+        const team = await sql`
+            INSERT INTO hackathon_teams (hackathon_id, name, created_by)
+            VALUES (${data.hackathon_id}, ${data.name}, ${data.created_by})
+            RETURNING *
+        `;
+        
+        // Add creator as first member
+        await sql`
+            INSERT INTO hackathon_team_members (team_id, user_id)
+            VALUES (${team[0].id}, ${data.created_by})
+        `;
+        
+        return team[0];
+    } catch (error) {
+        console.error("Error creating team:", error);
+        throw error;
+    }
+}
+
+export async function getTeamForUser(hackathonId: string, userId: string) {
+    try {
+        // Find if user is in any team for this hackathon
+        const result = await sql`
+            SELECT t.*, 
+                   (SELECT COUNT(*) FROM hackathon_team_members WHERE team_id = t.id) as member_count
+            FROM hackathon_teams t
+            JOIN hackathon_team_members tm ON t.id = tm.team_id
+            WHERE t.hackathon_id = ${hackathonId} AND tm.user_id = ${userId}
+        `;
+        return result[0] || null;
+    } catch (error) {
+        console.error("Error getting user team:", error);
+        throw error;
+    }
+}
+
+export async function joinTeam(teamId: string, userId: string) {
+    try {
+        const result = await sql`
+            INSERT INTO hackathon_team_members (team_id, user_id)
+            VALUES (${teamId}, ${userId})
+            RETURNING *
+        `;
+        return result[0];
+    } catch (error) {
+        console.error("Error joining team:", error);
         throw error;
     }
 }

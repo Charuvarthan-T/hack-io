@@ -49,3 +49,35 @@ export async function DELETE(
         return NextResponse.json({ error: String(error) }, { status: 500 });
     }
 }
+
+export async function GET(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+    const { getUserRole, getHackathonParticipants } = await import("@/repository/hackathon.repository");
+
+    // RBAC: Organizer, Admin, Judge, Mentor
+    let canView = false;
+    if (session.user.role === 'admin') canView = true;
+    else {
+        const role = await getUserRole(id, session.user.id);
+        if (role === 'ORGANIZER' || role === 'JUDGE' || role === 'MENTOR') canView = true;
+    }
+
+    if (!canView) {
+        return NextResponse.json({ error: "Permission denied" }, { status: 403 });
+    }
+
+    try {
+        const participants = await getHackathonParticipants(id);
+        return NextResponse.json(participants);
+    } catch (error) {
+        return NextResponse.json({ error: String(error) }, { status: 500 });
+    }
+}

@@ -28,9 +28,13 @@ interface Hackathon {
     status: string;
     created_by: string;
     user_role?: string;
+    participant_count?: number;
 }
 
+import { useRouter } from "next/navigation";
+
 export default function HackathonsPage() {
+    const router = useRouter();
     const { data: session } = useSession();
     const [hackathons, setHackathons] = useState<Hackathon[]>([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -162,8 +166,98 @@ export default function HackathonsPage() {
         }
     };
 
+    const [participantsOpen, setParticipantsOpen] = useState(false);
+    const [participants, setParticipants] = useState<any[]>([]);
+    const [selectedHackathonId, setSelectedHackathonId] = useState<string | null>(null);
+
+    const handleViewParticipants = async (hackId: string) => {
+        try {
+            const res = await fetch(`/api/hackathons/${hackId}/participants`);
+            if (res.ok) {
+                const data = await res.json();
+                setParticipants(data);
+                setSelectedHackathonId(hackId);
+                setParticipantsOpen(true);
+            } else {
+                toast.error("Failed to fetch participants");
+            }
+        } catch (error) {
+            toast.error("Error fetching participants");
+        }
+    };
+
     return (
         <div className="p-6 space-y-6">
+            {/* Participants Dialog */}
+            <Dialog open={participantsOpen} onOpenChange={setParticipantsOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Participants</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        {participants.length === 0 ? (
+                            <p className="text-center text-muted-foreground">No participants yet.</p>
+                        ) : (
+                            <div className="border rounded-lg overflow-hidden">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="bg-secondary text-secondary-foreground">
+                                        <tr>
+                                            <th className="p-3">Name</th>
+                                            <th className="p-3">Email</th>
+                                            <th className="p-3">Role</th>
+                                            <th className="p-3">Joined</th>
+                                            <th className="p-3">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {participants.map((p) => (
+                                            <tr key={p.id} className="border-t">
+                                                <td className="p-3 font-medium">{p.name || "Unknown"}</td>
+                                                <td className="p-3 text-muted-foreground">{p.email}</td>
+                                                <td className="p-3">
+                                                    <Badge variant="outline">{p.role}</Badge>
+                                                </td>
+                                                <td className="p-3 text-muted-foreground">
+                                                    {new Date(p.created_at).toLocaleDateString()}
+                                                </td>
+                                                <td className="p-3">
+                                                    {/* Organizer can remove participants */}
+                                                    {selectedHackathonId && (
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            className="h-8 w-8 text-destructive hover:text-destructive"
+                                                            onClick={async () => {
+                                                                if(!confirm("Remove this participant?")) return;
+                                                                try {
+                                                                    const res = await fetch(`/api/hackathons/${selectedHackathonId}/participants`, {
+                                                                        method: 'DELETE',
+                                                                        body: JSON.stringify({ targetUserId: p.id })
+                                                                    });
+                                                                    if(res.ok) {
+                                                                        toast.success("Removed");
+                                                                        handleViewParticipants(selectedHackathonId); // Refresh list
+                                                                        fetchHackathons(); // Refresh count
+                                                                    } else {
+                                                                        toast.error("Failed to remove");
+                                                                    }
+                                                                } catch(e) { toast.error("Error"); }
+                                                            }}
+                                                        >
+                                                            <Trash className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Hackathons</h1>
@@ -257,14 +351,21 @@ export default function HackathonsPage() {
                                 {/* Placeholder for participant count if we fetched it */}
                                 <div className="flex items-center">
                                     <Users className="mr-2 h-4 w-4" />
-                                    <span>Participants (0)</span>
+                                    <span>Participants ({hack.participant_count || 0})</span>
                                 </div>
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button variant="outline" className="flex-1">
-                                View Details
-                            </Button>
+                            {/* View Participants Button (If allowed) - Replaces View Details generic if Organizer */}
+                            {canDelete(hack) || hack.user_role === 'JUDGE' ? (
+                                <Button variant="outline" className="flex-1" onClick={() => handleViewParticipants(hack.id)}>
+                                    <Users className="w-4 h-4 mr-2"/> Participants
+                                </Button>
+                            ) : (
+                                <Button variant="outline" className="flex-1" onClick={() => router.push(`/hackathons/${hack.id}`)}>
+                                    View Details
+                                </Button>
+                            )}
                             
                             {/* Role Indicator / Join Button */}
                             {hack.user_role ? (
@@ -295,6 +396,7 @@ export default function HackathonsPage() {
                                     <Send className="h-4 w-4" />
                                 </Button>
                             )}
+                            
                             
                             {/* Delete Button */}
                             {canDelete(hack) && (
