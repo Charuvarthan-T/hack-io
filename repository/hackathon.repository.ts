@@ -61,6 +61,16 @@ export async function getHackathonById(id: string) {
   }
 }
 
+export async function deleteHackathon(id: string) {
+  try {
+    const result = await sql`DELETE FROM hackathons WHERE id = ${id} RETURNING *`;
+    return result[0];
+  } catch (error) {
+    console.error("Error deleting hackathon:", error);
+    throw error;
+  }
+}
+
 // ==================== Role Management ====================
 
 export async function addParticipant(hackathonId: string, userId: string, role: HackathonRole) {

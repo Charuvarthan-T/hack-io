@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Calendar, Users } from "lucide-react";
+import { Plus, Calendar, Users, Trash } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -87,6 +87,26 @@ export default function HackathonsPage() {
             toast.error("An error occurred");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this hackathon?")) return;
+        
+        try {
+            const res = await fetch(`/api/hackathons/${id}`, {
+                method: "DELETE",
+            });
+
+            if (res.ok) {
+                toast.success("Hackathon deleted");
+                fetchHackathons();
+            } else {
+                const err = await res.json();
+                toast.error(err.error || "Failed to delete");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
         }
     };
 
@@ -188,8 +208,15 @@ export default function HackathonsPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                            <Button variant="outline" className="w-full">
+                            <Button variant="outline" className="flex-1">
                                 View Details
+                            </Button>
+                            <Button 
+                                variant="destructive" 
+                                size="icon"
+                                onClick={() => handleDelete(hack.id)}
+                            >
+                                <Trash className="h-4 w-4" />
                             </Button>
                         </CardFooter>
                     </Card>
