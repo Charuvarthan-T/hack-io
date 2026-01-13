@@ -1,3 +1,4 @@
+
 import sql from "@/lib/db";
 
 // Role Enum
@@ -12,6 +13,7 @@ export interface Hackathon {
     end_date: Date;
     status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "COMPLETED";
     created_by: string;
+    max_team_size: number;
     created_at: Date;
     updated_at: Date;
 }
@@ -33,6 +35,7 @@ export interface CreateHackathonDTO {
     end_date: Date;
     created_by: string;
     status?: "DRAFT" | "PUBLISHED" | "ACTIVE" | "COMPLETED";
+    max_team_size?: number;
 }
 
 // ==================== Hackathon CRUD ====================
@@ -40,8 +43,8 @@ export interface CreateHackathonDTO {
 export async function createHackathon(data: CreateHackathonDTO) {
     try {
         const result = await sql`
-      INSERT INTO hackathons (title, description, start_date, end_date, created_by, status)
-      VALUES (${data.title}, ${data.description || null}, ${data.start_date}, ${data.end_date}, ${data.created_by}, ${data.status || 'DRAFT'})
+      INSERT INTO hackathons (title, description, start_date, end_date, created_by, status, max_team_size)
+      VALUES (${data.title}, ${data.description || null}, ${data.start_date}, ${data.end_date}, ${data.created_by}, ${data.status || 'DRAFT'}, ${data.max_team_size || 4})
       RETURNING *
     `;
         return result[0] as Hackathon;
@@ -67,7 +70,6 @@ export async function getHackathonsWithUserRole(userId?: string) {
             return await sql`SELECT *, NULL as user_role FROM hackathons ORDER BY created_at DESC`;
         }
 
-        // Join to get the specific user's role if it exists
         // Join to get the specific user's role if it exists, and count total participants
         const result = await sql`
             SELECT 
@@ -115,12 +117,11 @@ export async function updateHackathonStatus(id: string, status: "DRAFT" | "PUBLI
 
 export async function addParticipant(hackathonId: string, userId: string, role: HackathonRole) {
     try {
-        // Constraint check is handled by DB unique index, but we can double check logic here if needed
         const result = await sql`
       INSERT INTO hackathon_participants (hackathon_id, user_id, role)
       VALUES (${hackathonId}, ${userId}, ${role})
       ON CONFLICT (hackathon_id, user_id) 
-      DO UPDATE SET role = ${role} -- Allow updating role if needed, or we could throw
+      DO UPDATE SET role = ${role}
       RETURNING *
     `;
         return result[0] as HackathonParticipant;
@@ -183,28 +184,16 @@ export async function removeHackathonParticipant(hackathonId: string, userId: st
 // This function purposely excludes user/team identity information
 export async function getSubmissionForBlindJudging(submissionId: string) {
     try {
-        // Assumes a 'submissions' table exists (from standard contest repo) or will be used.
-        // For Hack.io, let's assume we reuse `contest_submissions` or a similar structure.
-        // We strictly select ONLY content fields, NO user_id join for names.
-
-        // Note: Adjust table names if we are reusing contest_submissions or creating new hackathon_submissions.
-        // For now, assuming similar structure to contest_submissions but we need to ensure we don't leak user info.
-
-        /* 
-           Hypothetical query assuming we link problems to hackathons (via contest mechanisms) 
-           and use contest_submissions. 
-        */
         const result = await sql`
       SELECT 
         id,
         problem_id,
-        code_content, -- hypothetical field
+        code_content, 
         language,
         submission_time
       FROM contest_submissions 
       WHERE id = ${submissionId}
     `;
-
     } catch (error) {
         console.error("Error getting blind submission:", error);
         throw error;
@@ -226,13 +215,13 @@ export async function createTeam(data: CreateTeamDTO) {
             VALUES (${data.hackathon_id}, ${data.name}, ${data.created_by})
             RETURNING *
         `;
-        
+
         // Add creator as first member
         await sql`
             INSERT INTO hackathon_team_members (team_id, user_id)
             VALUES (${team[0].id}, ${data.created_by})
         `;
-        
+
         return team[0];
     } catch (error) {
         console.error("Error creating team:", error);
@@ -242,7 +231,6 @@ export async function createTeam(data: CreateTeamDTO) {
 
 export async function getTeamForUser(hackathonId: string, userId: string) {
     try {
-        // Find if user is in any team for this hackathon
         const result = await sql`
             SELECT t.*, 
                    (SELECT COUNT(*) FROM hackathon_team_members WHERE team_id = t.id) as member_count
@@ -267,6 +255,28 @@ export async function joinTeam(teamId: string, userId: string) {
         return result[0];
     } catch (error) {
         console.error("Error joining team:", error);
+        throw error;
+    }
+}
+
+export async function findUserByEmail(email: string) {
+    try {
+        const result = await sql`SELECT id, name, email, image FROM users WHERE email = ${email}`;
+        return result[0];
+    } catch (error) {
+        console.error("Error finding user:", error);
+        throw error;
+    }
+}
+
+export async function getTeamMemberCount(teamId: string) {
+    try {
+        const result = await sql`
+            SELECT COUNT(*) as count FROM hackathon_team_members WHERE team_id = ${teamId}
+        `;
+        return Number(result[0].count);
+    } catch (error) {
+        console.error("Error counting team members:", error);
         throw error;
     }
 }

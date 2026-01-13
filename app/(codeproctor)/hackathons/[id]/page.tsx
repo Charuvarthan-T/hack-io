@@ -21,6 +21,7 @@ interface HackathonDetails {
     start_date: string;
     end_date: string;
     status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "COMPLETED";
+    max_team_size: number;
     user_status: {
         role: "ORGANIZER" | "PARTICIPANT" | "JUDGE" | "MENTOR" | null;
         team: {
@@ -68,20 +69,41 @@ export default function HackathonDetailsPage() {
     useEffect(() => {
         if (!hackathon) return;
 
-        // Only run timer if ACTIVE (counting down to end)
-        if (hackathon.status !== 'ACTIVE') {
+        let targetDate: Date;
+        const now = new Date();
+        const startDate = new Date(hackathon.start_date);
+        const endDate = new Date(hackathon.end_date);
+
+        let mode: 'START' | 'END' = 'START';
+
+        if (hackathon.status === 'PUBLISHED') {
+            if (now > startDate) {
+                // If start date passed, count down to end (Treat as implicit Active for UI)
+                targetDate = endDate;
+                mode = 'END';
+            } else {
+                targetDate = startDate;
+                mode = 'START';
+            }
+        } else if (hackathon.status === 'ACTIVE') {
+            targetDate = endDate;
+            mode = 'END';
+        } else {
             setTimeLeft("");
             return;
         }
 
-        const targetDate = new Date(hackathon.end_date);
-
         const updateTimer = () => {
-            const now = new Date();
-            const diff = targetDate.getTime() - now.getTime();
+            const currentTime = new Date();
+            const diff = targetDate.getTime() - currentTime.getTime();
 
             if (diff <= 0) {
-                setTimeLeft("Ended");
+                if (mode === 'START') {
+                    // Should technically not happen due to check above, but purely for transition
+                    setTimeLeft("Started");
+                } else {
+                    setTimeLeft("Ended");
+                }
                 return;
             }
 
@@ -92,8 +114,8 @@ export default function HackathonDetailsPage() {
             setTimeLeft(`${days}d ${hours}h ${minutes}m`);
         };
 
-        const interval = setInterval(updateTimer, 60000); // Update every minute
-        updateTimer(); // Initial call
+        const interval = setInterval(updateTimer, 1000); // Update every second
+        updateTimer();
 
         return () => clearInterval(interval);
     }, [hackathon]);
@@ -121,6 +143,11 @@ export default function HackathonDetailsPage() {
     };
 
     const submitCreateTeam = async () => {
+        // ... existing code ...
+        // (collapsed in diff for brevity, ensure existing function is preserved or use multi_replace for cleaner insert)
+        // Since I'm using replace_file_content with range, I should just append after it.
+        // Wait, I can't easily append without context.
+        // I will replace the submitCreateTeam and add the new one after.
         if (!teamName) {
             toast.error("Please enter a team name");
             return;
@@ -146,10 +173,38 @@ export default function HackathonDetailsPage() {
         }
     };
 
+    // Add Member State
+    const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
+    const [inviteEmail, setInviteEmail] = useState("");
+    const [isInviting, setIsInviting] = useState(false);
+
+    const handleAddMember = async () => {
+        if (!inviteEmail) return;
+        setIsInviting(true);
+        try {
+            const res = await fetch(`/api/hackathons/${hackathon?.id}/teams/members`, {
+                method: "POST",
+                body: JSON.stringify({ email: inviteEmail })
+            });
+            if (res.ok) {
+                toast.success("Member added!");
+                setIsAddMemberOpen(false);
+                setInviteEmail("");
+                fetchDetails();
+            } else {
+                const err = await res.json();
+                toast.error(err.error || "Failed to add member");
+            }
+        } catch (error) {
+            toast.error("Error adding member");
+        } finally {
+            setIsInviting(false);
+        }
+    };
+
     const handleEnterWorkspace = () => {
         if (hackathon?.user_status.team) {
-            // router.push(`/hackathons/${hackathon.id}/team/${hackathon.user_status.team.id}`);
-            toast.info("Entering Team Workspace... (Coming Soon)");
+            router.push(`/hackathons/${hackathon.id}/team/${hackathon.user_status.team.id}`);
         }
     };
 
@@ -179,10 +234,15 @@ export default function HackathonDetailsPage() {
                     <Card className="min-w-[200px] bg-secondary/50 border-none">
                         <CardContent className="p-4 text-center">
                             <p className="text-xs text-muted-foreground uppercase font-semibold">
-                                {status === 'ACTIVE' ? "Ends In" : "Status"}
+                                { status === 'ACTIVE' ? "Ends In" :
+                                  (status === 'PUBLISHED' && new Date() > new Date(hackathon.start_date) ? "Ends In" : "Starts In")
+                                }
                             </p>
-                            <p className={`text-2xl font-mono font-bold mt-1 ${status === 'ACTIVE' ? 'text-red-500' : 'text-primary'}`}>
-                                {status === 'ACTIVE' ? timeLeft : "Starting Soon"}
+                            <p className={`text-2xl font-mono font-bold mt-1 ${
+                                (status === 'ACTIVE' || (status === 'PUBLISHED' && new Date() > new Date(hackathon.start_date)))
+                                ? 'text-red-500' : 'text-primary'
+                            }`}>
+                                {timeLeft}
                             </p>
                         </CardContent>
                     </Card>
@@ -226,6 +286,19 @@ export default function HackathonDetailsPage() {
                                     <p className="text-sm font-medium">End Date</p>
                                     <p className="text-sm text-muted-foreground">
                                         {new Date(hackathon.end_date).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card className="col-span-2 md:col-span-1">
+                            <CardContent className="p-4 flex items-center space-x-4">
+                                <div className="p-2 bg-primary/10 rounded-full">
+                                    <UsersIcon className="h-6 w-6 text-primary" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium">Team Size</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Max {hackathon.max_team_size} members
                                     </p>
                                 </div>
                             </CardContent>
@@ -278,15 +351,28 @@ export default function HackathonDetailsPage() {
                                 <div className="space-y-3">
                                     <div className="p-3 bg-secondary rounded-md">
                                         <p className="text-sm font-medium">Team: {user_status.team?.name}</p>
-                                        <p className="text-xs text-muted-foreground">{user_status.team?.member_count} Members</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {user_status.team?.member_count} / {hackathon.max_team_size} Members
+                                        </p>
                                     </div>
                                     <Button
                                         className="w-full"
-                                        variant="secondary" // Prominent but not primary if event not started, adjust logic if needed
+                                        variant="secondary"
                                         onClick={handleEnterWorkspace}
                                     >
                                         Enter Workspace <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
+
+                                    {/* Add Member Button - Only if space available */}
+                                    {(user_status.team?.member_count || 0) < (hackathon.max_team_size || 4) && (
+                                        <Button
+                                            variant="outline"
+                                            className="w-full"
+                                            onClick={() => setIsAddMemberOpen(true)}
+                                        >
+                                            <UserPlus className="mr-2 h-4 w-4" /> Add Member
+                                        </Button>
+                                    )}
                                 </div>
                             )}
 
@@ -299,10 +385,11 @@ export default function HackathonDetailsPage() {
                         </CardContent>
                     </Card>
 
-                    {/* Resources / Links (Placeholder) */}
+                    {/* Resources ... */}
                     <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base">Resources</CardTitle>
+                            <div className="h-0.5 w-10 bg-primary mt-2 rounded-full" />
                         </CardHeader>
                         <CardContent className="text-sm space-y-2">
                             <a href="#" className="block text-primary hover:underline">Rulebook</a>
@@ -334,6 +421,32 @@ export default function HackathonDetailsPage() {
                         </div>
                         <Button className="w-full" onClick={submitCreateTeam} disabled={isCreatingTeam}>
                             {isCreatingTeam ? "Creating..." : "Create Team"}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+            {/* Add Member Dialog */}
+            <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Add Team Member</DialogTitle>
+                        <DialogDescription>
+                            Enter the email of the participant you want to add. They must have already joined the hackathon.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="inviteEmail">User Email</Label>
+                            <Input
+                                id="inviteEmail"
+                                type="email"
+                                value={inviteEmail}
+                                onChange={(e) => setInviteEmail(e.target.value)}
+                                placeholder="student@example.com"
+                            />
+                        </div>
+                        <Button className="w-full" onClick={handleAddMember} disabled={isInviting}>
+                            {isInviting ? "Adding..." : "Add Member"}
                         </Button>
                     </div>
                 </DialogContent>

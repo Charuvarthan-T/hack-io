@@ -45,6 +45,7 @@ export default function HackathonsPage() {
     const [description, setDescription] = useState("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+    const [maxTeamSize, setMaxTeamSize] = useState(4);
 
     // Permissions
     const canCreate = session?.user?.role === 'admin' || session?.user?.role === 'faculty';
@@ -73,6 +74,12 @@ export default function HackathonsPage() {
         e.preventDefault();
         setLoading(true);
 
+        if (maxTeamSize < 1) {
+            toast.error("Team size must be at least 1");
+            setLoading(false);
+            return;
+        }
+
         try {
             const res = await fetch("/api/hackathons", {
                 method: "POST",
@@ -82,7 +89,8 @@ export default function HackathonsPage() {
                     description,
                     start_date: new Date(startDate).toISOString(),
                     end_date: new Date(endDate).toISOString(),
-                    status: "DRAFT"
+                    status: "DRAFT",
+                    max_team_size: maxTeamSize
                 }),
             });
 
@@ -223,25 +231,25 @@ export default function HackathonsPage() {
                                                 <td className="p-3">
                                                     {/* Organizer can remove participants */}
                                                     {selectedHackathonId && (
-                                                        <Button 
-                                                            variant="ghost" 
-                                                            size="icon" 
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
                                                             className="h-8 w-8 text-destructive hover:text-destructive"
                                                             onClick={async () => {
-                                                                if(!confirm("Remove this participant?")) return;
+                                                                if (!confirm("Remove this participant?")) return;
                                                                 try {
                                                                     const res = await fetch(`/api/hackathons/${selectedHackathonId}/participants`, {
                                                                         method: 'DELETE',
                                                                         body: JSON.stringify({ targetUserId: p.id })
                                                                     });
-                                                                    if(res.ok) {
+                                                                    if (res.ok) {
                                                                         toast.success("Removed");
                                                                         handleViewParticipants(selectedHackathonId); // Refresh list
                                                                         fetchHackathons(); // Refresh count
                                                                     } else {
                                                                         toast.error("Failed to remove");
                                                                     }
-                                                                } catch(e) { toast.error("Error"); }
+                                                                } catch (e) { toast.error("Error"); }
                                                             }}
                                                         >
                                                             <Trash className="h-4 w-4" />
@@ -318,6 +326,18 @@ export default function HackathonsPage() {
                                             required
                                         />
                                     </div>
+                                    <div className="col-span-2 space-y-2">
+                                        <Label htmlFor="maxSize">Max Team Size</Label>
+                                        <Input
+                                            id="maxSize"
+                                            type="number"
+                                            min="1"
+                                            max="10"
+                                            value={maxTeamSize}
+                                            onChange={(e) => setMaxTeamSize(Number(e.target.value))}
+                                            required
+                                        />
+                                    </div>
                                 </div>
                                 <Button type="submit" className="w-full" disabled={loading}>
                                     {loading ? "Creating..." : "Create Event"}
@@ -359,14 +379,14 @@ export default function HackathonsPage() {
                             {/* View Participants Button (If allowed) - Replaces View Details generic if Organizer */}
                             {canDelete(hack) || hack.user_role === 'JUDGE' ? (
                                 <Button variant="outline" className="flex-1" onClick={() => handleViewParticipants(hack.id)}>
-                                    <Users className="w-4 h-4 mr-2"/> Participants
+                                    <Users className="w-4 h-4 mr-2" /> Participants
                                 </Button>
                             ) : (
                                 <Button variant="outline" className="flex-1" onClick={() => router.push(`/hackathons/${hack.id}`)}>
                                     View Details
                                 </Button>
                             )}
-                            
+
                             {/* Role Indicator / Join Button */}
                             {hack.user_role ? (
                                 <Badge variant="outline" className="ml-2 h-9 px-3 border-green-500 text-green-500">
@@ -396,8 +416,8 @@ export default function HackathonsPage() {
                                     <Send className="h-4 w-4" />
                                 </Button>
                             )}
-                            
-                            
+
+
                             {/* Delete Button */}
                             {canDelete(hack) && (
                                 <Button
@@ -414,7 +434,11 @@ export default function HackathonsPage() {
                 ))}
                 {hackathons.length === 0 && (
                     <div className="col-span-full text-center py-10">
-                        <p className="text-muted-foreground">No hackathons found. Create one to get started.</p>
+                        {canCreate ? (
+                            <p className="text-muted-foreground">No hackathons found. Create one to get started.</p>
+                        ) : (
+                            <p className="text-muted-foreground">No upcoming hackathons found.</p>
+                        )}
                     </div>
                 )}
             </div>
