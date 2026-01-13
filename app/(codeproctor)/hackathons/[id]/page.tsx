@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -11,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Calendar, Users, Clock, ArrowRight, UserPlus, Users as UsersIcon } from "lucide-react";
+
 
 interface HackathonDetails {
     id: string;
@@ -66,16 +68,20 @@ export default function HackathonDetailsPage() {
     useEffect(() => {
         if (!hackathon) return;
 
-        const targetDate = hackathon.status === 'PUBLISHED'
-            ? new Date(hackathon.start_date)
-            : new Date(hackathon.end_date);
+        // Only run timer if ACTIVE (counting down to end)
+        if (hackathon.status !== 'ACTIVE') {
+            setTimeLeft("");
+            return;
+        }
+
+        const targetDate = new Date(hackathon.end_date);
 
         const updateTimer = () => {
             const now = new Date();
             const diff = targetDate.getTime() - now.getTime();
 
             if (diff <= 0) {
-                setTimeLeft(hackathon.status === 'PUBLISHED' ? "Started!" : "Ended");
+                setTimeLeft("Ended");
                 return;
             }
 
@@ -173,10 +179,10 @@ export default function HackathonDetailsPage() {
                     <Card className="min-w-[200px] bg-secondary/50 border-none">
                         <CardContent className="p-4 text-center">
                             <p className="text-xs text-muted-foreground uppercase font-semibold">
-                                {status === 'PUBLISHED' ? "Starts In" : "Time Remaining"}
+                                {status === 'ACTIVE' ? "Ends In" : "Status"}
                             </p>
-                            <p className="text-2xl font-mono font-bold text-primary mt-1">
-                                {timeLeft}
+                            <p className={`text-2xl font-mono font-bold mt-1 ${status === 'ACTIVE' ? 'text-red-500' : 'text-primary'}`}>
+                                {status === 'ACTIVE' ? timeLeft : "Starting Soon"}
                             </p>
                         </CardContent>
                     </Card>
