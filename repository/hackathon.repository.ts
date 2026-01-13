@@ -284,3 +284,19 @@ export async function getTeamMemberCount(teamId: string) {
         throw error;
     }
 }
+
+
+export async function getTeamMembers(teamId: string) {
+    try {
+        const result = await sql`
+            SELECT u.id, u.name, u.email, u.image 
+            FROM hackathon_team_members tm
+            JOIN users u ON tm.user_id = u.id
+            WHERE tm.team_id = ${teamId}
+        `;
+        return result;
+    } catch (error) {
+        console.error("Error getting team members:", error);
+        throw error;
+    }
+}

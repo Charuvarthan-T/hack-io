@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, Code, CheckSquare, UploadCloud, Users, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { TaskList } from "@/components/team/task-list";
 
 export default function TeamWorkspacePage({ params }: { params: Promise<{ id: string; teamId: string }> }) {
     // Unwrap params using use() hook or await if in async component, but this is client component.
@@ -19,6 +20,18 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
     const teamId = routerParams.teamId as string;
 
     const [activeTab, setActiveTab] = useState("overview");
+    const [members, setMembers] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (teamId) {
+            fetch(`/api/hackathons/${hackathonId}/team/${teamId}/members`)
+                .then(res => res.json())
+                .then(data => {
+                    if (Array.isArray(data)) setMembers(data);
+                })
+                .catch(err => console.error("Failed to fetch members", err));
+        }
+    }, [teamId, hackathonId]);
 
     return (
         <div className="flex flex-col h-[calc(100vh-4rem)]">
@@ -103,8 +116,8 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                         </TabsContent>
 
                         <TabsContent value="tasks" className="h-full m-0">
-                            <div className="flex items-center justify-center h-full text-muted-foreground">
-                                Task Board Module (Coming Soon)
+                            <div className="h-full overflow-auto">
+                                <TaskList members={members} />
                             </div>
                         </TabsContent>
 
