@@ -152,9 +152,13 @@ export async function getHackathonParticipants(hackathonId: string) {
                 u.name, 
                 u.email, 
                 hp.role, 
-                hp.created_at
+                hp.created_at,
+                t.name as team_name,
+                t.id as team_id
             FROM hackathon_participants hp
             JOIN users u ON hp.user_id = u.id
+            LEFT JOIN hackathon_team_members tm ON u.id = tm.user_id
+            LEFT JOIN hackathon_teams t ON tm.team_id = t.id AND t.hackathon_id = hp.hackathon_id
             WHERE hp.hackathon_id = ${hackathonId}
             ORDER BY hp.created_at DESC
         `;

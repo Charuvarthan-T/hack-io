@@ -378,7 +378,7 @@ export default function HackathonsPage() {
                         <CardFooter>
                             {/* View Participants Button (If allowed) - Replaces View Details generic if Organizer */}
                             {canDelete(hack) || hack.user_role === 'JUDGE' ? (
-                                <Button variant="outline" className="flex-1" onClick={() => handleViewParticipants(hack.id)}>
+                                <Button variant="outline" className="flex-1" onClick={() => router.push(`/hackathons/${hack.id}/admin/participants`)}>
                                     <Users className="w-4 h-4 mr-2" /> Participants
                                 </Button>
                             ) : (

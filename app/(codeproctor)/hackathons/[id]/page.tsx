@@ -208,12 +208,19 @@ export default function HackathonDetailsPage() {
         }
     };
 
-    if (loading) return <div className="p-10 text-center">Loading details...</div>;
-    if (!hackathon) return <div className="p-10 text-center">Hackathon not found.</div>;
+    if (loading) {
+        return <div className="flex justify-center items-center py-20">Loading...</div>;
+    }
+
+    if (!hackathon) {
+        return <div className="flex justify-center items-center py-20">Hackathon not found</div>;
+    }
 
     const { status, user_status } = hackathon;
     const isJoined = !!user_status.role;
     const hasTeam = !!user_status.team;
+    
+    const isOrganizerOrAdmin = user_status?.role === 'ORGANIZER' || session?.user?.role === 'admin';
 
     return (
         <div className="container max-w-4xl mx-auto py-10 space-y-8">
@@ -224,9 +231,16 @@ export default function HackathonDetailsPage() {
                         {status}
                     </Badge>
                     <h1 className="text-4xl font-bold tracking-tight">{hackathon.title}</h1>
-                    <p className="text-muted-foreground mt-1">
-                        Hosted by Protocol (Organizer)
-                    </p>
+                    <div className="flex items-center gap-4 mt-1">
+                        <p className="text-muted-foreground">
+                            Hosted by Protocol (Organizer)
+                        </p>
+                        {isOrganizerOrAdmin && (
+                            <Button variant="outline" size="sm" onClick={() => router.push(`/hackathons/${hackathon.id}/admin/participants`)}>
+                                <UsersIcon className="h-4 w-4 mr-2" /> Manage Participants
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Countdown Card */}
