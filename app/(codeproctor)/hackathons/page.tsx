@@ -13,9 +13,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Calendar, Users, Trash } from "lucide-react";
+import { Plus, Calendar, Users, Trash, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+import { useSession } from "next-auth/react";
 
 interface Hackathon {
     id: string;
@@ -24,9 +26,11 @@ interface Hackathon {
     start_date: string;
     end_date: string;
     status: string;
+    created_by: string;
 }
 
 export default function HackathonsPage() {
+    const { data: session } = useSession();
     const [hackathons, setHackathons] = useState<Hackathon[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -36,6 +40,13 @@ export default function HackathonsPage() {
     const [description, setDescription] = useState("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+
+    // Permissions
+    const canCreate = session?.user?.role === 'admin' || session?.user?.role === 'faculty';
+    const canDelete = (hack: Hackathon) => {
+        if (!session?.user) return false;
+        return session.user.role === 'admin' || session.user.id === hack.created_by;
+    };
 
     const fetchHackathons = async () => {
         try {
@@ -92,7 +103,7 @@ export default function HackathonsPage() {
 
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this hackathon?")) return;
-        
+
         try {
             const res = await fetch(`/api/hackathons/${id}`, {
                 method: "DELETE",
@@ -110,6 +121,24 @@ export default function HackathonsPage() {
         }
     };
 
+    const handleJoin = async (id: string) => {
+        try {
+            const res = await fetch(`/api/hackathons/${id}/join`, {
+                method: "POST",
+            });
+
+            if (res.ok) {
+                toast.success("Successfully joined hackathon!");
+                fetchHackathons();
+            } else {
+                const err = await res.json();
+                toast.error(err.error || "Failed to join");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        }
+    };
+
     return (
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
@@ -120,64 +149,66 @@ export default function HackathonsPage() {
                     </p>
                 </div>
 
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                    <DialogTrigger asChild>
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" /> Create Hackathon
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Create New Hackathon</DialogTitle>
-                        </DialogHeader>
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="title">Title</Label>
-                                <Input
-                                    id="title"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    required
-                                    placeholder="Hackathon Name"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
-                                <Textarea
-                                    id="description"
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    placeholder="Event details..."
-                                />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="start">Start Date</Label>
-                                    <Input
-                                        id="start"
-                                        type="datetime-local"
-                                        value={startDate}
-                                        onChange={(e) => setStartDate(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="end">End Date</Label>
-                                    <Input
-                                        id="end"
-                                        type="datetime-local"
-                                        value={endDate}
-                                        onChange={(e) => setEndDate(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <Button type="submit" className="w-full" disabled={loading}>
-                                {loading ? "Creating..." : "Create Event"}
+                {canCreate && (
+                    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                        <DialogTrigger asChild>
+                            <Button>
+                                <Plus className="mr-2 h-4 w-4" /> Create Hackathon
                             </Button>
-                        </form>
-                    </DialogContent>
-                </Dialog>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Create New Hackathon</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="title">Title</Label>
+                                    <Input
+                                        id="title"
+                                        value={title}
+                                        onChange={(e) => setTitle(e.target.value)}
+                                        required
+                                        placeholder="Hackathon Name"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="description">Description</Label>
+                                    <Textarea
+                                        id="description"
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="Event details..."
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="start">Start Date</Label>
+                                        <Input
+                                            id="start"
+                                            type="datetime-local"
+                                            value={startDate}
+                                            onChange={(e) => setStartDate(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="end">End Date</Label>
+                                        <Input
+                                            id="end"
+                                            type="datetime-local"
+                                            value={endDate}
+                                            onChange={(e) => setEndDate(e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <Button type="submit" className="w-full" disabled={loading}>
+                                    {loading ? "Creating..." : "Create Event"}
+                                </Button>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                )}
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -211,13 +242,27 @@ export default function HackathonsPage() {
                             <Button variant="outline" className="flex-1">
                                 View Details
                             </Button>
-                            <Button 
-                                variant="destructive" 
-                                size="icon"
-                                onClick={() => handleDelete(hack.id)}
-                            >
-                                <Trash className="h-4 w-4" />
-                            </Button>
+                            {/* Join Button */}
+                            {hack.status === 'PUBLISHED' && (
+                                <Button
+                                    variant="secondary"
+                                    className="ml-2"
+                                    onClick={() => handleJoin(hack.id)}
+                                >
+                                    <UserPlus className="h-4 w-4 mr-2" /> Join
+                                </Button>
+                            )}
+                            {/* Delete Button */}
+                            {canDelete(hack) && (
+                                <Button
+                                    variant="destructive"
+                                    size="icon"
+                                    className="ml-2"
+                                    onClick={() => handleDelete(hack.id)}
+                                >
+                                    <Trash className="h-4 w-4" />
+                                </Button>
+                            )}
                         </CardFooter>
                     </Card>
                 ))}

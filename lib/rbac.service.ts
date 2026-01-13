@@ -17,7 +17,7 @@ export interface RBACContext {
     userId: string;
     hackathonId: string;
     action: RBACAction;
-    resourceId?: string; 
+    resourceId?: string;
 }
 
 
@@ -32,13 +32,13 @@ const PERMISSIONS: Record<HackathonRole, Set<RBACAction>> = {
     PARTICIPANT: new Set([
         'VIEW_HACKATHON',
         'SUBMIT_PROJECT',
-        'VIEW_PROJECT' 
+        'VIEW_PROJECT'
     ]),
     JUDGE: new Set([
         'VIEW_HACKATHON',
         'VIEW_PROJECT',
         'SCORE_PROJECT',
-        'TRIGGER_AGENT' 
+        'TRIGGER_AGENT'
     ]),
     MENTOR: new Set([
         'VIEW_HACKATHON',
@@ -115,5 +115,76 @@ export class RBACService {
         }
 
         throw new Error("Access denied or not implemented for this role preference");
+    }
+
+
+    // ==================== Participant Membership Rules ====================
+
+    /**
+     * Validates if a user can self-join a hackathon.
+     * Rules:
+     * 1. Hackathon matches PUBLISHED state (or ACTIVE if late join allowed, but spec says PUBLISHED)
+     * 2. User has no existing role
+     * 3. Global role is Student or Faculty (Strictly NO Judges/Mentors self-joining if they already have that role)
+     */
+    static async validateJoinRequest(userId: string, hackathonId: string, globalRole: string): Promise<boolean> {
+        // 0. Fetch Hackathon State (Need to import getHackathonById)
+        const { getHackathonById } = await import("@/repository/hackathon.repository");
+        const hackathon = await getHackathonById(hackathonId);
+
+        if (!hackathon) throw new Error("Hackathon not found");
+
+        // Rule 1: State Check
+        if (hackathon.status !== 'PUBLISHED') {
+            console.warn(`RBAC Check Failed: Hackathon ${hackathonId} is ${hackathon.status}, expected PUBLISHED`);
+            return false;
+        }
+
+        // Rule 2: Existing Role Check
+        const existingRole = await getUserRole(hackathonId, userId);
+        if (existingRole) {
+            console.warn(`RBAC Check Failed: User ${userId} already has role ${existingRole}`);
+            return false;
+        }
+
+        // Rule 3: Global Role Check
+        // assuming globalRole is passed from session.user.role
+        const allowedGlobalRoles = ['student', 'faculty', 'admin']; // Admin can technically join to test
+        if (!allowedGlobalRoles.includes(globalRole)) {
+            console.warn(`RBAC Check Failed: Global Role ${globalRole} not allowed to join`);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates if a requester can remove a target user.
+     * Rules:
+     * 1. Requester must be ORGANIZER (of this event) or Global ADMIN.
+     * 2. Target must be PARTICIPANT (cannot remove other officials via this flow).
+     */
+    static async validateRemovalRequest(requesterId: string, hackathonId: string, targetUserId: string, requesterGlobalRole: string): Promise<boolean> {
+        // 1. Check Requester Role
+        // Global Admin always allowed
+        if (requesterGlobalRole === 'admin') {
+            // pass
+        } else {
+            // Start Local Check
+            const requesterRole = await getUserRole(hackathonId, requesterId);
+            if (requesterRole !== 'ORGANIZER') {
+                console.warn(`RBAC Validation Failed: Requester ${requesterId} is not ORGANIZER`);
+                return false;
+            }
+        }
+
+        // 2. Check Target Role
+        const targetRole = await getUserRole(hackathonId, targetUserId);
+        if (targetRole !== 'PARTICIPANT') {
+            console.warn(`RBAC Validation Failed: Target ${targetUserId} is ${targetRole}, not PARTICIPANT`);
+            return false;
+        }
+
+        return true;
     }
 }
