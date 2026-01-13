@@ -61,12 +61,52 @@ export async function getHackathonById(id: string) {
     }
 }
 
+export async function getHackathonsWithUserRole(userId?: string) {
+    try {
+        if (!userId) {
+            return await sql`SELECT *, NULL as user_role FROM hackathons ORDER BY created_at DESC`;
+        }
+
+        // Join to get the specific user's role if it exists
+        // Join to get the specific user's role if it exists, and count total participants
+        const result = await sql`
+            SELECT 
+                h.*, 
+                hp.role as user_role,
+                (SELECT COUNT(*) FROM hackathon_participants WHERE hackathon_id = h.id) as participant_count
+            FROM hackathons h
+            LEFT JOIN hackathon_participants hp 
+            ON h.id = hp.hackathon_id AND hp.user_id = ${userId}
+            ORDER BY h.created_at DESC
+        `;
+        return result as (Hackathon & { user_role: HackathonRole | null, participant_count: number })[];
+    } catch (error) {
+        console.error("Error fetching hackathons:", error);
+        throw error;
+    }
+}
+
 export async function deleteHackathon(id: string) {
     try {
         const result = await sql`DELETE FROM hackathons WHERE id = ${id} RETURNING *`;
         return result[0];
     } catch (error) {
         console.error("Error deleting hackathon:", error);
+        throw error;
+    }
+}
+
+export async function updateHackathonStatus(id: string, status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "COMPLETED") {
+    try {
+        const result = await sql`
+      UPDATE hackathons 
+      SET status = ${status}, updated_at = NOW()
+      WHERE id = ${id} 
+      RETURNING *
+    `;
+        return result[0] as Hackathon;
+    } catch (error) {
+        console.error("Error updating hackathon status:", error);
         throw error;
     }
 }

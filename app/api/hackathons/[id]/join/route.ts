@@ -21,11 +21,7 @@ export async function POST(
 
     try {
         // 1. RBAC Validation (Deterministic Gate)
-        const canJoin = await RBACService.validateJoinRequest(userId, id, globalRole);
-
-        if (!canJoin) {
-            return NextResponse.json({ error: "Join request denied by RBAC (Invalid State or Conflict)" }, { status: 403 });
-        }
+        await RBACService.validateJoinRequest(userId, id, globalRole);
 
         // 2. Execution
         await addParticipant(id, userId, "PARTICIPANT");

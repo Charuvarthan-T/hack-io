@@ -2,8 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { createHackathon } from "@/repository/hackathon.repository";
-import { addParticipant } from "@/repository/hackathon.repository";
+import { createHackathon, addParticipant, getHackathonsWithUserRole } from "@/repository/hackathon.repository";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -37,11 +36,14 @@ export async function POST(req: NextRequest) {
   }
 }
 
+
+
 export async function GET(req: NextRequest) {
   try {
-    // Basic query - fetch all for now.
-    // In real app, might filter by user.
-    const hackathons = await import("@/lib/db").then(mod => mod.default`SELECT * FROM hackathons ORDER BY created_at DESC`);
+    const session = await getServerSession(authOptions);
+    const userId = session?.user?.id;
+
+    const hackathons = await getHackathonsWithUserRole(userId);
     return NextResponse.json(hackathons);
   } catch (error) {
     return NextResponse.json({ error: String(error) }, { status: 500 });

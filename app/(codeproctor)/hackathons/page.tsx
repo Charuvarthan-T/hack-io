@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Calendar, Users, Trash, UserPlus } from "lucide-react";
+import { Plus, Calendar, Users, Trash, UserPlus, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -27,6 +27,7 @@ interface Hackathon {
     end_date: string;
     status: string;
     created_by: string;
+    user_role?: string;
 }
 
 export default function HackathonsPage() {
@@ -139,6 +140,28 @@ export default function HackathonsPage() {
         }
     };
 
+    const handlePublish = async (id: string) => {
+        if (!confirm("Are you sure you want to PUBLISH this hackathon? Participants will be able to join.")) return;
+
+        try {
+            const res = await fetch(`/api/hackathons/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "PUBLISHED" }),
+            });
+
+            if (res.ok) {
+                toast.success("Hackathon Published!");
+                fetchHackathons();
+            } else {
+                const err = await res.json();
+                toast.error(err.error || "Failed to publish");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        }
+    };
+
     return (
         <div className="p-6 space-y-6">
             <div className="flex justify-between items-center">
@@ -242,16 +265,37 @@ export default function HackathonsPage() {
                             <Button variant="outline" className="flex-1">
                                 View Details
                             </Button>
-                            {/* Join Button */}
-                            {hack.status === 'PUBLISHED' && (
+                            
+                            {/* Role Indicator / Join Button */}
+                            {hack.user_role ? (
+                                <Badge variant="outline" className="ml-2 h-9 px-3 border-green-500 text-green-500">
+                                    {hack.user_role}
+                                </Badge>
+                            ) : (
+                                hack.status === 'PUBLISHED' && (
+                                    <Button
+                                        variant="secondary"
+                                        className="ml-2"
+                                        onClick={() => handleJoin(hack.id)}
+                                    >
+                                        <UserPlus className="h-4 w-4 mr-2" /> Join
+                                    </Button>
+                                )
+                            )}
+
+                            {/* Publish Button (Only for Organizers/Admin if DRAFT) */}
+                            {canDelete(hack) && hack.status === 'DRAFT' && (
                                 <Button
-                                    variant="secondary"
-                                    className="ml-2"
-                                    onClick={() => handleJoin(hack.id)}
+                                    variant="default"
+                                    size="icon"
+                                    className="ml-2 bg-green-600 hover:bg-green-700"
+                                    onClick={() => handlePublish(hack.id)}
+                                    title="Publish Hackathon"
                                 >
-                                    <UserPlus className="h-4 w-4 mr-2" /> Join
+                                    <Send className="h-4 w-4" />
                                 </Button>
                             )}
+                            
                             {/* Delete Button */}
                             {canDelete(hack) && (
                                 <Button

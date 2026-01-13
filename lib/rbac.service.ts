@@ -136,23 +136,20 @@ export class RBACService {
 
         // Rule 1: State Check
         if (hackathon.status !== 'PUBLISHED') {
-            console.warn(`RBAC Check Failed: Hackathon ${hackathonId} is ${hackathon.status}, expected PUBLISHED`);
-            return false;
+            throw new Error(`Hackathon is ${hackathon.status}, expected PUBLISHED`);
         }
 
         // Rule 2: Existing Role Check
         const existingRole = await getUserRole(hackathonId, userId);
         if (existingRole) {
-            console.warn(`RBAC Check Failed: User ${userId} already has role ${existingRole}`);
-            return false;
+            throw new Error(`You already have the role of ${existingRole} in this hackathon`);
         }
 
         // Rule 3: Global Role Check
         // assuming globalRole is passed from session.user.role
         const allowedGlobalRoles = ['student', 'faculty', 'admin']; // Admin can technically join to test
-        if (!allowedGlobalRoles.includes(globalRole)) {
-            console.warn(`RBAC Check Failed: Global Role ${globalRole} not allowed to join`);
-            return false;
+        if (!allowedGlobalRoles.includes(globalRole.toLowerCase())) {
+            throw new Error(`Global Role ${globalRole} not allowed to join`);
         }
 
         return true;
