@@ -55,6 +55,12 @@ const sidebarItems: SidebarItem[] = [
     role: ["admin", "faculty", "student"],
   },
   {
+    label: "Hackathons",
+    href: "/hackathons",
+    icon: Trophy,
+    role: ["admin", "faculty", "student"],
+  },
+  {
     label: "Semesters",
     href: "/semesters",
     icon: GraduationCap,
