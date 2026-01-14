@@ -16,6 +16,10 @@ export interface Hackathon {
     max_team_size: number;
     created_at: Date;
     updated_at: Date;
+    discord_enabled?: boolean;
+    discord_server_type?: "INTERNAL" | "EXTERNAL";
+    discord_invite_link?: string;
+    discord_category_id?: string;
 }
 
 // Hackathon Participant Interface
@@ -147,7 +151,7 @@ export async function getUserRole(hackathonId: string, userId: string): Promise<
 export async function getHackathonParticipants(hackathonId: string) {
     try {
         const result = await sql`
-            SELECT 
+            SELECT DISTINCT ON (u.id)
                 u.id, 
                 u.name, 
                 u.email, 
@@ -160,7 +164,7 @@ export async function getHackathonParticipants(hackathonId: string) {
             LEFT JOIN hackathon_team_members tm ON u.id = tm.user_id
             LEFT JOIN hackathon_teams t ON tm.team_id = t.id AND t.hackathon_id = hp.hackathon_id
             WHERE hp.hackathon_id = ${hackathonId}
-            ORDER BY hp.created_at DESC
+            ORDER BY u.id, hp.created_at DESC
         `;
         return result;
     } catch (error) {
@@ -212,6 +216,12 @@ export interface CreateTeamDTO {
     created_by: string;
 }
 
+
+import { emitEvent } from "@/lib/events";
+
+// ... existing imports ...
+
+// ... createTeam modifications ...
 export async function createTeam(data: CreateTeamDTO) {
     try {
         const team = await sql`
@@ -225,6 +235,14 @@ export async function createTeam(data: CreateTeamDTO) {
             INSERT INTO hackathon_team_members (team_id, user_id)
             VALUES (${team[0].id}, ${data.created_by})
         `;
+
+        // Emit Event
+        await emitEvent("team.created", {
+            team_id: team[0].id,
+            hackathon_id: data.hackathon_id,
+            name: data.name,
+            created_by: data.created_by
+        });
 
         return team[0];
     } catch (error) {
@@ -249,6 +267,7 @@ export async function getTeamForUser(hackathonId: string, userId: string) {
     }
 }
 
+// ... joinTeam modifications ...
 export async function joinTeam(teamId: string, userId: string) {
     try {
         const result = await sql`
@@ -256,6 +275,17 @@ export async function joinTeam(teamId: string, userId: string) {
             VALUES (${teamId}, ${userId})
             RETURNING *
         `;
+        
+        // Fetch team details for event
+        const team = await sql`SELECT hackathon_id FROM hackathon_teams WHERE id = ${teamId}`;
+        
+        // Emit Event
+        await emitEvent("team.member.added", {
+            team_id: teamId,
+            hackathon_id: team[0]?.hackathon_id,
+            user_id: userId
+        });
+
         return result[0];
     } catch (error) {
         console.error("Error joining team:", error);
@@ -297,6 +327,25 @@ export async function getTeamMembers(teamId: string) {
         return result;
     } catch (error) {
         console.error("Error getting team members:", error);
+        throw error;
+    }
+}
+
+export async function updateHackathonDiscordSettings(id: string, settings: { discord_enabled: boolean; discord_server_type?: "INTERNAL" | "EXTERNAL"; discord_invite_link?: string; discord_category_id?: string }) {
+    try {
+        const result = await sql`
+            UPDATE hackathons
+            SET discord_enabled = ${settings.discord_enabled},
+                discord_server_type = ${settings.discord_server_type || null},
+                discord_invite_link = ${settings.discord_invite_link || null},
+                discord_category_id = ${settings.discord_category_id || null},
+                updated_at = NOW()
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        return result[0];
+    } catch (error) {
+        console.error("Error updating discord settings:", error);
         throw error;
     }
 }

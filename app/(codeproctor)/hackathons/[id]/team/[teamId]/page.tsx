@@ -21,8 +21,17 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
 
     const [activeTab, setActiveTab] = useState("overview");
     const [members, setMembers] = useState<any[]>([]);
+    const [hackathonSettings, setHackathonSettings] = useState<any>(null);
 
     useEffect(() => {
+        if (hackathonId) {
+            // Fetch hackathon settings
+            fetch(`/api/hackathons/${hackathonId}`)
+                .then(res => res.json())
+                .then(data => setHackathonSettings(data))
+                .catch(err => console.error("Failed to fetch hackathon", err));
+        }
+
         if (teamId) {
             fetch(`/api/hackathons/${hackathonId}/team/${teamId}/members`)
                 .then(res => res.json())
@@ -128,9 +137,35 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                         </TabsContent>
 
                         <TabsContent value="chat" className="h-full m-0">
-                            <div className="flex items-center justify-center h-full text-muted-foreground">
-                                Real-time Chat Module (Coming Soon)
-                            </div>
+                            {hackathonSettings?.discord_enabled ? (
+                                <div className="flex flex-col items-center justify-center h-full space-y-4">
+                                    <div className="bg-[#5865F2] text-white p-4 rounded-full">
+                                        <MessageSquare className="h-8 w-8" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold">Team Chat on Discord</h3>
+                                    <p className="text-muted-foreground text-center max-w-md">
+                                        Communication for this hackathon is hosted on Discord.
+                                        Click below to access your team channel.
+                                    </p>
+                                    <Button
+                                        className="bg-[#5865F2] hover:bg-[#4752C4]"
+                                        onClick={() => {
+                                            const link = hackathonSettings.discord_server_type === "INTERNAL"
+                                                ? "https://discord.gg/BRwWs4Nj" // Official Hack.io Server
+                                                : hackathonSettings.discord_invite_link;
+
+                                            if (link) window.open(link, "_blank");
+                                            else toast.error("Discord link is currently unavailable.");
+                                        }}
+                                    >
+                                        Open Discord
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-muted-foreground">
+                                    Team chat is not enabled for this hackathon.
+                                </div>
+                            )}
                         </TabsContent>
                     </div>
                 </Tabs>

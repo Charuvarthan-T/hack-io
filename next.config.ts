@@ -10,6 +10,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  serverExternalPackages: ["discord.js", "zlib-sync", "utf-8-validate", "bufferutil"],
 };
 
 module.exports = nextConfig;

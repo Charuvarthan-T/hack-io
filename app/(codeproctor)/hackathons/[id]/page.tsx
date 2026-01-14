@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Calendar, Users, Clock, ArrowRight, UserPlus, Users as UsersIcon } from "lucide-react";
+import { Calendar, Users, Clock, ArrowRight, UserPlus, Users as UsersIcon, Settings } from "lucide-react";
 
 
 interface HackathonDetails {
@@ -238,6 +238,11 @@ export default function HackathonDetailsPage() {
                         {isOrganizerOrAdmin && (
                             <Button variant="outline" size="sm" onClick={() => router.push(`/hackathons/${hackathon.id}/admin/participants`)}>
                                 <UsersIcon className="h-4 w-4 mr-2" /> Manage Participants
+                            </Button>
+                        )}
+                        {isOrganizerOrAdmin && (
+                            <Button variant="outline" size="sm" onClick={() => router.push(`/hackathons/${hackathon.id}/admin/settings`)}>
+                                <Settings className="h-4 w-4 mr-2" /> Settings
                             </Button>
                         )}
                     </div>
