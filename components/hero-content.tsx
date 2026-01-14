@@ -15,12 +15,15 @@ export function HeroContent() {
             Secure Code Assessment Platform
           </div>
 
+
+
+
           {/* Hero Title */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
             Master Code Assessment
           </h1>
 
-          {/* Hero Description */}
+          {/* Hero Descriptio*/}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
             Streamline your coding assessments with our comprehensive platform.
             Manage departments, track progress, and ensure academic integrity.
