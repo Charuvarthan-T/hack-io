@@ -9,7 +9,7 @@ export function HeroContent() {
     <main className="container mx-auto px-4">
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] text-center">
         <div className="max-w-6xl mx-auto">
-          {/* Hero Badge */}
+          {/* Hero Badge*/}
           <div className="inline-flex items-center px-4 py-2 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm font-medium mb-8">
             <Shield className="w-4 h-4 mr-2" />
             Secure Code Assessment Platform
