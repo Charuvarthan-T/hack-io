@@ -21,7 +21,7 @@ async function main() {
       CREATE TABLE IF NOT EXISTS hackathon_tasks (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         team_id UUID NOT NULL,
-        title TEXT NOT NULL,
+        title TEXT NOT NULL,w
         description TEXT,
         assigned_by TEXT NOT NULL,
         assigned_to TEXT,
