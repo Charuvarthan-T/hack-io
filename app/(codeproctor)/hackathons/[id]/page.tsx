@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Calendar, Users, Clock, ArrowRight, UserPlus, Users as UsersIcon, Settings } from "lucide-react";
+import { Calendar, Users, Clock, ArrowRight, UserPlus, Users as UsersIcon, Settings, Send } from "lucide-react";
+import { SubmissionModal } from "@/components/hackathon/SubmissionModal";
 
 
 interface HackathonDetails {
@@ -219,7 +220,7 @@ export default function HackathonDetailsPage() {
     const { status, user_status } = hackathon;
     const isJoined = !!user_status.role;
     const hasTeam = !!user_status.team;
-    
+
     const isOrganizerOrAdmin = user_status?.role === 'ORGANIZER' || session?.user?.role === 'admin';
 
     return (
@@ -253,14 +254,13 @@ export default function HackathonDetailsPage() {
                     <Card className="min-w-[200px] bg-secondary/50 border-none">
                         <CardContent className="p-4 text-center">
                             <p className="text-xs text-muted-foreground uppercase font-semibold">
-                                { status === 'ACTIVE' ? "Ends In" :
-                                  (status === 'PUBLISHED' && new Date() > new Date(hackathon.start_date) ? "Ends In" : "Starts In")
+                                {status === 'ACTIVE' ? "Ends In" :
+                                    (status === 'PUBLISHED' && new Date() > new Date(hackathon.start_date) ? "Ends In" : "Starts In")
                                 }
                             </p>
-                            <p className={`text-2xl font-mono font-bold mt-1 ${
-                                (status === 'ACTIVE' || (status === 'PUBLISHED' && new Date() > new Date(hackathon.start_date)))
-                                ? 'text-red-500' : 'text-primary'
-                            }`}>
+                            <p className={`text-2xl font-mono font-bold mt-1 ${(status === 'ACTIVE' || (status === 'PUBLISHED' && new Date() > new Date(hackathon.start_date)))
+                                    ? 'text-red-500' : 'text-primary'
+                                }`}>
                                 {timeLeft}
                             </p>
                         </CardContent>
@@ -400,6 +400,18 @@ export default function HackathonDetailsPage() {
                                 <div className="p-3 bg-muted rounded-md text-center text-sm">
                                     This hackathon has ended.
                                 </div>
+                            )}
+
+                            {/* ACTION 4: Submit Project */}
+                            {isJoined && hasTeam && (status === 'ACTIVE') && (
+                                <SubmissionModal 
+                                    hackathonId={hackathon.id} 
+                                    trigger={
+                                        <Button className="w-full" variant="default">
+                                            <Send className="mr-2 h-4 w-4" /> Submit Project
+                                        </Button>
+                                    }
+                                />
                             )}
                         </CardContent>
                     </Card>

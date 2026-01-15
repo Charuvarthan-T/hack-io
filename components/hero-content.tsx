@@ -14,10 +14,7 @@ export function HeroContent() {
             <Shield className="w-4 h-4 mr-2" />
             Secure Code Assessment Platform
           </div>
-
-
-
-
+          
           {/* Hero Title */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
             Master Code Assessment

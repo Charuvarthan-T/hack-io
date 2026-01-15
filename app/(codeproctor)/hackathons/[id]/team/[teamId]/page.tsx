@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MessageSquare, Code, CheckSquare, UploadCloud, Users, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { TaskList } from "@/components/team/task-list";
+import { SubmissionModal } from "@/components/hackathon/SubmissionModal";
 
 export default function TeamWorkspacePage({ params }: { params: Promise<{ id: string; teamId: string }> }) {
     // Unwrap params using use() hook or await if in async component, but this is client component.
@@ -59,9 +60,14 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                     <Button variant="outline" size="sm">
                         <Users className="h-4 w-4 mr-2" /> Team Members
                     </Button>
-                    <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                        <UploadCloud className="h-4 w-4 mr-2" /> Submit Project
-                    </Button>
+                    <SubmissionModal 
+                        hackathonId={hackathonId}
+                        trigger={
+                            <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                                <UploadCloud className="h-4 w-4 mr-2" /> Submit Project
+                            </Button>
+                        }
+                    />
                 </div>
             </div>
 
