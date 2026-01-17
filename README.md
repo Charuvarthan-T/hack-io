@@ -1,2 +1,2 @@
-Refer ***https://github.com/codeproctordev/codeproctor*** if you stack this repo to see what it is!!
+Refer ***https://github.com/codeproctordev/codeproctor*** if you stalk this repo to see what it is!!
 Coz this one is under upgradation to manage hackathons as well...
