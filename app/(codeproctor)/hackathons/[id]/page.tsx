@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Calendar, Users, Clock, ArrowRight, UserPlus, Users as UsersIcon, Settings, Send } from "lucide-react";
 import { SubmissionModal } from "@/components/hackathon/SubmissionModal";
+import { AssignJudgesDialog } from "@/components/hackathon/AssignJudgesDialog";
 
 
 interface HackathonDetails {
@@ -60,6 +61,7 @@ export default function HackathonDetailsPage() {
         }
     };
 
+    // ...existing code...
     useEffect(() => {
         if (params.id) {
             fetchDetails();
@@ -245,6 +247,9 @@ export default function HackathonDetailsPage() {
                             <Button variant="outline" size="sm" onClick={() => router.push(`/hackathons/${hackathon.id}/admin/settings`)}>
                                 <Settings className="h-4 w-4 mr-2" /> Settings
                             </Button>
+                        )}
+                        {isOrganizerOrAdmin && (
+                            <AssignJudgesDialog hackathonId={hackathon.id} trigger={<Button variant="outline" size="sm">Assign Judges</Button>} />
                         )}
                     </div>
                 </div>
