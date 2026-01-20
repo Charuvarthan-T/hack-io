@@ -78,8 +78,12 @@ export async function POST(
         // 5. Upload to R2 (Storage First)
         // Deterministic Key: hackio/hackathons/{hackathon_id}/teams/{team_id}/submission/final.pptx
         // We use the extension from the file or default to .pptx
+
         const ext = file.name.split('.').pop() || "pptx";
-        const objectKey = `hackio/hackathons/${hackathonId}/teams/${team.id}/submission/final.${ext}`;
+        const timestamp = Date.now();
+        // Sanitize original filename to avoid path traversal or special chars
+        const safeFileName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+        const objectKey = `hackio/hackathons/${hackathonId}/teams/${team.id}/submission/${timestamp}_${safeFileName}`;
 
         // Convert File to Buffer/ArrayBuffer
         const arrayBuffer = await file.arrayBuffer();
