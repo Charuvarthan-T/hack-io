@@ -37,6 +37,7 @@ export function CreateTaskDialog({ onTaskCreated, members = [] }: CreateTaskDial
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [date, setDate] = useState<Date>();
+    const [calendarOpen, setCalendarOpen] = useState(false);
 
     const [formData, setFormData] = useState({
         title: "",
@@ -131,10 +132,11 @@ export function CreateTaskDialog({ onTaskCreated, members = [] }: CreateTaskDial
                         </div>
                         <div className="grid gap-2">
                             <Label>Due Date (Optional)</Label>
-                            <Popover>
+                            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant={"outline"}
+                                        type="button"
                                         className={cn(
                                             "w-full justify-start text-left font-normal",
                                             !date && "text-muted-foreground"
@@ -144,11 +146,14 @@ export function CreateTaskDialog({ onTaskCreated, members = [] }: CreateTaskDial
                                         {date ? format(date, "PPP") : <span>Pick a date</span>}
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0 z-[60]">
+                                <PopoverContent className="w-auto p-0" align="start">
                                     <Calendar
                                         mode="single"
                                         selected={date}
-                                        onSelect={setDate}
+                                        onSelect={(newDate) => {
+                                            setDate(newDate);
+                                            setCalendarOpen(false);
+                                        }}
                                         initialFocus
                                     />
                                 </PopoverContent>
