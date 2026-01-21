@@ -32,6 +32,8 @@ export function AssignJudgesDialog({ hackathonId, trigger, initialAssigned = [],
     }
   }, [open, hackathonId]);
 
+
+
   const handleSave = async () => {
     setLoading(true);
     try {
@@ -51,10 +53,14 @@ export function AssignJudgesDialog({ hackathonId, trigger, initialAssigned = [],
     }
   };
 
+
+
   const toggleJudge = (id: string) => {
     setSelected(sel => sel.includes(id) ? sel.filter(j => j !== id) : [...sel, id]);
   };
 
+
+  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || <Button>Assign Judges</Button>}</DialogTrigger>
