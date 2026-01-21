@@ -12,17 +12,17 @@ export function HeroContent() {
           {/* Hero Badge*/}
           <div className="inline-flex items-center px-4 py-2 rounded-full border border-primary/20 bg-primary/5 text-primary text-sm font-medium mb-8">
             <Shield className="w-4 h-4 mr-2" />
-            Secure Code Assessment Platform
+            A Stellar Hackathon Platform
           </div>
           
           {/* Hero Title */}
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-foreground mb-6 leading-tight">
-            Master Code Assessment
+            Hack.io
           </h1>
 
           {/* Hero Descriptio*/}
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
-            Streamline your coding assessments with our comprehensive platform.
+            Streamline your coding assessments and engage in Hackathons with our comprehensive platform.
             Manage departments, track progress, and ensure academic integrity.
           </p>
 

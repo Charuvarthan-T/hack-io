@@ -47,7 +47,7 @@ export function AppHeader() {
           <SidebarTrigger />
           <Code className="w-6 h-6 text-primary" />
           <Link href={"/"}>
-            <h1 className="text-2xl font-bold text-foreground">CodeProctor</h1>
+            <h1 className="text-2xl font-bold text-foreground">Hack.io</h1>
           </Link>
         </div>
 
