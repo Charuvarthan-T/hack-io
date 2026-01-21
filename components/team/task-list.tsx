@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -23,6 +22,7 @@ interface __Task {
     assignee_image?: string;
 }
 
+
 export function TaskList({ members }: { members: any[] }) {
     const params = useParams();
     const { data: session } = useSession();
@@ -45,14 +45,15 @@ export function TaskList({ members }: { members: any[] }) {
         }
     };
 
+
     useEffect(() => {
         if (params.teamId) {
             fetchTasks();
         }
     }, [params.teamId]);
 
+    
     const handleToggleStatus = async (task: __Task) => {
-        // Optimistic update
         const newStatus = task.status === 'DONE' ? 'TODO' : 'DONE';
         const oldStatus = task.status;
         
@@ -65,12 +66,14 @@ export function TaskList({ members }: { members: any[] }) {
                 body: JSON.stringify({ status: newStatus })
             });
             if (!res.ok) throw new Error();
+
         } catch (e) {
             toast.error("Failed to update status");
-            // Revert
             setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: oldStatus } : t));
         }
     };
+
+
 
     const handleDelete = async (taskId: string) => {
         if(!confirm("Delete this task?")) return;
@@ -79,10 +82,12 @@ export function TaskList({ members }: { members: any[] }) {
             const res = await fetch(`/api/hackathons/${params.id}/team/${params.teamId}/tasks/${taskId}`, {
                 method: "DELETE",
             });
+
             if (res.ok) {
                 setTasks(prev => prev.filter(t => t.id !== taskId));
                 toast.success("Task deleted");
             }
+            
         } catch (e) {
             toast.error("Failed to delete task");
         }
