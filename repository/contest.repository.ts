@@ -1,6 +1,4 @@
 import sql from "@/lib/db";
-
-// Contest interfaces
 export interface Contest {
   id: string;
   title: string;
@@ -13,7 +11,6 @@ export interface Contest {
   created_at: Date;
   updated_at: Date;
 }
-
 export interface CreateContestDTO {
   title: string;
   description?: string;
@@ -23,7 +20,6 @@ export interface CreateContestDTO {
   duration_minutes?: number;
   is_active?: boolean;
 }
-
 export interface UpdateContestDTO {
   title?: string;
   description?: string;
@@ -32,7 +28,6 @@ export interface UpdateContestDTO {
   duration_minutes?: number;
   is_active?: boolean;
 }
-
 export interface ContestProblem {
   id: string;
   contest_id: string;
@@ -40,7 +35,6 @@ export interface ContestProblem {
   points: number;
   order_index: number | null;
 }
-
 export interface ContestSubmission {
   id: string;
   contest_id: string;
@@ -51,10 +45,6 @@ export interface ContestSubmission {
   submission_time: Date;
   started_at: Date | null;
 }
-
-// ==================== Contest CRUD ====================
-
-// Get all contests with pagination
 export async function getContestsWithPagination(
   page: number,
   pageSize: number,
@@ -64,7 +54,6 @@ export async function getContestsWithPagination(
 ) {
   try {
     const offset = (page - 1) * pageSize;
-
     const allowedSortColumns = [
       "title",
       "start_time",
@@ -77,30 +66,26 @@ export async function getContestsWithPagination(
       : "created_at";
     const safeSortOrder = sortOrder === "desc" ? "DESC" : "ASC";
     const safeSortExpr = safeSortBy === 'title' ? 'LOWER(c.title)' : safeSortBy;
-
     let contests, totalResult;
-
     if (search) {
       const searchPattern = `%${search}%`;
-
       contests = await sql`
         SELECT c.*, u.name as created_by_name,
           (SELECT COUNT(*) FROM contests_problems WHERE contest_id = c.id) as problem_count,
           (SELECT COUNT(*) FROM contests_sections WHERE contest_id = c.id) as section_count
         FROM contests c
         LEFT JOIN users u ON c.created_by = u.id
-        WHERE c.title ILIKE ${searchPattern} 
+        WHERE c.title ILIKE ${searchPattern}
            OR c.description ILIKE ${searchPattern}
            OR u.name ILIKE ${searchPattern}
   ORDER BY ${sql.unsafe(safeSortExpr)} ${sql.unsafe(safeSortOrder)}
         LIMIT ${pageSize} OFFSET ${offset}
       `;
-
       totalResult = await sql`
-        SELECT COUNT(*) as count 
+        SELECT COUNT(*) as count
         FROM contests c
         LEFT JOIN users u ON c.created_by = u.id
-        WHERE c.title ILIKE ${searchPattern} 
+        WHERE c.title ILIKE ${searchPattern}
            OR c.description ILIKE ${searchPattern}
            OR u.name ILIKE ${searchPattern}
       `;
@@ -114,14 +99,11 @@ export async function getContestsWithPagination(
   ORDER BY ${sql.unsafe(safeSortExpr)} ${sql.unsafe(safeSortOrder)}
         LIMIT ${pageSize} OFFSET ${offset}
       `;
-
       totalResult = await sql`
         SELECT COUNT(*) as count FROM contests
       `;
     }
-
     const total = parseInt(totalResult[0].count);
-
     return {
       data: contests,
       total,
@@ -134,8 +116,6 @@ export async function getContestsWithPagination(
     throw error;
   }
 }
-
-// Get all contests (without pagination)
 export async function getAllContests() {
   try {
     const contests = await sql`
@@ -150,8 +130,6 @@ export async function getAllContests() {
     throw error;
   }
 }
-
-// Get contest by ID
 export async function getContestById(id: string) {
   try {
     const result = await sql`
@@ -166,18 +144,16 @@ export async function getContestById(id: string) {
     throw error;
   }
 }
-
-// Create contest
 export async function createContest(contest: CreateContestDTO) {
   try {
     const result = await sql`
       INSERT INTO contests (title, description, created_by, start_time, end_time, duration_minutes, is_active)
       VALUES (${contest.title}, ${contest.description || null}, ${
       contest.created_by
-    }, 
+    },
               ${contest.start_time}, ${contest.end_time}, ${
       contest.duration_minutes || null
-    }, 
+    },
               ${contest.is_active !== undefined ? contest.is_active : false})
       RETURNING *
     `;
@@ -187,12 +163,9 @@ export async function createContest(contest: CreateContestDTO) {
     throw error;
   }
 }
-
-// Update contest
 export async function updateContest(id: string, updates: UpdateContestDTO) {
   try {
     const contest = await getContestById(id);
-
     if (updates.title !== undefined) {
       contest.title = updates.title;
     }
@@ -211,22 +184,18 @@ export async function updateContest(id: string, updates: UpdateContestDTO) {
     if (updates.is_active !== undefined) {
       contest.is_active = updates.is_active;
     }
-
     const result = await sql`
-      UPDATE contests 
+      UPDATE contests
       SET title = ${contest.title}, description = ${contest.description}, start_time = ${contest.start_time}, end_time = ${contest.end_time}, duration_minutes = ${contest.duration_minutes}, is_active = ${contest.is_active}, updated_at = now()
       WHERE id = ${id}
       RETURNING *
     `;
-
     return result[0] || null;
   } catch (error) {
     console.error("Error updating contest:", error);
     throw error;
   }
 }
-
-// Delete contest
 export async function deleteContest(id: string) {
   try {
     const result = await sql`
@@ -238,10 +207,6 @@ export async function deleteContest(id: string) {
     throw error;
   }
 }
-
-// ==================== Contest Problems ====================
-
-// Get problems for a contest
 export async function getContestProblems(contestId: string) {
   try {
     const problems = await sql`
@@ -257,8 +222,6 @@ export async function getContestProblems(contestId: string) {
     throw error;
   }
 }
-
-// Add problem to contest
 export async function addProblemToContest(
   contestId: string,
   problemId: string,
@@ -277,8 +240,6 @@ export async function addProblemToContest(
     throw error;
   }
 }
-
-// Update problem points in contest
 export async function updateContestProblemPoints(
   contestId: string,
   problemId: string,
@@ -287,7 +248,7 @@ export async function updateContestProblemPoints(
 ) {
   try {
     const result = await sql`
-      UPDATE contests_problems 
+      UPDATE contests_problems
       SET points = ${points}, order_index = ${orderIndex || null}
       WHERE contest_id = ${contestId} AND problem_id = ${problemId}
       RETURNING *
@@ -298,15 +259,13 @@ export async function updateContestProblemPoints(
     throw error;
   }
 }
-
-// Remove problem from contest
 export async function removeProblemFromContest(
   contestId: string,
   problemId: string
 ) {
   try {
     const result = await sql`
-      DELETE FROM contests_problems 
+      DELETE FROM contests_problems
       WHERE contest_id = ${contestId} AND problem_id = ${problemId}
       RETURNING *
     `;
@@ -316,8 +275,6 @@ export async function removeProblemFromContest(
     throw error;
   }
 }
-
-// Get available problems (not in contest)
 export async function getAvailableProblems(contestId: string) {
   try {
     const problems = await sql`
@@ -335,10 +292,6 @@ export async function getAvailableProblems(contestId: string) {
     throw error;
   }
 }
-
-// ==================== Contest Sections ====================
-
-// Get sections for a contest
 export async function getContestSections(contestId: string) {
   try {
     const sections = await sql`
@@ -355,8 +308,6 @@ export async function getContestSections(contestId: string) {
     throw error;
   }
 }
-
-// Add section to contest
 export async function addSectionToContest(
   contestId: string,
   sectionId: string
@@ -373,15 +324,13 @@ export async function addSectionToContest(
     throw error;
   }
 }
-
-// Remove section from contest
 export async function removeSectionFromContest(
   contestId: string,
   sectionId: string
 ) {
   try {
     const result = await sql`
-      DELETE FROM contests_sections 
+      DELETE FROM contests_sections
       WHERE contest_id = ${contestId} AND section_id = ${sectionId}
       RETURNING *
     `;
@@ -391,8 +340,6 @@ export async function removeSectionFromContest(
     throw error;
   }
 }
-
-// Get available sections (not in contest)
 export async function getAvailableSections(contestId: string) {
   try {
     const sections = await sql`
@@ -410,10 +357,6 @@ export async function getAvailableSections(contestId: string) {
     throw error;
   }
 }
-
-// ==================== Contest Submissions ====================
-
-// Record contest submission
 export async function recordContestSubmission(
   contestId: string,
   userId: string,
@@ -426,7 +369,7 @@ export async function recordContestSubmission(
       INSERT INTO contest_submissions (contest_id, user_id, problem_id, is_solved, points_earned)
       VALUES (${contestId}, ${userId}, ${problemId}, ${isSolved}, ${pointsEarned})
       ON CONFLICT (contest_id, user_id, problem_id)
-      DO UPDATE SET 
+      DO UPDATE SET
         is_solved = ${isSolved},
         points_earned = ${pointsEarned},
         submission_time = now()
@@ -438,8 +381,6 @@ export async function recordContestSubmission(
     throw error;
   }
 }
-
-// Get user's contest submissions
 export async function getUserContestSubmissions(
   contestId: string,
   userId: string
@@ -458,12 +399,10 @@ export async function getUserContestSubmissions(
     throw error;
   }
 }
-
-// Get contest leaderboard
 export async function getContestLeaderboard(contestId: string) {
   try {
     const leaderboard = await sql`
-      SELECT 
+      SELECT
         u.id,
         u.name,
         u.email,
@@ -482,14 +421,11 @@ export async function getContestLeaderboard(contestId: string) {
     throw error;
   }
 }
-
-// Mark contest as started for user
 export async function markContestStarted(contestId: string, userId: string) {
   try {
     const problems = await sql`
       SELECT problem_id FROM contests_problems WHERE contest_id = ${contestId}
     `;
-
     for (const problem of problems) {
       await sql`
         INSERT INTO contest_submissions (contest_id, user_id, problem_id, started_at)
@@ -498,22 +434,19 @@ export async function markContestStarted(contestId: string, userId: string) {
         DO UPDATE SET started_at = COALESCE(contest_submissions.started_at, now())
       `;
     }
-
     return { success: true };
   } catch (error) {
     console.error("Error marking contest as started:", error);
     throw error;
   }
 }
-
-// Get contests for a student (by section)
 export async function getContestsForStudent(userId: string) {
   try {
     const contests = await sql`
       SELECT DISTINCT c.*, u.name as created_by_name,
         (SELECT COUNT(*) FROM contests_problems WHERE contest_id = c.id) as problem_count,
-        (SELECT COUNT(CASE WHEN is_solved = true THEN 1 END) 
-         FROM contest_submissions 
+        (SELECT COUNT(CASE WHEN is_solved = true THEN 1 END)
+         FROM contest_submissions
          WHERE contest_id = c.id AND user_id = ${userId}) as solved_count
       FROM contests c
       LEFT JOIN users u ON c.created_by = u.id
@@ -528,8 +461,6 @@ export async function getContestsForStudent(userId: string) {
     throw error;
   }
 }
-
-// Check if user can access contest
 export async function canUserAccessContest(contestId: string, userId: string) {
   try {
     const result = await sql`
@@ -545,12 +476,10 @@ export async function canUserAccessContest(contestId: string, userId: string) {
     throw error;
   }
 }
-
-// Get contest statistics
 export async function getContestStatistics(contestId: string) {
   try {
     const stats = await sql`
-      SELECT 
+      SELECT
         COUNT(DISTINCT cs.user_id) as total_participants,
         COUNT(DISTINCT CASE WHEN cs.is_solved = true THEN cs.user_id END) as users_with_solutions,
         COUNT(*) as total_submissions,
