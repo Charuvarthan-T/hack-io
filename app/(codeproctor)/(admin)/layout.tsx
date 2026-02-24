@@ -3,10 +3,8 @@ import { AppHeader } from "@/components/app-header";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { getServerSession } from "next-auth";
 import { useSession } from "next-auth/react";
-
 export default async function AdminLayout({ children }: LayoutProps) {
     const user = await getAuthenticatedUser();
-
   if (user?.role !== "admin") {
     return (
       <div>
@@ -14,7 +12,6 @@ export default async function AdminLayout({ children }: LayoutProps) {
       </div>
     );
   }
-
   return (
     <div className="flex flex-1 flex-col">
       <main className="flex flex-1 flex-col p-4">{children}</main>
