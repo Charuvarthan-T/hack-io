@@ -5,17 +5,14 @@ import {
   deleteSection,
   editSection,
 } from "@/repository/section.repository";
-
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
     const search = searchParams.get("search") || "";
     const sortBy = searchParams.get("sortBy") || "section_name";
     const sortOrder = searchParams.get("sortOrder") || "asc";
-
     const result = await getSectionsWithPagination(
       page,
       pageSize,
@@ -32,7 +29,6 @@ export async function GET(req: NextRequest) {
     });
   }
 }
-
 export async function POST(req: Request) {
   try {
     const newSection = await req.json();
@@ -49,7 +45,6 @@ export async function POST(req: Request) {
     return new Response(JSON.stringify(e), { status: 500 });
   }
 }
-
 export async function PUT(req: Request) {
   try {
     const updatedSection = await req.json();
@@ -66,7 +61,6 @@ export async function PUT(req: Request) {
     return new Response(JSON.stringify(e), { status: 500 });
   }
 }
-
 export async function DELETE(req: Request) {
   try {
     const { id } = await req.json();
