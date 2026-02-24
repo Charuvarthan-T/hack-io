@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,22 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Upload, Loader2, Link as LinkIcon } from "lucide-react";
-
 interface SubmissionModalProps {
     hackathonId: string;
     onSuccess?: () => void;
     trigger?: React.ReactNode;
 }
-
 export function SubmissionModal({ hackathonId, onSuccess, trigger }: SubmissionModalProps) {
     const [open, setOpen] = useState(false);
     const [repoUrl, setRepoUrl] = useState("");
     const [file, setFile] = useState<File | null>(null);
     const [submitting, setSubmitting] = useState(false);
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!repoUrl) {
             toast.error("Repository URL is required");
             return;
@@ -31,19 +26,15 @@ export function SubmissionModal({ hackathonId, onSuccess, trigger }: SubmissionM
             toast.error("Presentation file is required");
             return;
         }
-
         setSubmitting(true);
-
         try {
             const formData = new FormData();
             formData.append("repo_url", repoUrl);
             formData.append("ppt_file", file);
-
             const res = await fetch(`/api/hackathons/${hackathonId}/submission`, {
                 method: "POST",
                 body: formData,
             });
-
             const text = await res.text();
             let data;
             try {
@@ -51,14 +42,12 @@ export function SubmissionModal({ hackathonId, onSuccess, trigger }: SubmissionM
             } catch (e) {
                 throw new Error(`Server Error (${res.status}): The server returned an invalid response. Check console logs.`);
             }
-
             if (!res.ok) {
                 const errorMessage = data.details
                     ? `${data.error}: ${data.details}`
                     : (data.error || "Submission failed");
                 throw new Error(errorMessage);
             }
-
             toast.success("Project submitted successfully!");
             setOpen(false);
             setRepoUrl("");
@@ -71,7 +60,6 @@ export function SubmissionModal({ hackathonId, onSuccess, trigger }: SubmissionM
             setSubmitting(false);
         }
     };
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -99,7 +87,6 @@ export function SubmissionModal({ hackathonId, onSuccess, trigger }: SubmissionM
                             />
                         </div>
                     </div>
-
                     <div className="space-y-2">
                         <Label htmlFor="ppt-file">Presentation (PPT/PPTX/PDF)</Label>
                         <div className="border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors relative">
@@ -125,7 +112,6 @@ export function SubmissionModal({ hackathonId, onSuccess, trigger }: SubmissionM
                             )}
                         </div>
                     </div>
-
                     <div className="flex justify-end gap-2 pt-2">
                         <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={submitting}>
                             Cancel
