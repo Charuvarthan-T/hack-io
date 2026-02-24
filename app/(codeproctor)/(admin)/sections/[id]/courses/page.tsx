@@ -27,36 +27,30 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, ArrowLeft, Plus, X, Users } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-
 interface Course {
   course_id: string;
   course_name: string;
 }
-
 interface Faculty {
   id: string;
   name: string;
   email: string;
 }
-
 interface CourseWithFaculty {
   course_id: string;
   course_name: string;
   faculty: Faculty[];
 }
-
 interface ApiResponse {
   status: boolean;
   data: Course[];
   error?: any;
 }
-
 interface FacultyResponse {
   status: boolean;
   data: Faculty[];
   error?: any;
 }
-
 export default function SectionCoursesPage() {
   const [coursesWithFaculty, setCoursesWithFaculty] = useState<CourseWithFaculty[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,24 +68,19 @@ export default function SectionCoursesPage() {
   const [deleteFacultyId, setDeleteFacultyId] = useState<string>("");
   const [deleteCourseId, setDeleteCourseId] = useState<string>("");
   const [facultyName, setFacultyName] = useState<string>("");
-
   const fetchCoursesWithFaculty = async () => {
     try {
       setLoading(true);
-      
       const coursesResponse = await fetch(`/api/sections/${sectionId}/courses`);
       const coursesData: ApiResponse = await coursesResponse.json();
-
       if (!coursesData.status || !coursesData.data) {
         setError(coursesData.error || "Failed to fetch courses");
         return;
       }
-
       const coursesWithFacultyPromises = coursesData.data.map(async (course) => {
         try {
           const facultyResponse = await fetch(`/api/sections/${sectionId}/courses/${course.course_id}/assigned`);
           const facultyData: FacultyResponse = await facultyResponse.json();
-          
           return {
             course_id: course.course_id,
             course_name: course.course_name,
@@ -106,10 +95,8 @@ export default function SectionCoursesPage() {
           };
         }
       });
-
       const coursesWithFacultyData = await Promise.all(coursesWithFacultyPromises);
       setCoursesWithFaculty(coursesWithFacultyData);
-      
     } catch (err) {
       setError("An error occurred while fetching courses");
       console.error("Error fetching courses:", err);
@@ -117,18 +104,15 @@ export default function SectionCoursesPage() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (sectionId) {
       fetchCoursesWithFaculty();
     }
   }, [sectionId]);
-
   const fetchAvailableFaculty = async (courseId: string) => {
     try {
       const response = await fetch(`/api/sections/${sectionId}/courses/${courseId}/faculty`);
       const data: FacultyResponse = await response.json();
-
       if (data.status && data.data) {
         setAvailableFaculty(data.data);
       } else {
@@ -141,7 +125,6 @@ export default function SectionCoursesPage() {
       console.error("Error fetching available faculty:", err);
     }
   };
-
   const handleAssignFaculty = (courseId: string, courseName: string) => {
     setSelectedCourseId(courseId);
     setSelectedCourseName(courseName);
@@ -149,13 +132,11 @@ export default function SectionCoursesPage() {
     setIsAssignDialogOpen(true);
     fetchAvailableFaculty(courseId);
   };
-
   const handleConfirmAssign = async () => {
     if (!selectedFacultyId || !selectedCourseId) {
       toast.error("Please select a faculty member");
       return;
     }
-
     setAssignLoading(true);
     try {
       const response = await fetch(`/api/sections/${sectionId}/courses/${selectedCourseId}/faculty`, {
@@ -165,13 +146,10 @@ export default function SectionCoursesPage() {
         },
         body: JSON.stringify({ facultyId: selectedFacultyId }),
       });
-
       const data = await response.json();
-
       if (data.status) {
         toast.success("Faculty assigned successfully");
         setIsAssignDialogOpen(false);
-        // Refresh the courses with faculty
         await fetchCoursesWithFaculty();
       } else {
         toast.error(data.error || "Failed to assign faculty");
@@ -183,18 +161,14 @@ export default function SectionCoursesPage() {
       setAssignLoading(false);
     }
   };
-
   const confirmRemoveFaculty = async (courseId: string, facultyId: string) => {
     try {
       const response = await fetch(`/api/sections/${sectionId}/courses/${courseId}/faculty?facultyId=${facultyId}`, {
         method: "DELETE",
       });
-
       const data = await response.json();
-
       if (data.status) {
         toast.success("Faculty removed successfully");
-        // Refresh the courses with faculty
         await fetchCoursesWithFaculty();
       } else {
         toast.error(data.error || "Failed to remove faculty");
@@ -204,14 +178,12 @@ export default function SectionCoursesPage() {
       console.error("Error removing faculty:", err);
     }
   };
-
   const handleRemoveFaculty = async (courseId: string, facultyId: string, facultyName: string) => {
     setDeleteDialogOpen(true);
     setDeleteCourseId(courseId);
     setDeleteFacultyId(facultyId);
     setFacultyName(facultyName);
   };
-
   const courseGroups = coursesWithFaculty.reduce((groups, course) => {
     groups[course.course_id] = {
       course_name: course.course_name,
@@ -223,7 +195,6 @@ export default function SectionCoursesPage() {
     };
     return groups;
   }, {} as Record<string, { course_name: string; faculty: Array<{ faculty_id: string; faculty_name: string; faculty_email: string }> }>);
-
   return (
     <div className="container mx-auto">
       <div className="flex items-center gap-4 mb-6">
@@ -236,14 +207,12 @@ export default function SectionCoursesPage() {
           </p>
         </div>
       </div>
-
       <div className="mb-4">
         <h2 className="text-xl font-semibold mb-2">Assigned Courses</h2>
         <p className="text-sm text-muted-foreground">
           {coursesWithFaculty.length} courses from the semester curriculum
         </p>
       </div>
-
       {coursesWithFaculty.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
@@ -262,7 +231,7 @@ export default function SectionCoursesPage() {
           {Object.entries(courseGroups).map(([courseId, courseData]) => (
             <Card key={courseId} className="border h-[280px] flex flex-col">
               <CardContent className="p-4 flex flex-col h-full">
-                {/* Course Header - Fixed */}
+                {}
                 <div className="flex items-start justify-between mb-3 flex-shrink-0">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <BookOpen className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -291,8 +260,7 @@ export default function SectionCoursesPage() {
                     </Button>
                   </div>
                 </div>
-
-                {/* Faculty List - Scrollable */}
+                {}
                 <div className="flex-1 mb-0 min-h-0">
                   {courseData.faculty.length > 0 ? (
                     <div className="h-full">
@@ -339,7 +307,6 @@ export default function SectionCoursesPage() {
           ))}
         </div>
       )}
-
       <ConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
@@ -350,8 +317,7 @@ export default function SectionCoursesPage() {
           await confirmRemoveFaculty(deleteCourseId, deleteFacultyId);
         }}
       />
-
-      {/* Assign Faculty Dialog */}
+      {}
       <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -360,7 +326,6 @@ export default function SectionCoursesPage() {
               Select a faculty member to assign to <strong>{selectedCourseName}</strong>.
             </DialogDescription>
           </DialogHeader>
-
           <div className="py-4">
             {availableFaculty.length > 0 ? (
               <Select value={selectedFacultyId} onValueChange={setSelectedFacultyId}>
@@ -387,7 +352,6 @@ export default function SectionCoursesPage() {
               </div>
             )}
           </div>
-
           <DialogFooter>
             <Button
               variant="outline"
