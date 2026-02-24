@@ -1,5 +1,4 @@
 import sql from "@/lib/db";
-
 export async function getAllUsers() {
   try {
     const users = await sql`SELECT * FROM users`;
@@ -9,7 +8,6 @@ export async function getAllUsers() {
     throw error;
   }
 }
-
 export async function getUsersWithPagination(
   page: number,
   pageSize: number,
@@ -19,23 +17,17 @@ export async function getUsersWithPagination(
 ) {
   try {
     const offset = (page - 1) * pageSize;
-
   const allowedSortColumns = ["id", "name", "email", "role", "points_earned"];
     const safeSortBy = allowedSortColumns.includes(sortBy) ? sortBy : "id";
     const safeSortOrder = sortOrder === "desc" ? "DESC" : "ASC";
-    // Use case-insensitive ordering for textual columns
     const textColumns = ["name", "email", "role"];
     const safeSortExpr = textColumns.includes(safeSortBy)
       ? `LOWER(${safeSortBy})`
       : safeSortBy;
-
     let users, totalResult;
-
     if (search) {
       search = search.trim();
       const searchPattern = `%${search}%`;
-
-      // Try to select points_earned; if the column doesn't exist, fall back to a query without it
       try {
         users = await sql`
           SELECT id, name, email, role, COALESCE(points_earned, 0) as points_earned FROM users
@@ -52,10 +44,8 @@ export async function getUsersWithPagination(
           ORDER BY ${sql.unsafe(safeSortExpr)} ${sql.unsafe(safeSortOrder)}
           LIMIT ${pageSize} OFFSET ${offset}
         `;
-        // normalize rows to include points_earned = 0
         users = users.map((u: any) => ({ ...u, points_earned: 0 }));
       }
-
       totalResult = await sql`
         SELECT COUNT(*) as count FROM users
         WHERE name ILIKE ${searchPattern} OR email ILIKE ${searchPattern}
@@ -77,12 +67,9 @@ export async function getUsersWithPagination(
         `;
         users = users.map((u: any) => ({ ...u, points_earned: 0 }));
       }
-
       totalResult = await sql`SELECT COUNT(*) as count FROM users`;
     }
-
     const total = parseInt(totalResult[0].count);
-
     return {
       data: users,
       total,
@@ -95,7 +82,6 @@ export async function getUsersWithPagination(
     throw error;
   }
 }
-
 export async function deleteUser(userId: string) {
   try {
     await sql`DELETE FROM users WHERE id = ${userId}`;
@@ -104,7 +90,6 @@ export async function deleteUser(userId: string) {
     throw error;
   }
 }
-
 export async function assignRoleToUser(userId: string, role: string) {
   try {
     await sql`UPDATE users SET role = ${role} WHERE id = ${userId}`;
@@ -113,7 +98,6 @@ export async function assignRoleToUser(userId: string, role: string) {
     throw error;
   }
 }
-
 export async function getMyCoursesForFaculty(facultyId: string) {
   try {
     const courses = await sql`
@@ -130,7 +114,6 @@ export async function getMyCoursesForFaculty(facultyId: string) {
     throw error;
   }
 }
-
 export async function getMyCoursesForStudent(studentId: string) {
   try {
     const courses = await sql`
@@ -148,7 +131,6 @@ export async function getMyCoursesForStudent(studentId: string) {
     throw error;
   }
 }
-
 export async function getUserPoints(userId: string) {
   try {
     const res =
