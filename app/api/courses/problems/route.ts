@@ -1,31 +1,27 @@
 import { requireAuth } from "@/lib/auth-helpers";
-import { 
-  assignProblemToCourse, 
-  unassignProblemFromCourse, 
-  getCourseProblems, 
+import {
+  assignProblemToCourse,
+  unassignProblemFromCourse,
+  getCourseProblems,
   getUnassignedProblems,
-  assignMultipleProblems 
+  assignMultipleProblems
 } from "@/repository/course-problem.repository";
 import { NextRequest } from "next/server";
-
 export async function GET(req: NextRequest) {
   try {
     const user = await requireAuth();
     if (user instanceof Response) {
       return user;
     }
-
     const { searchParams } = new URL(req.url);
     const courseId = searchParams.get("courseId");
     const action = searchParams.get("action");
-
     if (!courseId) {
       return new Response(
         JSON.stringify({ error: "Course ID is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-
     if (action === "unassigned") {
       const result = await getUnassignedProblems(courseId);
       return new Response(JSON.stringify(result), {
@@ -47,24 +43,20 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-
 export async function POST(req: NextRequest) {
   try {
     const user = await requireAuth();
     if (user instanceof Response) {
       return user;
     }
-
     const body = await req.json();
     const { courseId, problemIds, action } = body;
-
     if (!courseId) {
       return new Response(
         JSON.stringify({ error: "Course ID is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-
     if (action === "assign-multiple" && Array.isArray(problemIds)) {
       const result = await assignMultipleProblems(problemIds, courseId);
       return new Response(JSON.stringify(result), {
@@ -91,24 +83,20 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
 export async function DELETE(req: NextRequest) {
   try {
     const user = await requireAuth();
     if (user instanceof Response) {
       return user;
     }
-
     const body = await req.json();
     const { courseId, problemId } = body;
-
     if (!courseId || !problemId) {
       return new Response(
         JSON.stringify({ error: "Course ID and Problem ID are required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-
     const result = await unassignProblemFromCourse(problemId, courseId);
     return new Response(JSON.stringify(result), {
       status: result.success ? 200 : 500,
