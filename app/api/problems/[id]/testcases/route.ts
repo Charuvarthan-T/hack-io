@@ -2,7 +2,6 @@ import {
   createAndAssignTestcase,
   getTestCasesByProblemId,
 } from "@/repository/testcases.repository";
-
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -21,7 +20,6 @@ export async function POST(
     }
   );
 }
-
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
