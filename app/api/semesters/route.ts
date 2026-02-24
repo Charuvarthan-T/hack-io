@@ -5,24 +5,19 @@ import {
   editSemester,
   deleteSemester,
 } from "@/repository/semester.repository";
-
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
     const search = searchParams.get("search") || "";
     const sortBy = searchParams.get("sortBy") || "id";
     const sortOrder = searchParams.get("sortOrder") || "asc";
-
     const result = await getSemestersWithPagination(page, pageSize, search, sortBy, sortOrder);
-
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
-
   } catch (error) {
     console.error("Error fetching semesters:", error);
     return new Response(JSON.stringify({ error: "Failed to fetch semesters" }), {
@@ -31,12 +26,10 @@ export async function GET(req: NextRequest) {
     });
   }
 }
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const res = await createSemester(body);
-
     if (res.success) {
       return new Response(JSON.stringify(res), {
         status: 200,
@@ -58,12 +51,10 @@ export async function POST(req: Request) {
     );
   }
 }
-
 export async function DELETE(req: Request) {
   try {
     const url = new URL(req.url);
     const id = url.searchParams.get("id");
-
     if (!id) {
       return new Response(
         JSON.stringify({ error: "Semester ID is required" }),
@@ -73,9 +64,7 @@ export async function DELETE(req: Request) {
         }
       );
     }
-
     const res = await deleteSemester(id);
-
     if (res.success) {
       return new Response(JSON.stringify(res), {
         status: 200,
@@ -97,12 +86,10 @@ export async function DELETE(req: Request) {
     );
   }
 }
-
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
     const res = await editSemester(body);
-
     if (res.success) {
       return new Response(JSON.stringify(res), {
         status: 200,
