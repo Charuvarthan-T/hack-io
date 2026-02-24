@@ -20,7 +20,6 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-
 export const createColumns = (
   refetchData: () => Promise<void>,
   router: any,
@@ -108,21 +107,17 @@ export const createColumns = (
     enableHiding: false,
     cell: ({ row }) => {
       const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
       const handleDelete = () => {
         setIsDeleteDialogOpen(true);
       };
-
       const handleView = () => {
         router.push(`/problems/${row.original.id}`);
       };
-
       async function deleteProblem(problemId: string) {
         try {
           const res = await fetch(`/api/problems/${problemId}`, {
             method: "DELETE",
           });
-
           if (res.ok) {
             setIsDeleteDialogOpen(false);
             await refetchData();
@@ -133,11 +128,9 @@ export const createColumns = (
           console.error("Error deleting problem:", error);
         }
       }
-
       async function handleEdit() {
         router.push(`/problems/${row.original.id}/edit`);
       }
-
       return (
         <>
           <DropdownMenu>
@@ -168,7 +161,6 @@ export const createColumns = (
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-
           <Dialog
             open={isDeleteDialogOpen}
             onOpenChange={setIsDeleteDialogOpen}
