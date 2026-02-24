@@ -8,32 +8,25 @@ import {
   updateContestProblemPoints,
   getAvailableProblems,
 } from "@/repository/contest.repository";
-
-// GET /api/contests/[id]/problems - Get all problems for a contest
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const { id: contestId } = await params;
     const searchParams = req.nextUrl.searchParams;
     const available = searchParams.get("available") === "true";
-
     if (available) {
-      // Get problems not in the contest (for admin/faculty)
       if (session.user.role !== "admin" && session.user.role !== "faculty") {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
       const problems = await getAvailableProblems(contestId);
       return NextResponse.json({ problems });
     }
-
     const problems = await getContestProblems(contestId);
     return NextResponse.json({ problems });
   } catch (error) {
@@ -44,41 +37,33 @@ export async function GET(
     );
   }
 }
-
-// POST /api/contests/[id]/problems - Add problem to contest
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     if (session.user.role !== "admin" && session.user.role !== "faculty") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-
     const { id: contestId } = await params;
     const body = await req.json();
     const { problemId, points, orderIndex } = body;
-
     if (!problemId) {
       return NextResponse.json(
         { error: "Problem ID is required" },
         { status: 400 }
       );
     }
-
     const result = await addProblemToContest(
       contestId,
       problemId,
       points || 10,
       orderIndex
     );
-
     return NextResponse.json({ problem: result }, { status: 201 });
   } catch (error: any) {
     console.error("Error adding problem to contest:", error);
@@ -94,48 +79,39 @@ export async function POST(
     );
   }
 }
-
-// PUT /api/contests/[id]/problems - Update problem points/order
 export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     if (session.user.role !== "admin" && session.user.role !== "faculty") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-
     const { id: contestId } = await params;
     const body = await req.json();
     const { problemId, points, orderIndex } = body;
-
     if (!problemId || points === undefined) {
       return NextResponse.json(
         { error: "Problem ID and points are required" },
         { status: 400 }
       );
     }
-
     const result = await updateContestProblemPoints(
       contestId,
       problemId,
       points,
       orderIndex
     );
-
     if (!result) {
       return NextResponse.json(
         { error: "Problem not found in contest" },
         { status: 404 }
       );
     }
-
     return NextResponse.json({ problem: result });
   } catch (error) {
     console.error("Error updating contest problem:", error);
@@ -145,43 +121,34 @@ export async function PUT(
     );
   }
 }
-
-// DELETE /api/contests/[id]/problems - Remove problem from contest
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     if (session.user.role !== "admin" && session.user.role !== "faculty") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-
     const { id: contestId } = await params;
     const searchParams = req.nextUrl.searchParams;
     const problemId = searchParams.get("problemId");
-
     if (!problemId) {
       return NextResponse.json(
         { error: "Problem ID is required" },
         { status: 400 }
       );
     }
-
     const result = await removeProblemFromContest(contestId, problemId);
-
     if (!result) {
       return NextResponse.json(
         { error: "Problem not found in contest" },
         { status: 404 }
       );
     }
-
     return NextResponse.json({ message: "Problem removed from contest" });
   } catch (error) {
     console.error("Error removing problem from contest:", error);
