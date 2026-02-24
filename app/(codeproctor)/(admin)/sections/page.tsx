@@ -26,7 +26,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Switch } from "@/components/ui/switch";
-
 export default function Page() {
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -38,34 +37,27 @@ export default function Page() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [totalRows, setTotalRows] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-
   const [openDialog, setOpenDialog] = useState(false);
   const [departments, setDepartments] = useState<department[]>([]);
   const [semesters, setSemesters] = useState<semester[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
   const [selectedSection, setSelectedSection] = useState("");
-
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editSection, setEditSection] = useState<any>(null);
   const [editLoading, setEditLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [sectionToDelete, setSectionToDelete] = useState<any>(null);
-
   const [isActive, setIsActive] = useState(true);
-
   const router = useRouter();
-
   useEffect(() => {
     getData();
   }, [pagination, sorting, globalFilter]);
-
   async function getData(): Promise<void> {
     setLoading(true);
     try {
       const sortBy = sorting.length > 0 ? sorting[0].id : "section_name";
       const sortOrder = sorting.length > 0 && sorting[0].desc ? "desc" : "asc";
-
       const params = new URLSearchParams({
         page: (pagination.pageIndex + 1).toString(),
         pageSize: pagination.pageSize.toString(),
@@ -73,13 +65,10 @@ export default function Page() {
         sortBy,
         sortOrder,
       });
-
       const response = await fetch(`/api/sections?${params.toString()}`);
-
       if (!response.ok) {
         throw new Error("Failed to fetch sections");
       }
-
       const res = await response.json();
       setSections(res.data);
       setTotalRows(res.total);
@@ -92,7 +81,6 @@ export default function Page() {
       setLoading(false);
     }
   }
-
   async function getSectionSemester() {
     const [departmentData, semesterData] = await Promise.all([
       fetch("/api/departments/all").then((res) => res.json()),
@@ -101,7 +89,6 @@ export default function Page() {
     setDepartments(departmentData.data);
     setSemesters(semesterData.data);
   }
-
   async function handleDialogOpen() {
     try {
       setOpenDialog(true);
@@ -110,18 +97,15 @@ export default function Page() {
       console.error("Error fetching data:", error);
     }
   }
-
   async function handleCreateSection() {
     setOpenDialog(false);
     console.log(selectedDepartment, selectedSemester, selectedSection);
-
     const newSection: createSectionType = {
       name: selectedSection,
       semesterid: selectedSemester,
       departmentid: selectedDepartment,
       isactive: isActive,
     };
-
     const response = await fetch("/api/sections", {
       method: "POST",
       headers: {
@@ -129,18 +113,15 @@ export default function Page() {
       },
       body: JSON.stringify(newSection),
     });
-
     if (response.ok) {
       refetchData();
     } else {
       console.error("Error creating section");
     }
   }
-
   async function refetchData(): Promise<void> {
     await getData();
   }
-
   async function handleEditSection(): Promise<void> {
     if (
       !editSection?.section_name.trim() ||
@@ -149,7 +130,6 @@ export default function Page() {
       toast.error("Please fill in all required fields");
       return;
     }
-
     setEditLoading(true);
     try {
       const response = await fetch("/api/sections", {
@@ -165,7 +145,6 @@ export default function Page() {
           isactive: editSection.is_active,
         }),
       });
-
       if (response.ok) {
         setIsEditDialogOpen(false);
         setEditSection(null);
@@ -184,21 +163,17 @@ export default function Page() {
       setEditLoading(false);
     }
   }
-
   function openEditDialog(section: any): void {
     getSectionSemester();
     setEditSection({ ...section });
     setIsEditDialogOpen(true);
   }
-
   function openDeleteDialog(section: any): void {
     setSectionToDelete(section);
     setIsDeleteDialogOpen(true);
   }
-
   async function handleDeleteSection(): Promise<void> {
     if (!sectionToDelete) return;
-
     try {
       const response = await fetch("/api/sections", {
         method: "DELETE",
@@ -207,7 +182,6 @@ export default function Page() {
         },
         body: JSON.stringify({ id: sectionToDelete.id }),
       });
-
       if (response.ok) {
         await refetchData();
         toast.success("Section deleted successfully");
@@ -222,7 +196,6 @@ export default function Page() {
       toast.error("Failed to delete section");
     }
   }
-
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -281,7 +254,6 @@ export default function Page() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="grid gap-3">
               <Select onValueChange={setSelectedSemester}>
                 <SelectTrigger>
@@ -298,19 +270,16 @@ export default function Page() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="flex gap-3">
               <label htmlFor="is-active">Is Active</label>
               <Switch checked={isActive} onCheckedChange={setIsActive} />
             </div>
-
             <Button variant="outline" onClick={handleCreateSection}>
               Create Section
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -343,7 +312,6 @@ export default function Page() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-semester" className="text-right">
                 Semester
@@ -368,7 +336,6 @@ export default function Page() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="edit-is-active" className="text-right">
                 Is Active
@@ -405,7 +372,6 @@ export default function Page() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       <ConfirmDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
