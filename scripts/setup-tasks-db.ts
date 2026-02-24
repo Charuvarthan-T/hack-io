@@ -1,13 +1,7 @@
-
 import sql from "../lib/db";
-
 async function main() {
   console.log("Setting up task database...");
-
   try {
-    // Create Enum if not exists (handled by postgres usually, but we'll use text constraint for simplicity or create type)
-    // We'll stick to text check constraints for simplicity and portability in this raw query
-    
     await sql`
       CREATE TABLE IF NOT EXISTS hackathon_tasks (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -23,16 +17,11 @@ async function main() {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       );
     `;
-
     console.log("Created hackathon_tasks table.");
-
-    // Create index on team_id for faster lookups
     await sql`
       CREATE INDEX IF NOT EXISTS idx_hackathon_tasks_team_id ON hackathon_tasks(team_id);
     `;
-    
     console.log("Created indices.");
-    
   } catch (error) {
     console.error("Error setting up tasks db:", error);
   } finally {
@@ -40,5 +29,4 @@ async function main() {
     process.exit(0);
   }
 }
-
 main();
