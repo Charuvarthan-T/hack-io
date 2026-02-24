@@ -1,5 +1,4 @@
 import sql from "@/lib/db";
-
 export async function GET(){
     const n_courses = await sql`SELECT COUNT(*) FROM courses`;
     const n_users = await sql`SELECT COUNT(*) FROM users`;
@@ -8,7 +7,6 @@ export async function GET(){
     const n_sections = await sql`SELECT COUNT(*) FROM sections`;
     const n_instructors = await sql`SELECT COUNT(*) FROM users WHERE role = 'faculty'`;
     const n_departments = await sql`SELECT COUNT(*) FROM departments`;
-    
     return new Response(JSON.stringify({
         n_courses: n_courses[0].count,
         n_users: n_users[0].count,
