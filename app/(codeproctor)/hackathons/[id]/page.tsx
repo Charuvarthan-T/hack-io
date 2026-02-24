@@ -1,6 +1,4 @@
 "use client";
-
-
 import { useEffect, useState, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -14,8 +12,6 @@ import { toast } from "sonner";
 import { Calendar, Users, Clock, ArrowRight, UserPlus, Users as UsersIcon, Settings, Send, ShieldCheck, Trophy } from "lucide-react";
 import { SubmissionModal } from "@/components/hackathon/SubmissionModal";
 import { AssignJudgesDialog } from "@/components/hackathon/AssignJudgesDialog";
-
-
 interface HackathonDetails {
     id: string;
     title: string;
@@ -34,17 +30,13 @@ interface HackathonDetails {
         } | null;
     };
 }
-
 export default function HackathonDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const { data: session } = useSession();
     const [hackathon, setHackathon] = useState<HackathonDetails | null>(null);
     const [loading, setLoading] = useState(true);
-
-    // Countdown State
     const [timeLeft, setTimeLeft] = useState<string>("");
-
     const fetchDetails = async () => {
         try {
             const res = await fetch(`/api/hackathons/${params.id}`);
@@ -61,28 +53,20 @@ export default function HackathonDetailsPage() {
             setLoading(false);
         }
     };
-
-    // ...existing code...
     useEffect(() => {
         if (params.id) {
             fetchDetails();
         }
     }, [params.id]);
-
-    // Timer Logic
     useEffect(() => {
         if (!hackathon) return;
-
         let targetDate: Date;
         const now = new Date();
         const startDate = new Date(hackathon.start_date);
         const endDate = new Date(hackathon.end_date);
-
         let mode: 'START' | 'END' = 'START';
-
         if (hackathon.status === 'PUBLISHED') {
             if (now > startDate) {
-                // If start date passed, count down to end (Treat as implicit Active for UI)
                 targetDate = endDate;
                 mode = 'END';
             } else {
@@ -96,62 +80,45 @@ export default function HackathonDetailsPage() {
             setTimeLeft("");
             return;
         }
-
         const updateTimer = () => {
             const currentTime = new Date();
             const diff = targetDate.getTime() - currentTime.getTime();
-
             if (diff <= 0) {
                 if (mode === 'START') {
-                    // Should technically not happen due to check above, but purely for transition
                     setTimeLeft("Started");
                 } else {
                     setTimeLeft("Ended");
                 }
                 return;
             }
-
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
             setTimeLeft(`${days}d ${hours}h ${minutes}m`);
         };
-
-        const interval = setInterval(updateTimer, 1000); // Update every second
+        const interval = setInterval(updateTimer, 1000);
         updateTimer();
-
         return () => clearInterval(interval);
     }, [hackathon]);
-
     const handleJoin = async () => {
         try {
             const res = await fetch(`/api/hackathons/${hackathon?.id}/join`, { method: "POST" });
             if (res.ok) {
                 toast.success("Joined successfully!");
-                fetchDetails(); // Refresh to update state
+                fetchDetails();
             } else {
                 const err = await res.json();
                 toast.error(err.error || "Failed to join");
             }
         } catch (e) { toast.error("Error joining"); }
     };
-
-    // Team Creation State
     const [isTeamDialogOpen, setIsTeamDialogOpen] = useState(false);
     const [teamName, setTeamName] = useState("");
     const [isCreatingTeam, setIsCreatingTeam] = useState(false);
-
     const handleCreateTeam = () => {
         setIsTeamDialogOpen(true);
     };
-
     const submitCreateTeam = async () => {
-        // ... existing code ...
-        // (collapsed in diff for brevity, ensure existing function is preserved or use multi_replace for cleaner insert)
-        // Since I'm using replace_file_content with range, I should just append after it.
-        // Wait, I can't easily append without context.
-        // I will replace the submitCreateTeam and add the new one after.
         if (!teamName) {
             toast.error("Please enter a team name");
             return;
@@ -165,7 +132,7 @@ export default function HackathonDetailsPage() {
             if (res.ok) {
                 toast.success("Team created!");
                 setIsTeamDialogOpen(false);
-                fetchDetails(); // Refresh
+                fetchDetails();
             } else {
                 const err = await res.json();
                 toast.error(err.error || "Failed to create team");
@@ -176,12 +143,9 @@ export default function HackathonDetailsPage() {
             setIsCreatingTeam(false);
         }
     };
-
-    // Add Member State
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
     const [inviteEmail, setInviteEmail] = useState("");
     const [isInviting, setIsInviting] = useState(false);
-
     const handleAddMember = async () => {
         if (!inviteEmail) return;
         setIsInviting(true);
@@ -205,30 +169,24 @@ export default function HackathonDetailsPage() {
             setIsInviting(false);
         }
     };
-
     const handleEnterWorkspace = () => {
         if (hackathon?.user_status.team) {
             router.push(`/hackathons/${hackathon.id}/team/${hackathon.user_status.team.id}`);
         }
     };
-
     if (loading) {
         return <div className="flex justify-center items-center py-20">Loading...</div>;
     }
-
     if (!hackathon) {
         return <div className="flex justify-center items-center py-20">Hackathon not found</div>;
     }
-
     const { status, user_status } = hackathon;
     const isJoined = !!user_status.role;
     const hasTeam = !!user_status.team;
-
     const isOrganizerOrAdmin = user_status?.role === 'ORGANIZER' || session?.user?.role === 'admin';
-
     return (
         <div className="container max-w-6xl mx-auto py-10 space-y-8">
-            {/* Header Section */}
+            {}
             <div className="flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row justify-between items-start gap-4">
                     <div className="space-y-2">
@@ -245,10 +203,9 @@ export default function HackathonDetailsPage() {
                             Hosted by <span className="font-semibold text-foreground underline decoration-primary/50">Protocol</span>
                         </p>
                     </div>
-
-                    {/* Action Group: Public & Role Specific */}
+                    {}
                     <div className="flex flex-wrap gap-4 md:items-center">
-                        {/* Countdown inside header for better alignment */}
+                        {}
                         {(status === 'PUBLISHED' || status === 'ACTIVE') && (
                             <div className="flex flex-col items-end pr-4 border-r border-secondary-foreground/10">
                                 <span className="text-[10px] font-black uppercase text-muted-foreground tracking-tighter">
@@ -263,7 +220,6 @@ export default function HackathonDetailsPage() {
                                 </span>
                             </div>
                         )}
-
                         <div className="flex gap-2">
                             <Button variant="outline" className="border-secondary-foreground/20 hover:bg-secondary/20" onClick={() => router.push(`/hackathons/${hackathon.id}/leaderboard`)}>
                                 <Trophy className="h-4 w-4 mr-2 text-yellow-500" /> Leaderboard
@@ -276,8 +232,7 @@ export default function HackathonDetailsPage() {
                         </div>
                     </div>
                 </div>
-
-                {/* Organizer Toolbar */}
+                {}
                 {isOrganizerOrAdmin && (
                     <div className="flex flex-wrap items-center gap-3 p-4 bg-secondary/20 rounded-xl border border-secondary/50 shadow-sm">
                         <div className="flex items-center gap-2 mr-4 border-r pr-4 border-secondary-foreground/10">
@@ -295,18 +250,16 @@ export default function HackathonDetailsPage() {
                                 <UsersIcon className="h-4 w-4 mr-2" /> Assign Judges
                             </Button>
                         } />
-                        
                         <div className="flex-1" />
-
-                        {/* Phase Compact Switcher */}
+                        {}
                         <div className="flex items-center gap-2 bg-background/50 p-1 rounded-lg border">
                             <span className="text-[10px] font-bold px-2 uppercase text-muted-foreground">Phase</span>
                             <div className="flex gap-1">
                                 {(['SUBMISSION', 'EVALUATION', 'RESULTS'] as const).map((p) => (
-                                    <Button 
-                                        key={p} 
-                                        variant={hackathon.phase === p ? "default" : "ghost"} 
-                                        size="sm" 
+                                    <Button
+                                        key={p}
+                                        variant={hackathon.phase === p ? "default" : "ghost"}
+                                        size="sm"
                                         className={`text-[10px] h-7 px-3 ${hackathon.phase === p ? 'shadow-sm' : ''}`}
                                         onClick={async () => {
                                             const res = await fetch(`/api/hackathons/${hackathon.id}`, {
@@ -327,11 +280,9 @@ export default function HackathonDetailsPage() {
                     </div>
                 )}
             </div>
-
-            {/* Main Content Grid */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-                {/* Left Column: Description */}
+                {}
                 <div className="md:col-span-2 space-y-6">
                     <Card>
                         <CardHeader>
@@ -341,7 +292,6 @@ export default function HackathonDetailsPage() {
                             <p className="whitespace-pre-wrap">{hackathon.description || "No description provided."}</p>
                         </CardContent>
                     </Card>
-
                     <div className="grid grid-cols-2 gap-4">
                         <Card>
                             <CardContent className="p-4 flex items-center space-x-4">
@@ -384,11 +334,9 @@ export default function HackathonDetailsPage() {
                         </Card>
                     </div>
                 </div>
-
-                {/* Right Column: Actions & Status */}
+                {}
                 <div className="space-y-6">
-
-                    {/* Primary Action Card */}
+                    {}
                     <Card className="border-primary/20 shadow-lg">
                         <CardHeader>
                             <CardTitle>Your Status</CardTitle>
@@ -399,7 +347,7 @@ export default function HackathonDetailsPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {/* ACTION 1: Join */}
+                            {}
                             {!isJoined && status === 'PUBLISHED' && (
                                 <Button
                                     className="w-full h-12 text-lg"
@@ -408,8 +356,7 @@ export default function HackathonDetailsPage() {
                                     <UserPlus className="mr-2 h-5 w-5" /> Join Hackathon
                                 </Button>
                             )}
-
-                            {/* ACTION 2: Create Team */}
+                            {}
                             {isJoined && !hasTeam && user_status.role === 'PARTICIPANT' && (status === 'PUBLISHED' || status === 'ACTIVE') && (
                                 <div className="space-y-2">
                                     <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-md text-sm text-yellow-500">
@@ -424,8 +371,7 @@ export default function HackathonDetailsPage() {
                                     </Button>
                                 </div>
                             )}
-
-                            {/* ACTION 3: Workspace */}
+                            {}
                             {hasTeam && (
                                 <div className="space-y-3">
                                     <div className="p-3 bg-secondary rounded-md">
@@ -441,8 +387,7 @@ export default function HackathonDetailsPage() {
                                     >
                                         Enter Workspace <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
-
-                                    {/* Add Member Button - Only if space available */}
+                                    {}
                                     {(user_status.team?.member_count || 0) < (hackathon.max_team_size || 4) && (
                                         <Button
                                             variant="outline"
@@ -454,18 +399,16 @@ export default function HackathonDetailsPage() {
                                     )}
                                 </div>
                             )}
-
-                            {/* State: Completed */}
+                            {}
                             {status === 'COMPLETED' && (
                                 <div className="p-3 bg-muted rounded-md text-center text-sm">
                                     This hackathon has ended.
                                 </div>
                             )}
-
-                            {/* ACTION 4: Submit Project */}
+                            {}
                             {isJoined && hasTeam && (status === 'ACTIVE') && (
-                                <SubmissionModal 
-                                    hackathonId={hackathon.id} 
+                                <SubmissionModal
+                                    hackathonId={hackathon.id}
                                     trigger={
                                         <Button className="w-full" variant="default">
                                             <Send className="mr-2 h-4 w-4" /> Submit Project
@@ -475,8 +418,7 @@ export default function HackathonDetailsPage() {
                             )}
                         </CardContent>
                     </Card>
-
-                    {/* Resources ... */}
+                    {}
                     <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base">Resources</CardTitle>
@@ -490,8 +432,7 @@ export default function HackathonDetailsPage() {
                     </Card>
                 </div>
             </div>
-
-            {/* Create Team Dialog */}
+            {}
             <Dialog open={isTeamDialogOpen} onOpenChange={setIsTeamDialogOpen}>
                 <DialogContent>
                     <DialogHeader>
@@ -516,7 +457,7 @@ export default function HackathonDetailsPage() {
                     </div>
                 </DialogContent>
             </Dialog>
-            {/* Add Member Dialog */}
+            {}
             <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
                 <DialogContent>
                     <DialogHeader>
