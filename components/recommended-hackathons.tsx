@@ -1,16 +1,13 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, ExternalLink, Calendar, MapPin, Sparkles } from "lucide-react";
 import Link from "next/link";
-
 export default function RecommendedHackathons() {
     const [recommendations, setRecommendations] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-
     useEffect(() => {
         const fetchRecommendations = async () => {
             try {
@@ -27,7 +24,6 @@ export default function RecommendedHackathons() {
         };
         fetchRecommendations();
     }, []);
-
     if (loading) {
         return (
             <div className="flex justify-center p-8">
@@ -35,13 +31,10 @@ export default function RecommendedHackathons() {
             </div>
         );
     }
-
     if (!recommendations || recommendations.hackathons.length === 0) {
         return null;
     }
-
     const isRecommended = recommendations.type === "RECOMMENDED";
-
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -54,7 +47,6 @@ export default function RecommendedHackathons() {
                     </Badge>
                 )}
             </div>
-
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {recommendations.hackathons.map((hack: any) => (
                     <Card key={hack.id} className="relative overflow-hidden group hover:shadow-md transition-shadow">
