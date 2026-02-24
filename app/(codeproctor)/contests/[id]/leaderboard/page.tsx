@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 interface LeaderboardEntry {
   rank: number;
   user_id: string;
@@ -23,20 +21,16 @@ interface LeaderboardEntry {
   problems_solved: number;
   total_points: number;
 }
-
 export default function ContestLeaderboardPage() {
   const params = useParams();
   const router = useRouter();
   const contestId = params.id as string;
-
   const [contest, setContest] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-
   useEffect(() => {
     fetchLeaderboardData();
   }, [contestId]);
-
   const fetchLeaderboardData = async () => {
     try {
       setLoading(true);
@@ -44,12 +38,9 @@ export default function ContestLeaderboardPage() {
         fetch(`/api/contests/${contestId}`),
         fetch(`/api/contests/${contestId}/leaderboard`),
       ]);
-
       if (!contestRes.ok) throw new Error("Failed to fetch contest");
-
       const contestData = await contestRes.json();
       setContest(contestData.contest);
-
       if (leaderboardRes.ok) {
         const leaderboardData = await leaderboardRes.json();
         setLeaderboard(leaderboardData.leaderboard || []);
@@ -61,7 +52,6 @@ export default function ContestLeaderboardPage() {
       setLoading(false);
     }
   };
-
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
@@ -74,13 +64,11 @@ export default function ContestLeaderboardPage() {
         return <User className="h-5 w-5 text-muted-foreground" />;
     }
   };
-
   const getRankBadgeVariant = (rank: number) => {
     if (rank === 1) return "default";
     if (rank <= 3) return "secondary";
     return "outline";
   };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -88,7 +76,6 @@ export default function ContestLeaderboardPage() {
       </div>
     );
   }
-
   if (!contest) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -96,10 +83,8 @@ export default function ContestLeaderboardPage() {
       </div>
     );
   }
-
   const topThree = leaderboard.slice(0, 3);
   const restOfLeaderboard = leaderboard.slice(3);
-
   return (
     <div className="container mx-auto py-10">
       <Button
@@ -110,8 +95,7 @@ export default function ContestLeaderboardPage() {
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Contests
       </Button>
-
-      {/* Contest Info */}
+      {}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-2xl">{contest.title}</CardTitle>
@@ -120,12 +104,11 @@ export default function ContestLeaderboardPage() {
           )}
         </CardHeader>
       </Card>
-
-      {/* Top 3 Podium */}
+      {}
       {topThree.length > 0 && (
         <div className="mb-8">
           <div className="flex items-end justify-center gap-4 mb-8">
-            {/* 2nd Place */}
+            {}
             {topThree[1] && (
               <Card className="w-48 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 border-2 border-gray-400">
                 <CardContent className="pt-6 text-center">
@@ -141,8 +124,7 @@ export default function ContestLeaderboardPage() {
                 </CardContent>
               </Card>
             )}
-
-            {/* 1st Place */}
+            {}
             {topThree[0] && (
               <Card className="w-52 bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900 dark:to-yellow-950 border-2 border-yellow-500">
                 <CardContent className="pt-6 text-center">
@@ -158,8 +140,7 @@ export default function ContestLeaderboardPage() {
                 </CardContent>
               </Card>
             )}
-
-            {/* 3rd Place */}
+            {}
             {topThree[2] && (
               <Card className="w-48 bg-gradient-to-br from-orange-100 to-orange-200 dark:from-orange-900 dark:to-orange-950 border-2 border-orange-600">
                 <CardContent className="pt-6 text-center">
@@ -178,8 +159,7 @@ export default function ContestLeaderboardPage() {
           </div>
         </div>
       )}
-
-      {/* Full Leaderboard Table */}
+      {}
       <Card>
         <CardHeader>
           <CardTitle>Full Leaderboard</CardTitle>
@@ -229,8 +209,7 @@ export default function ContestLeaderboardPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Actions */}
+      {}
       <div className="mt-6 flex gap-4">
         <Button
           variant="outline"
