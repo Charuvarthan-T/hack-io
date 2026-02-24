@@ -1,5 +1,4 @@
 "use client";
-
 import {
   Users,
   Home,
@@ -21,14 +20,12 @@ import {
 } from "./ui/sidebar";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-
 interface SidebarItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   role?: string[];
 }
-
 const sidebarItems: SidebarItem[] = [
   {
     label: "Dashboard",
@@ -97,14 +94,12 @@ const sidebarItems: SidebarItem[] = [
     role: ["faculty","student","admin"],
   }
 ];
-
 export default function AppSidebar() {
   const { data: session } = useSession();
   if(!session?.user){
     return;
   }
   const user = session?.user;
-
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
