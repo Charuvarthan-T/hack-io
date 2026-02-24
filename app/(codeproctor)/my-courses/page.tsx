@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { DataTable } from "@/components/data-table";
@@ -14,27 +13,22 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { createCourseColumns } from "./columns";
-
 export default function MyCoursesPage() {
   const { data: session, status } = useSession();
   const userRole = session?.user?.role;
   const [courses, setCourses] = useState<course[]>([]);
   const [loading, setLoading] = useState(true);
   const myCourseColumns = createCourseColumns(userRole ?? "Student");
-
   const fetchMyCourses = async () => {
     if (!session?.user?.id) {
       return;
     }
-
     try {
       setLoading(true);
       const response = await fetch(`/api/users/${session.user.id}/courses`);
-
       if (!response.ok) {
         throw new Error("Failed to fetch courses");
       }
-
       const data = await response.json();
       setCourses(data.courses || []);
     } catch (error) {
@@ -44,13 +38,11 @@ export default function MyCoursesPage() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
       fetchMyCourses();
     }
   }, [session, status]);
-
   if (status === "loading" || loading) {
     return (
       <div className="container mx-auto py-6">
@@ -73,7 +65,6 @@ export default function MyCoursesPage() {
       </div>
     );
   }
-
   if (status === "unauthenticated") {
     return (
       <div className="container mx-auto py-6">
@@ -87,7 +78,6 @@ export default function MyCoursesPage() {
       </div>
     );
   }
-
   return (
     <div className="container mx-auto py-6">
       <Card>
