@@ -1,7 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import sql from "@/lib/db";
-
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -12,7 +11,7 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    maxAge: 1 * 24 * 60 * 60, // 1 day
+    maxAge: 1 * 24 * 60 * 60,
   },
   callbacks: {
     async signIn({ user }) {
@@ -20,27 +19,23 @@ export const authOptions: NextAuthOptions = {
         if (!user.email) {
           return false;
         }
-
         const name = user.name || "";
         const email = user.email;
         const image = user.image || "";
-
         const existingUser =
           await sql`SELECT id FROM users WHERE email = ${email}`;
-
         if (existingUser.length === 0) {
           await sql`
-            INSERT INTO users (name, email, image, created_at, updated_at) 
+            INSERT INTO users (name, email, image, created_at, updated_at)
             VALUES (${name}, ${email}, ${image}, NOW(), NOW())
           `;
         } else {
           await sql`
-            UPDATE users 
-            SET name = ${name}, image = ${image}, updated_at = NOW() 
+            UPDATE users
+            SET name = ${name}, image = ${image}, updated_at = NOW()
             WHERE email = ${email}
           `;
         }
-
         return true;
       } catch (e) {
         console.log(e);
@@ -68,9 +63,7 @@ export const authOptions: NextAuthOptions = {
     },
     async redirect({ url, baseUrl }) {
       if (url.startsWith("/")) return `${baseUrl}${url}`;
-
       if (new URL(url).origin === baseUrl) return url;
-
       return `${baseUrl}/dashboard`;
     },
   },
