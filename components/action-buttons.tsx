@@ -1,17 +1,13 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import { useSession, signIn } from "next-auth/react";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
-
 export function ActionButtons() {
   const { data: session } = useSession();
-
   return (
     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
       {session ? (
-        // Signed-in user: Show Dashboard button
         <Link href="/dashboard">
           <Button size="lg" className="group px-8 py-3 text-lg">
             Go to Dashboard
@@ -19,7 +15,6 @@ export function ActionButtons() {
           </Button>
         </Link>
       ) : (
-        // Not signed-in: Show Google Sign-in button
         <>
           <Button
             size="lg"
