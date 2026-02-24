@@ -1,15 +1,11 @@
 import { getAssignedFacultyForACourse } from "@/repository/section.repository";
-
-// GET: Get assigned faculty for a specific course-section combination
 export async function GET(
-  request: Request, 
+  request: Request,
   { params }: { params: { id: string; courseId: string } }
 ) {
   try {
     const { id: sectionId, courseId } = await params;
-    
     const result = await getAssignedFacultyForACourse(courseId, sectionId);
-    
     return new Response(JSON.stringify(result), {
       headers: { "Content-Type": "application/json" },
     });
