@@ -3,7 +3,6 @@ import { ArrowUpDown, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ColumnDef } from "@tanstack/react-table";
-
 export const createColumns = (
   refetchData: () => Promise<void>,
   isAssigned: boolean = false,
@@ -81,7 +80,6 @@ export const createColumns = (
     enableHiding: false,
     cell: ({ row }) => {
       const user = row.original;
-      
       if (isAssigned && onUnassign) {
         return (
           <Button
@@ -107,7 +105,6 @@ export const createColumns = (
           </Button>
         );
       }
-      
       return null;
     },
   },
