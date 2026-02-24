@@ -33,30 +33,25 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
 export interface Tag {
   id: string;
   name: string;
 }
-
 export interface CreateTestcase {
   name: string;
   input: string;
   output: string;
 }
-
 export interface TestcaseDTO {
   input: string;
   output: string;
 }
-
 export interface CreateProblem {
   problemid: string;
   title: string;
   description: string;
   created_by?: string;
 }
-
 export interface ProblemTemplate {
   python?: string;
   java?: string;
@@ -64,7 +59,6 @@ export interface ProblemTemplate {
   c?: string;
   cpp?: string;
 }
-
 export default function Page() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -87,10 +81,7 @@ export default function Page() {
     cpp: ''
   });
   const [activeTemplateTab, setActiveTemplateTab] = useState('python');
-
   const { data: session } = useSession();
-
-  // Language mapping for Monaco Editor
   const getMonacoLanguage = (lang: string): string => {
     switch (lang) {
       case "cpp":
@@ -107,25 +98,20 @@ export default function Page() {
         return "javascript";
     }
   };
-
   if (!session?.user) {
     return <h1>Please login first</h1>;
   }
-
   if (session.user.role !== "admin" && session.user.role !== "faculty") {
     return <h1>Access Denied</h1>;
   }
-
   useEffect(() => {
     fetchTags();
   }, []);
-
   useEffect(() => {
     if (problemid) {
       getTestCases();
     }
   }, [problemid]);
-
   async function fetchTags() {
     try {
       const res = await fetch("/api/problems/tags");
@@ -137,10 +123,8 @@ export default function Page() {
       console.error("Failed to fetch tags:", error);
     }
   }
-
   async function getTestCases() {
     if (!problemid) return;
-
     try {
       const res = await fetch(`/api/problems/${problemid}/testcases`);
       if (res.ok) {
@@ -151,7 +135,6 @@ export default function Page() {
       console.error("Failed to fetch test cases:", error);
     }
   }
-
   function resetForm() {
     setTitle("");
     setDescription("");
@@ -167,36 +150,29 @@ export default function Page() {
       cpp: ''
     });
   }
-
   function resetTestcaseForm() {
     setTestcaseName("");
     setTestcaseInput("");
     setTestcaseOutput("");
   }
-
   async function handleCreateProblem() {
     if (!title.trim()) {
       toast.error("Please enter a problem title");
       return;
     }
-
     if (!description.trim()) {
       toast.error("Please enter a problem description");
       return;
     }
-
     setIsLoading(true);
-
     try {
       const newProblemId = crypto.randomUUID();
-
       const newProblem: CreateProblem = {
         problemid: newProblemId,
         title: title.trim(),
         description: description.trim(),
         created_by: session?.user?.id,
       };
-
       const problemRes = await fetch("/api/problems", {
         method: "POST",
         headers: {
@@ -204,7 +180,6 @@ export default function Page() {
         },
         body: JSON.stringify(newProblem),
       });
-
       if (!problemRes.ok) {
         const errorData = await problemRes.json();
         throw new Error(
@@ -212,20 +187,15 @@ export default function Page() {
             `Failed to create problem: ${problemRes.statusText}`
         );
       }
-
       setProblemid(newProblemId);
       setCreatedProblem(true);
-
       if (selectedTag) {
         await assignTagToProblem(newProblemId);
       }
-
-      // Save templates if any are provided
       const hasTemplates = Object.values(templates).some(template => template.trim() !== '');
       if (hasTemplates) {
         await saveTemplates(newProblemId);
       }
-
       toast.success("Problem created successfully!");
     } catch (error) {
       console.error("Error creating problem:", error);
@@ -238,7 +208,6 @@ export default function Page() {
       setIsLoading(false);
     }
   }
-
   async function assignTagToProblem(problemId: string) {
     try {
       const res = await fetch(`/api/problems/${problemId}/tags`, {
@@ -248,7 +217,6 @@ export default function Page() {
         },
         body: JSON.stringify({ tagId: selectedTag }),
       });
-
       if (!res.ok) {
         throw new Error(`Failed to assign tag: ${res.statusText}`);
       }
@@ -257,10 +225,8 @@ export default function Page() {
       throw error;
     }
   }
-
   async function saveTemplates(problemId: string) {
     try {
-
       const res = await fetch(`/api/problems/${problemId}/template`, {
         method: "PUT",
         headers: {
@@ -268,13 +234,11 @@ export default function Page() {
         },
         body: JSON.stringify(templates),
       });
-
       if (!res.ok) {
         const errorText = await res.text();
         console.error("Failed to save templates. Status:", res.status, "Error:", errorText);
         throw new Error(`Failed to save templates: ${res.statusText}`);
       }
-      
       const result = await res.json();
       console.log("Templates saved successfully:", result);
     } catch (error) {
@@ -282,7 +246,6 @@ export default function Page() {
       throw error;
     }
   }
-
   async function handleCreateTestcase() {
     if (
       !testcaseName.trim() ||
@@ -292,16 +255,13 @@ export default function Page() {
       toast.error("Please fill in all testcase fields");
       return;
     }
-
     setIsCreatingTestcase(true);
-
     try {
       const newTestCase: CreateTestcase = {
         name: testcaseName.trim(),
         input: testcaseInput.trim(),
         output: testcaseOutput.trim(),
       };
-
       const res = await fetch(`/api/problems/${problemid}/testcases`, {
         method: "POST",
         headers: {
@@ -309,11 +269,9 @@ export default function Page() {
         },
         body: JSON.stringify(newTestCase),
       });
-
       if (!res.ok) {
         throw new Error("Failed to create test case");
       }
-
       toast.success("Test case created successfully!");
       setIsDialogOpen(false);
       resetTestcaseForm();
@@ -325,7 +283,6 @@ export default function Page() {
       setIsCreatingTestcase(false);
     }
   }
-
   return (
     <div className="space-y-6">
       <div>
@@ -336,7 +293,6 @@ export default function Page() {
           Create a new coding problem for students to solve
         </p>
       </div>
-
       <div className="grid gap-6 lg:grid-cols-3">
         <Card>
           <CardHeader>
@@ -356,7 +312,6 @@ export default function Page() {
                 disabled={createdProblem || isLoading}
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="description">Problem Description</Label>
               <Textarea
@@ -368,7 +323,6 @@ export default function Page() {
                 className="min-h-[100px]"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="tag">Tag (Optional)</Label>
               <Select
@@ -390,7 +344,6 @@ export default function Page() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="flex gap-2 pt-4">
               <Button
                 onClick={handleCreateProblem}
@@ -407,7 +360,6 @@ export default function Page() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Test Cases</CardTitle>
@@ -480,7 +432,6 @@ export default function Page() {
                     </div>
                   </DialogContent>
                 </Dialog>
-
                 <div className="space-y-3">
                   {testcases.length === 0 ? (
                     <div className="text-center py-4 text-muted-foreground">
@@ -520,7 +471,6 @@ export default function Page() {
             )}
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Template Code</CardTitle>
@@ -537,7 +487,6 @@ export default function Page() {
                 <TabsTrigger value="c">C</TabsTrigger>
                 <TabsTrigger value="cpp">C++</TabsTrigger>
               </TabsList>
-              
               <TabsContent value="python" className="space-y-2">
                 <Label htmlFor="python-template">Python Template</Label>
                 <div className="rounded-lg border overflow-hidden" style={{ height: '200px' }}>
@@ -561,7 +510,6 @@ export default function Page() {
                   />
                 </div>
               </TabsContent>
-              
               <TabsContent value="java" className="space-y-2">
                 <Label htmlFor="java-template">Java Template</Label>
                 <div className="rounded-lg border overflow-hidden" style={{ height: '200px' }}>
@@ -585,7 +533,6 @@ export default function Page() {
                   />
                 </div>
               </TabsContent>
-              
               <TabsContent value="javascript" className="space-y-2">
                 <Label htmlFor="javascript-template">JavaScript Template</Label>
                 <div className="rounded-lg border overflow-hidden" style={{ height: '200px' }}>
@@ -609,7 +556,6 @@ export default function Page() {
                   />
                 </div>
               </TabsContent>
-              
               <TabsContent value="c" className="space-y-2">
                 <Label htmlFor="c-template">C Template</Label>
                 <div className="rounded-lg border overflow-hidden" style={{ height: '200px' }}>
@@ -633,7 +579,6 @@ export default function Page() {
                   />
                 </div>
               </TabsContent>
-              
               <TabsContent value="cpp" className="space-y-2">
                 <Label htmlFor="cpp-template">C++ Template</Label>
                 <div className="rounded-lg border overflow-hidden" style={{ height: '200px' }}>
