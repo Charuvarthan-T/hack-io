@@ -1,5 +1,4 @@
 "use client";
-
 import { problem } from "@/types/types";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -16,7 +15,6 @@ import { capitalizeFirstLetter } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-
 export default function Page() {
   const { id } = useParams();
   const [problem, setProblem] = useState<problem>({} as problem);
@@ -26,14 +24,11 @@ export default function Page() {
   const [languageCode, setLanguageCode] = useState<number>(63);
   const [output, setOutput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  // test case logic written here
   interface TestCase {
     id: string;
     input: string;
     output: string;
   }
-
   interface TestResult {
     testCaseId: string;
     input: string;
@@ -41,23 +36,16 @@ export default function Page() {
     actualOutput: string;
     passed: boolean;
   }
-
   const [testCases, setTestCases] = useState<TestCase[]>([]);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunningTests, setIsRunningTests] = useState(false);
   const [showTestCases, setShowTestCases] = useState(true);
   const [selectedTestCase, setSelectedTestCase] = useState(0);
   const [templates, setTemplates] = useState<{ [key: string]: string }>({});
-
-  // end of test case logic
-
-  // LeetCode-style test execution with detailed feedback
   async function handleClick() {
     setIsLoading(true);
     setIsRunningTests(true);
-
     const apiUrl = process.env.NEXT_PUBLIC_JUDGE0_API_URL;
-
     if (!apiUrl) {
       setOutput(
         "❌ API configuration missing. Please check your environment variables."
@@ -66,10 +54,8 @@ export default function Page() {
       setIsRunningTests(false);
       return;
     }
-
     try {
       if (testCases.length === 0) {
-        // Run without test cases (original behavior)
         const url = `${apiUrl}/submissions?base64_encoded=false&wait=true`;
         const options = {
           method: "POST",
@@ -78,14 +64,12 @@ export default function Page() {
           },
           body: JSON.stringify({
             language_id: languageCode,
-            source_code: getBoilerplateCode(language, code), // Auto-add boilerplate for execution
+            source_code: getBoilerplateCode(language, code),
             stdin: "",
           }),
         };
-
         const response = await fetch(url, options);
         const result = await response.json();
-
         if (result.compile_output) {
           setOutput(`❌ Compilation Error:\n${result.compile_output}`);
         } else if (result.stderr) {
@@ -94,12 +78,10 @@ export default function Page() {
           setOutput(result.stdout || "No output");
         }
       } else {
-        // LeetCode-style test case execution
         const results: TestResult[] = [];
         let allTestsPassed = true;
         let compilationError = false;
         let runtimeError = false;
-
         for (let i = 0; i < testCases.length; i++) {
           const testCase = testCases[i];
           const url = `${apiUrl}/submissions?base64_encoded=false&wait=true`;
@@ -110,22 +92,17 @@ export default function Page() {
             },
             body: JSON.stringify({
               language_id: languageCode,
-              source_code: getBoilerplateCode(language, code), // Auto-add boilerplate for test execution
+              source_code: getBoilerplateCode(language, code),
               stdin: testCase.input,
             }),
           };
-
           const response = await fetch(url, options);
           const result = await response.json();
-
-          // Handle compilation errors
           if (result.compile_output) {
             setOutput(`❌ Compilation Error:\n${result.compile_output}`);
             compilationError = true;
             break;
           }
-
-          // Handle runtime errors
           if (result.stderr && !result.stdout) {
             setOutput(
               `❌ Runtime Error on Test Case ${i + 1}:\n${result.stderr}`
@@ -133,13 +110,10 @@ export default function Page() {
             runtimeError = true;
             break;
           }
-
           const actualOutput = (result.stdout || result.stderr || "").trim();
           const expectedOutput = (testCase.output || "").trim();
           const passed = actualOutput === expectedOutput;
-
           if (!passed) allTestsPassed = false;
-
           results.push({
             testCaseId: testCase.id,
             input: testCase.input,
@@ -148,38 +122,29 @@ export default function Page() {
             passed: passed,
           });
         }
-
-        // Only set results if no compilation/runtime errors
         if (!compilationError && !runtimeError) {
           setTestResults(results);
           const passedCount = results.filter((r) => r.passed).length;
-
           if (allTestsPassed) {
-            // Award points (100) and update UI
             try {
-              // call award-points API first (so the award write occurs even if marking completed has issues)
               const awardRes = await fetch(`/api/problems/${id}/award-points`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ points: 100 }),
               });
-
               let pointsLine = "";
               let awardedOk = false;
               if (awardRes.ok) {
                 const data = await awardRes.json();
                 if (data.awarded) {
                   awardedOk = true;
-                  // show awarded points and total
                   pointsLine = `\n\nPoints score: 100`;
                   if (data.totalPoints)
                     pointsLine += `\nTotal points: ${data.totalPoints}`;
                 } else {
-                  // Not awarded because already solved; show total if provided
                   if (data.totalPoints)
                     pointsLine = `\n\nPoints total: ${data.totalPoints}`;
                 }
-                // Broadcast the updated totalPoints so other UI (header) can refresh immediately
                 try {
                   if (data && typeof window !== "undefined") {
                     window.dispatchEvent(
@@ -189,11 +154,8 @@ export default function Page() {
                     );
                   }
                 } catch (e) {
-                  /* ignore in non-browser env */
                 }
               }
-
-              // mark as solved only if award succeeded (or if we didn't get a decisive response, still attempt)
               try {
                 await handleSwitchChange(true);
               } catch (e) {
@@ -202,13 +164,11 @@ export default function Page() {
                   e
                 );
               }
-
               setOutput(
                 `🎉 Accepted!\n\nAll test cases passed (${passedCount}/${results.length})\n\nRuntime: Judge0\nMemory: Judge0${pointsLine}`
               );
             } catch (e) {
               console.error("Error awarding points:", e);
-              // still mark as solved if award failed to ensure progress tracking
               try {
                 await handleSwitchChange(true);
               } catch (_) {}
@@ -225,7 +185,6 @@ export default function Page() {
                 results.length
               }\n\nSee test cases below for details.`
             );
-            // Auto-select the first failed test case
             setSelectedTestCase(firstFailedIndex);
           }
         }
@@ -238,10 +197,8 @@ export default function Page() {
       setIsRunningTests(false);
     }
   }
-
   async function handleSwitchChange(checked: boolean) {
     setSwitchState(checked);
-
     const res = await fetch(`/api/problems/${id}/completed`, {
       method: "POST",
       body: JSON.stringify({ isCompleted: checked ? "solved" : "unsolved" }),
@@ -253,8 +210,6 @@ export default function Page() {
       console.error("Failed to mark problem as completed");
     }
   }
-
-  // Language mapping for Monaco Editor
   const getMonacoLanguage = (lang: string): string => {
     switch (lang) {
       case "cpp":
@@ -271,8 +226,6 @@ export default function Page() {
         return "javascript";
     }
   };
-
-  // TEST CASE FETCHING FUNCTION:
   async function fetchTestCases() {
     try {
       const response = await fetch(`/api/problems/${id}/testcases`);
@@ -286,24 +239,20 @@ export default function Page() {
       console.error("Error fetching test cases:", error);
     }
   }
-
-  // TEMPLATE FETCHING FUNCTION:
   async function fetchTemplates() {
     try {
       console.log("Fetching templates for problem:", id);
       const response = await fetch(`/api/problems/${id}/template`);
       console.log("Template response status:", response.status);
-
       if (response.ok) {
         const data = await response.json();
         console.log("Template data received:", data);
-
         if (data.templates && typeof data.templates === "object") {
           console.log("Setting templates:", data.templates);
           setTemplates(data.templates);
         } else if (data.templates === null) {
           console.log("No templates found for this problem");
-          setTemplates({}); // Set empty object if no templates exist
+          setTemplates({});
         } else {
           console.log("Invalid templates format in response");
           setTemplates({});
@@ -312,21 +261,17 @@ export default function Page() {
         console.error("Failed to fetch templates, status:", response.status);
         const errorText = await response.text();
         console.error("Error response:", errorText);
-        setTemplates({}); // Set empty object on error
+        setTemplates({});
       }
     } catch (error) {
       console.error("Error fetching templates:", error);
-      setTemplates({}); // Set empty object on error
+      setTemplates({});
     }
   }
-
-  // LeetCode-style clean user templates (what users see and edit)
   const getUserTemplate = (lang: string): string => {
     console.log("=== Getting template for language:", lang, "===");
     console.log("Available templates object:", templates);
     console.log("Template keys:", Object.keys(templates || {}));
-
-    // First priority: Check if we have a template from the database
     if (templates && typeof templates === "object" && templates[lang]) {
       const dbTemplate = templates[lang];
       console.log("Database template for", lang, ":", dbTemplate);
@@ -341,8 +286,6 @@ export default function Page() {
       console.log("Templates type:", typeof templates);
       console.log("Templates value:", templates);
     }
-
-    // Second priority: If problem has custom function signatures, use them
     if (
       problem.function_signatures &&
       problem.function_signatures[
@@ -356,15 +299,11 @@ export default function Page() {
         ] || getCleanTemplate(lang)
       );
     }
-
-    // Fall back to clean template (what users see)
     console.log("⚠️ Using fallback template for", lang);
     const fallback = getCleanTemplate(lang);
     console.log("Fallback template:", fallback.substring(0, 50) + "...");
     return fallback;
   };
-
-  // Clean templates that users see and edit (LeetCode-style)
   const getCleanTemplate = (lang: string): string => {
     switch (lang) {
       case "python":
@@ -372,114 +311,81 @@ export default function Page() {
     # Parse the input as needed
     # Write your solution here
     return "your_output"`;
-
       case "javascript":
         return `function solution(input) {
-    // Parse the input as needed
-    // Write your solution here
     return "your_output";
 }`;
-
       case "java":
         return `public class Solution {
     public String solution(String input) {
-        // Parse the input as needed
-        // Write your solution here
         return "your_output";
     }
 }`;
-
       case "cpp":
         return `#include <string>
 using namespace std;
-
 class Solution {
 public:
     string solution(string input) {
-        // Parse the input as needed
-        // Write your solution here
         return "your_output";
     }
 };`;
-
       case "c":
         return `#include <stdio.h>
 #include <string.h>
-
 char* solution(char* input) {
-    // Parse the input as needed
-    // Write your solution here
     static char result[1000];
     strcpy(result, "your_output");
     return result;
 }`;
-
       default:
         return "// Write your solution here...";
     }
   };
-
-  // Boilerplate code that gets added when running (hidden from users)
   const getBoilerplateCode = (lang: string, userCode: string): string => {
-    // Generic boilerplate for other problems
     switch (lang) {
       case "python":
         return `${userCode}
-
 # Auto-generated boilerplate
 import sys
 input_data = sys.stdin.read().strip()
 result = solution(input_data)
 print(result)`;
-
       case "javascript":
         return `${userCode}
-
-// Auto-generated boilerplate
 const input = require('fs').readFileSync(0, 'utf8').trim();
 const result = solution(input);
 console.log(result);`;
-
       case "java":
         return `import java.util.*;
 import java.io.*;
-
 ${userCode}
-
 public class Main {
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String input = br.readLine();
-        
         Solution sol = new Solution();
         String result = sol.solution(input);
         System.out.println(result);
     }
 }`;
-
       case "cpp":
         return `#include <iostream>
 #include <string>
 using namespace std;
-
 ${userCode}
-
 int main() {
     string input;
     getline(cin, input);
-    
     Solution sol;
     cout << sol.solution(input) << endl;
     return 0;
 }`;
-
       case "c":
         return `#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 ${userCode}
-
 int main() {
     char input[1000];
     if (fgets(input, sizeof(input), stdin) != NULL) {
@@ -489,12 +395,10 @@ int main() {
     }
     return 0;
 }`;
-
       default:
         return userCode;
     }
   };
-
   useEffect(() => {
     const fetchProblem = async () => {
       const res = await fetch(`/api/problems/${id}`);
@@ -512,11 +416,9 @@ int main() {
     }
     fetchProblemStatus();
     fetchProblem();
-    fetchTestCases(); // added this part for test cases
-    fetchTemplates(); // added this part for templates
+    fetchTestCases();
+    fetchTemplates();
   }, [id]);
-
-  // Initialize code when templates are loaded
   useEffect(() => {
     if (Object.keys(templates).length > 0) {
       console.log("Templates loaded, initializing code for", language);
@@ -524,8 +426,6 @@ int main() {
       setCode(template);
     }
   }, [templates]);
-
-  // Update code when language changes or templates are loaded
   useEffect(() => {
     console.log("Language changed to:", language);
     console.log("Templates:", templates);
@@ -536,11 +436,8 @@ int main() {
       ":",
       template.substring(0, 50) + "..."
     );
-
-    // FORCE update the code every time language or templates change
     setCode(template);
   }, [language, templates]);
-
   return (
     <div className="flex flex-col h-[85vh]">
       <div className="flex flex-1 gap-2 min-h-0">
@@ -563,7 +460,6 @@ int main() {
                   />
                 </div>
               </div>
-
               <div>
                 <h3 className="text-lg font-medium text-foreground mb-2">
                   Description
@@ -572,7 +468,6 @@ int main() {
                   {problem.description || "Loading problem description..."}
                 </div>
               </div>
-
               {problem.created_by && (
                 <div>
                   <h3 className="text-lg font-medium text-foreground mb-2">
@@ -584,9 +479,8 @@ int main() {
             </div>
           </div>
         </div>
-
         <div className="w-1/2 flex flex-col">
-          {/* Header with language selector and run button */}
+          {}
           <div className="flex justify-between items-center mb-2">
             <div className="flex gap-2">
               <DropdownMenu>
@@ -660,8 +554,7 @@ int main() {
               </Button>
             </div>
           </div>
-
-          {/* Monaco Editor */}
+          {}
           <div
             className="rounded-lg border overflow-hidden mb-2"
             style={{ height: "45vh" }}
@@ -682,8 +575,7 @@ int main() {
               onChange={(value) => setCode(value || "")}
             />
           </div>
-
-          {/* Enhanced Console Output - LeetCode Style */}
+          {}
           <div className="flex flex-col gap-2 flex-1">
             <Card className="p-3">
               <div className="flex items-center justify-between mb-2">
@@ -695,7 +587,6 @@ int main() {
                   </div>
                 )}
               </div>
-
               <div className="bg-gray-900 dark:bg-gray-950 rounded-md p-3 font-mono text-xs min-h-[80px] border border-gray-200 dark:border-gray-800">
                 {!isLoading && !output && (
                   <span className="text-gray-500">
@@ -704,7 +595,7 @@ int main() {
                 )}
                 {output && (
                   <div className="text-gray-100">
-                    {/* Enhanced output formatting based on result type */}
+                    {}
                     {output.includes("🎉 Accepted") && (
                       <div className="text-green-400">
                         <pre className="whitespace-pre-wrap">{output}</pre>
@@ -734,12 +625,11 @@ int main() {
                 )}
               </div>
             </Card>
-
-            {/* Test Cases Section - LeetCode Style */}
+            {}
             {testCases.length > 0 && (
               <Card className="p-3 flex-1 max-h-[25vh] overflow-hidden">
                 <div className="flex flex-col h-full">
-                  {/* Header */}
+                  {}
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-sm font-medium text-foreground">
                       Test Cases
@@ -752,8 +642,7 @@ int main() {
                         : `${testCases.length} cases`}
                     </Badge>
                   </div>
-
-                  {/* Test Case Tabs */}
+                  {}
                   <div className="flex gap-1 border-b mb-3">
                     {testCases.map((testCase, index) => {
                       const result = testResults.find(
@@ -785,13 +674,12 @@ int main() {
                       );
                     })}
                   </div>
-
-                  {/* Selected Test Case Content */}
+                  {}
                   <div className="flex-1 overflow-y-auto">
                     {testCases[selectedTestCase] && (
                       <div className="space-y-2">
                         <div className="grid grid-cols-2 gap-2">
-                          {/* Input */}
+                          {}
                           <div>
                             <label className="text-xs font-medium text-muted-foreground mb-1 block">
                               Input
@@ -800,8 +688,7 @@ int main() {
                               {testCases[selectedTestCase].input || "(empty)"}
                             </div>
                           </div>
-
-                          {/* Expected Output */}
+                          {}
                           <div>
                             <label className="text-xs font-medium text-muted-foreground mb-1 block">
                               Expected
@@ -811,8 +698,7 @@ int main() {
                             </div>
                           </div>
                         </div>
-
-                        {/* Actual Output (only show if test was run and failed) */}
+                        {}
                         {(() => {
                           const result = testResults.find(
                             (r) =>
@@ -832,8 +718,7 @@ int main() {
                           }
                           return null;
                         })()}
-
-                        {/* Enhanced Result Status with LeetCode-style feedback */}
+                        {}
                         {(() => {
                           const result = testResults.find(
                             (r) =>
@@ -889,7 +774,6 @@ int main() {
                                     </div>
                                   )}
                                 </div>
-
                                 {!result.passed && (
                                   <div className="text-xs text-muted-foreground">
                                     <div className="mb-1">
