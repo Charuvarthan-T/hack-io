@@ -3,7 +3,6 @@ export type course = {
   name: string;
 };
 import NextAuth from "next-auth";
-
 declare module "next-auth" {
   interface Session {
     user: {
@@ -15,14 +14,12 @@ declare module "next-auth" {
     };
   }
 }
-
 declare module "next-auth/jwt" {
   interface JWT {
     userId: string;
     userRole: string;
   }
 }
-
 export type user = {
   id: string;
   name: string;
@@ -30,7 +27,6 @@ export type user = {
   role: string;
   points_earned?: number;
 };
-
 export type semester = {
   id: string;
   name: string;
@@ -38,12 +34,10 @@ export type semester = {
   dept_id?: string;
   department_name?: string;
 };
-
 export type department = {
   id: string;
   name: string;
 };
-
 export type section = {
   id: string;
   name: string;
@@ -52,15 +46,13 @@ export type section = {
   departmentid: string;
   isactive: boolean;
 };
-
 export type problem = {
   id: string;
   title: string;
   description: string;
   created_by?: string;
   created_at?: string;
-  course?: string; // Course ID for course-specific problems, null for general problems
-  // Function signatures for different languages (LeetCode-style)
+  course?: string;
   function_signatures?: {
     javascript?: string;
     python?: string;
@@ -68,19 +60,15 @@ export type problem = {
     cpp?: string;
     c?: string;
   };
-  // Template type for common problem patterns
   template_type?: string;
-  // Submission status for the current user
   solved_status?: "solved" | "attempted" | "unsolved";
 };
-
 export type testCase = {
   id: string;
   input: string;
   output: string;
   created_at?: string;
 };
-
 export type contest = {
   id: string;
   title: string;
