@@ -1,5 +1,4 @@
 "use client";
-
 import { problem } from "@/types/types";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -16,7 +15,6 @@ import { capitalizeFirstLetter } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-
 export default function ContestProblemPage() {
   const { id: contestId, problemId } = useParams();
   const router = useRouter();
@@ -29,13 +27,11 @@ export default function ContestProblemPage() {
   const [output, setOutput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSolved, setIsSolved] = useState(false);
-
   interface TestCase {
     id: string;
     input: string;
     output: string;
   }
-
   interface TestResult {
     testCaseId: string;
     input: string;
@@ -43,14 +39,11 @@ export default function ContestProblemPage() {
     actualOutput: string;
     passed: boolean;
   }
-
   const [testCases, setTestCases] = useState<TestCase[]>([]);
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunningTests, setIsRunningTests] = useState(false);
   const [selectedTestCase, setSelectedTestCase] = useState(0);
   const [templates, setTemplates] = useState<{ [key: string]: string }>({});
-
-  // Check if user has already solved this problem in the contest
   async function checkSubmissionStatus() {
     try {
       const res = await fetch(`/api/contests/${contestId}/submissions`);
@@ -67,26 +60,19 @@ export default function ContestProblemPage() {
       console.error("Error checking submission status:", error);
     }
   }
-
-  // Fetch contest and problem data
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch contest data
         const contestRes = await fetch(`/api/contests/${contestId}`);
         if (contestRes.ok) {
           const contestData = await contestRes.json();
           setContest(contestData.contest);
         }
-
-        // Fetch problem data
         const problemRes = await fetch(`/api/problems/${problemId}`);
         if (problemRes.ok) {
           const problemData = await problemRes.json();
           setProblem(problemData);
         }
-
-        // Fetch problem points from contest
         const problemsRes = await fetch(`/api/contests/${contestId}/problems`);
         if (problemsRes.ok) {
           const problemsData = await problemsRes.json();
@@ -102,29 +88,23 @@ export default function ContestProblemPage() {
         toast.error("Failed to load problem");
       }
     }
-
     fetchData();
     checkSubmissionStatus();
     fetchTestCases();
     fetchTemplates();
   }, [contestId, problemId]);
-
   async function handleClick() {
     setIsLoading(true);
     setIsRunningTests(true);
-
     const apiUrl = process.env.NEXT_PUBLIC_JUDGE0_API_URL;
-
     if (!apiUrl) {
       setOutput("❌ API configuration missing. Please check your environment variables.");
       setIsLoading(false);
       setIsRunningTests(false);
       return;
     }
-
     try {
       if (testCases.length === 0) {
-        // Run without test cases
         const url = `${apiUrl}/submissions?base64_encoded=false&wait=true`;
         const options = {
           method: "POST",
@@ -135,10 +115,8 @@ export default function ContestProblemPage() {
             stdin: "",
           }),
         };
-
         const response = await fetch(url, options);
         const result = await response.json();
-
         if (result.compile_output) {
           setOutput(`❌ Compilation Error:\n${result.compile_output}`);
         } else if (result.stderr) {
@@ -147,12 +125,10 @@ export default function ContestProblemPage() {
           setOutput(result.stdout || "No output");
         }
       } else {
-        // Run with test cases
         const results: TestResult[] = [];
         let allTestsPassed = true;
         let compilationError = false;
         let runtimeError = false;
-
         for (let i = 0; i < testCases.length; i++) {
           const testCase = testCases[i];
           const url = `${apiUrl}/submissions?base64_encoded=false&wait=true`;
@@ -165,28 +141,22 @@ export default function ContestProblemPage() {
               stdin: testCase.input,
             }),
           };
-
           const response = await fetch(url, options);
           const result = await response.json();
-
           if (result.compile_output) {
             setOutput(`❌ Compilation Error:\n${result.compile_output}`);
             compilationError = true;
             break;
           }
-
           if (result.stderr && !result.stdout) {
             setOutput(`❌ Runtime Error on Test Case ${i + 1}:\n${result.stderr}`);
             runtimeError = true;
             break;
           }
-
           const actualOutput = (result.stdout || result.stderr || "").trim();
           const expectedOutput = (testCase.output || "").trim();
           const passed = actualOutput === expectedOutput;
-
           if (!passed) allTestsPassed = false;
-
           results.push({
             testCaseId: testCase.id,
             input: testCase.input,
@@ -195,13 +165,10 @@ export default function ContestProblemPage() {
             passed: passed,
           });
         }
-
         if (!compilationError && !runtimeError) {
           setTestResults(results);
           const passedCount = results.filter((r) => r.passed).length;
-
           if (allTestsPassed) {
-            // Award contest points
             try {
               const submissionRes = await fetch(`/api/contests/${contestId}/submissions`, {
                 method: "POST",
@@ -212,7 +179,6 @@ export default function ContestProblemPage() {
                   pointsEarned: problemPoints,
                 }),
               });
-
               if (submissionRes.ok) {
                 setIsSolved(true);
                 toast.success(`🎉 Accepted! +${problemPoints} points`);
@@ -247,7 +213,6 @@ export default function ContestProblemPage() {
       setIsRunningTests(false);
     }
   }
-
   const getMonacoLanguage = (lang: string): string => {
     switch (lang) {
       case "cpp": return "cpp";
@@ -258,7 +223,6 @@ export default function ContestProblemPage() {
       default: return "javascript";
     }
   };
-
   async function fetchTestCases() {
     try {
       const response = await fetch(`/api/problems/${problemId}/testcases`);
@@ -270,7 +234,6 @@ export default function ContestProblemPage() {
       console.error("Error fetching test cases:", error);
     }
   }
-
   async function fetchTemplates() {
     try {
       const response = await fetch(`/api/problems/${problemId}/template`);
@@ -289,7 +252,6 @@ export default function ContestProblemPage() {
       setTemplates({});
     }
   }
-
   const getUserTemplate = (lang: string): string => {
     if (templates && typeof templates === "object" && templates[lang]) {
       const dbTemplate = templates[lang];
@@ -297,17 +259,14 @@ export default function ContestProblemPage() {
         return dbTemplate;
       }
     }
-
     if (
       problem.function_signatures &&
       problem.function_signatures[lang as keyof typeof problem.function_signatures]
     ) {
       return problem.function_signatures[lang as keyof typeof problem.function_signatures] || getCleanTemplate(lang);
     }
-
     return getCleanTemplate(lang);
   };
-
   const getCleanTemplate = (lang: string): string => {
     switch (lang) {
       case "python":
@@ -324,7 +283,6 @@ export default function ContestProblemPage() {
         return "// Write your solution here...";
     }
   };
-
   const getBoilerplateCode = (lang: string, userCode: string): string => {
     switch (lang) {
       case "python":
@@ -341,22 +299,19 @@ export default function ContestProblemPage() {
         return userCode;
     }
   };
-
   useEffect(() => {
     if (Object.keys(templates).length > 0) {
       const template = getUserTemplate(language);
       setCode(template);
     }
   }, [templates]);
-
   useEffect(() => {
     const template = getUserTemplate(language);
     setCode(template);
   }, [language, templates]);
-
   return (
     <div className="flex flex-col h-[85vh]">
-      {/* Back button and contest info */}
+      {}
       <div className="mb-4 flex items-center justify-between">
         <Button
           variant="ghost"
@@ -382,16 +337,14 @@ export default function ContestProblemPage() {
           )}
         </div>
       </div>
-
       <div className="flex flex-1 gap-2 min-h-0">
-        {/* Problem Description */}
+        {}
         <div className="w-1/2 flex flex-col">
           <div className="rounded-lg border bg-card shadow-sm p-6 flex-1 overflow-auto">
             <div className="space-y-4">
               <h2 className="text-2xl font-semibold text-foreground">
                 {capitalizeFirstLetter(problem.title) || "Loading..."}
               </h2>
-
               <div>
                 <h3 className="text-lg font-medium text-foreground mb-2">
                   Description
@@ -400,7 +353,6 @@ export default function ContestProblemPage() {
                   {problem.description || "Loading problem description..."}
                 </div>
               </div>
-
               {problem.created_by && (
                 <div>
                   <h3 className="text-lg font-medium text-foreground mb-2">
@@ -412,8 +364,7 @@ export default function ContestProblemPage() {
             </div>
           </div>
         </div>
-
-        {/* Code Editor and Console */}
+        {}
         <div className="w-1/2 flex flex-col">
           <div className="flex justify-between items-center mb-2">
             <div className="flex gap-2">
@@ -465,7 +416,6 @@ export default function ContestProblemPage() {
               </Button>
             </div>
           </div>
-
           <div className="rounded-lg border overflow-hidden mb-2" style={{ height: "45vh" }}>
             <Editor
               height="100%"
@@ -483,7 +433,6 @@ export default function ContestProblemPage() {
               onChange={(value) => setCode(value || "")}
             />
           </div>
-
           <div className="flex flex-col gap-2 flex-1">
             <Card className="p-3">
               <div className="flex items-center justify-between mb-2">
@@ -495,7 +444,6 @@ export default function ContestProblemPage() {
                   </div>
                 )}
               </div>
-
               <div className="bg-gray-900 dark:bg-gray-950 rounded-md p-3 font-mono text-xs min-h-[80px] border border-gray-200 dark:border-gray-800">
                 {!isLoading && !output && (
                   <span className="text-gray-500">Click "Run" to see output</span>
@@ -511,8 +459,7 @@ export default function ContestProblemPage() {
                 )}
               </div>
             </Card>
-
-            {/* Test Cases Section */}
+            {}
             {testCases.length > 0 && (
               <Card className="p-3 flex-1 max-h-[25vh] overflow-hidden">
                 <div className="flex flex-col h-full">
@@ -524,7 +471,6 @@ export default function ContestProblemPage() {
                         : `${testCases.length} cases`}
                     </Badge>
                   </div>
-
                   <div className="flex gap-1 border-b mb-3">
                     {testCases.map((testCase, index) => {
                       const result = testResults.find((r) => r.testCaseId === testCase.id);
@@ -548,7 +494,6 @@ export default function ContestProblemPage() {
                       );
                     })}
                   </div>
-
                   <div className="flex-1 overflow-y-auto">
                     {testCases[selectedTestCase] && (
                       <div className="space-y-2">
@@ -566,7 +511,6 @@ export default function ContestProblemPage() {
                             </div>
                           </div>
                         </div>
-
                         {(() => {
                           const result = testResults.find((r) => r.testCaseId === testCases[selectedTestCase].id);
                           if (result && !result.passed) {
