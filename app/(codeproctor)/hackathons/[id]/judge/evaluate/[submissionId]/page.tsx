@@ -134,10 +134,11 @@ export default function EvaluationPage() {
                     await goToNext();
                 }
             } else {
-                toast.error("Failed to save evaluation");
+                const errorData = await res.json().catch(() => ({}));
+                toast.error(`Failed: ${errorData.details || "Unknown error"}`);
             }
         } catch (error) {
-            toast.error("Error saving");
+            toast.error("Error saving: Check console for details");
         } finally {
             setIsSaving(false);
         }

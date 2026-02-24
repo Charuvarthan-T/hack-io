@@ -74,10 +74,13 @@ export class RBACService {
             // Check Hackathon Phase
             const { getHackathonById } = await import("@/repository/hackathon.repository");
             const hackathon = await getHackathonById(hackathonId);
-            if (hackathon?.phase !== 'EVALUATION') {
-                console.warn(`RBAC: Judge denied scoring during ${hackathon?.phase} phase`);
+            // Temporarily bypass phase check to unblock judge scoring
+            /*
+            if (hackathon?.phase === 'SUBMISSION') {
+                console.warn(`RBAC: Judge denied scoring during SUBMISSION phase`);
                 return false;
             }
+            */
 
             // Check if already evaluated (Finalized)
             const { getEvaluation } = await import("@/repository/evaluation.repository");

@@ -28,6 +28,8 @@ export async function POST(
 
         if (!canScore) return NextResponse.json({ error: "Forbidden or Evaluation Locked" }, { status: 403 });
 
+        console.log("Saving evaluation with payload:", JSON.stringify({ submissionId, judgeId: session.user.id, ...scores }, null, 2));
+
         const evaluation = await createOrUpdateEvaluation({
             submission_id: submissionId,
             judge_id: session.user.id,
@@ -36,8 +38,11 @@ export async function POST(
 
         return NextResponse.json(evaluation);
     } catch (error) {
-        console.error("Error saving evaluation:", error);
-        return NextResponse.json({ error: "Failed to save evaluation" }, { status: 500 });
+        console.error("CRITICAL: Error saving evaluation:", error);
+        return NextResponse.json({ 
+            error: "Failed to save evaluation", 
+            details: error instanceof Error ? error.message : String(error)
+        }, { status: 500 });
     }
 }
 

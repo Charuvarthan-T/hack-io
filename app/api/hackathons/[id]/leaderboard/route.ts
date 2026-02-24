@@ -17,19 +17,24 @@ export async function GET(
 
         if (!hackathon) return NextResponse.json({ error: "Hackathon not found" }, { status: 404 });
 
-        // Leaderboard Visibility Rules:
-        // 1. Organizers/Admins can always see it.
-        // 2. Judges can see it during Evaluation/Results phase.
-        // 3. Participants can ONLY see it during Results phase.
+        const { getUserRole } = await import("@/repository/hackathon.repository");
+        const userRole = await getUserRole(hackathonId, session.user.id);
 
-        const isOrganizer = session.user.role === 'admin'; // placeholder for RBAC
+        const isOrganizer = userRole === 'ORGANIZER' || session.user.role === 'admin';
+        const isJudge = userRole === 'JUDGE';
+        const isParticipant = userRole === 'PARTICIPANT';
         const isResultsPhase = hackathon.phase === 'RESULTS';
         const isEvaluationPhase = hackathon.phase === 'EVALUATION';
 
-        // Check for Judge/Participant roles (simplified check here, can use RBACService)
-        // For now, if Results phase, everyone can see. If not, only organizers/judges.
+        // Visibility: 
+        // - Organizers/Admins: Always
+        // - Judges: Evaluation or Results
+        // - Participants: Evaluation or Results (per user request)
+        
+        const canView = isOrganizer || 
+                        ((isJudge || isParticipant) && (isEvaluationPhase || isResultsPhase));
 
-        if (!isResultsPhase && !isOrganizer && session.user.role !== 'judge') {
+        if (!canView) {
             return NextResponse.json({ error: "Leaderboard is currently hidden" }, { status: 403 });
         }
 

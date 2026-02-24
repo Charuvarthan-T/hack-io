@@ -122,10 +122,15 @@ export default function JudgeDashboard() {
                                             </div>
                                         </div>
                                     </CardContent>
-                                    <CardFooter className="bg-primary/5 border-t border-primary/5">
+                                    <CardFooter className="bg-primary/5 border-t border-primary/5 flex flex-col gap-2">
                                         <Button asChild className="w-full font-black uppercase text-xs tracking-widest shadow-lg shadow-primary/10 group-hover:bg-primary group-hover:text-primary-foreground transition-colors" variant="ghost">
                                             <Link href={`/hackathons/${h.id}/judge`}>
                                                 Go to Judging Queue <ArrowRight className="ml-2 h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                        <Button asChild className="w-full font-black uppercase text-xs tracking-widest border-primary/20 text-primary hover:bg-primary/10" variant="outline">
+                                            <Link href={`/hackathons/${h.id}/leaderboard`}>
+                                                <Trophy className="mr-2 h-3 w-3" /> View Leaderboard
                                             </Link>
                                         </Button>
                                     </CardFooter>

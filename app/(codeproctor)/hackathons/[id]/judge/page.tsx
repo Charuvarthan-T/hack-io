@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Clock, CheckCircle, AlertCircle, ArrowRight } from "lucide-react";
+import { Clock, CheckCircle, AlertCircle, ArrowRight, Trophy } from "lucide-react";
 
 interface SubmissionSummary {
     id: string;
@@ -61,6 +61,13 @@ export default function JudgeDashboardPage() {
                     <p className="text-muted-foreground">Evaluation Phase - Hackathon Submissions</p>
                 </div>
                 <div className="flex gap-4">
+                    <Button 
+                        variant="outline" 
+                        className="bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 font-bold"
+                        onClick={() => router.push(`/hackathons/${params.id}/leaderboard`)}
+                    >
+                        <Trophy className="mr-2 h-4 w-4" /> View Leaderboard
+                    </Button>
                     <Card className="px-4 py-2 flex items-center gap-2 bg-secondary/30">
                         <AlertCircle className="h-4 w-4 text-yellow-500" />
                         <span className="text-sm font-medium">{stats.pending} Pending</span>
