@@ -1,5 +1,4 @@
 import { deleteTestCase } from "@/repository/testcases.repository";
-
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -7,7 +6,6 @@ export async function DELETE(
   try {
     const resolvedParams = await params;
     const result = await deleteTestCase(resolvedParams.id);
-
     if (!result) {
       return new Response(JSON.stringify({ error: "Test case not found" }), {
         status: 404,
@@ -16,7 +14,6 @@ export async function DELETE(
         },
       });
     }
-
     return new Response(
       JSON.stringify({ message: "Test case deleted successfully" }),
       {
