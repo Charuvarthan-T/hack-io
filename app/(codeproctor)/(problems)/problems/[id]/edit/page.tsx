@@ -33,31 +33,26 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useCallback, useEffect, useState } from "react";
-
 export interface Tag {
   id: string;
   name: string;
 }
-
 export interface CreateTestcase {
   name: string;
   input: string;
   output: string;
 }
-
 export interface TestcaseDTO {
   id: string;
   input: string;
   output: string;
 }
-
 export interface Problem {
   id: string;
   title: string;
   description: string;
   created_by?: string;
 }
-
 export interface ProblemTemplate {
   python?: string;
   java?: string;
@@ -65,7 +60,6 @@ export interface ProblemTemplate {
   c?: string;
   cpp?: string;
 }
-
 export default function EditProblemPage() {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [title, setTitle] = useState("");
@@ -92,11 +86,8 @@ export default function EditProblemPage() {
   });
   const [activeTemplateTab, setActiveTemplateTab] = useState('python');
   const [isUpdatingTemplates, setIsUpdatingTemplates] = useState(false);
-
   const { id } = useParams();
   const router = useRouter();
-
-  // Language mapping for Monaco Editor
   const getMonacoLanguage = (lang: string): string => {
     switch (lang) {
       case "cpp":
@@ -113,7 +104,6 @@ export default function EditProblemPage() {
         return "javascript";
     }
   };
-
   const fetchProblem = useCallback(
     async function () {
       setIsLoading(true);
@@ -137,7 +127,6 @@ export default function EditProblemPage() {
     },
     [id, router]
   );
-
   const fetchTags = useCallback(async function () {
     try {
       const res = await fetch("/api/problems/tags");
@@ -149,7 +138,6 @@ export default function EditProblemPage() {
       console.error("Failed to fetch tags:", error);
     }
   }, []);
-
   const fetchProblemTags = useCallback(
     async function () {
       try {
@@ -169,7 +157,6 @@ export default function EditProblemPage() {
     },
     [id]
   );
-
   const fetchTestCases = useCallback(
     async function () {
       try {
@@ -190,7 +177,6 @@ export default function EditProblemPage() {
     },
     [id]
   );
-
   const fetchTemplates = useCallback(
     async function () {
       try {
@@ -213,32 +199,26 @@ export default function EditProblemPage() {
     },
     [id]
   );
-
   function resetTestcaseForm() {
     setTestcaseName("");
     setTestcaseInput("");
     setTestcaseOutput("");
   }
-
   async function handleUpdateProblem() {
     if (!title.trim()) {
       toast.error("Please enter a problem title");
       return;
     }
-
     if (!description.trim()) {
       toast.error("Please enter a problem description");
       return;
     }
-
     setIsUpdating(true);
-
     try {
       const updateData = {
         title: title.trim(),
         description: description.trim(),
       };
-
       const problemRes = await fetch(`/api/problems/${id}`, {
         method: "PUT",
         headers: {
@@ -246,7 +226,6 @@ export default function EditProblemPage() {
         },
         body: JSON.stringify(updateData),
       });
-
       if (!problemRes.ok) {
         const errorData = await problemRes.json();
         throw new Error(
@@ -254,7 +233,6 @@ export default function EditProblemPage() {
             `Failed to update problem: ${problemRes.statusText}`
         );
       }
-
       const currentTagId =
         problemTags.length > 0 ? problemTags[0].id : "no-tag";
       if (selectedTag !== currentTagId) {
@@ -263,7 +241,6 @@ export default function EditProblemPage() {
           selectedTag === "no-tag" ? "" : selectedTag
         );
       }
-
       toast.success("Problem updated successfully!");
       await fetchProblem();
       await fetchProblemTags();
@@ -278,7 +255,6 @@ export default function EditProblemPage() {
       setIsUpdating(false);
     }
   }
-
   async function updateProblemTag(oldTagId: string | null, newTagId: string) {
     try {
       if (!newTagId) {
@@ -293,7 +269,6 @@ export default function EditProblemPage() {
         }
         return;
       }
-
       const res = await fetch(`/api/problems/${id}/tags`, {
         method: "PUT",
         headers: {
@@ -301,7 +276,6 @@ export default function EditProblemPage() {
         },
         body: JSON.stringify({ oldTagId, newTagId }),
       });
-
       if (!res.ok) {
         throw new Error(`Failed to update tag: ${res.statusText}`);
       }
@@ -310,7 +284,6 @@ export default function EditProblemPage() {
       throw error;
     }
   }
-
   async function handleCreateTestcase() {
     if (
       !testcaseName.trim() ||
@@ -320,16 +293,13 @@ export default function EditProblemPage() {
       toast.error("Please fill in all testcase fields");
       return;
     }
-
     setIsCreatingTestcase(true);
-
     try {
       const newTestCase: CreateTestcase = {
         name: testcaseName.trim(),
         input: testcaseInput.trim(),
         output: testcaseOutput.trim(),
       };
-
       const res = await fetch(`/api/problems/${id}/testcases`, {
         method: "POST",
         headers: {
@@ -337,11 +307,9 @@ export default function EditProblemPage() {
         },
         body: JSON.stringify(newTestCase),
       });
-
       if (!res.ok) {
         throw new Error("Failed to create test case");
       }
-
       toast.success("Test case created successfully!");
       setIsDialogOpen(false);
       resetTestcaseForm();
@@ -353,24 +321,19 @@ export default function EditProblemPage() {
       setIsCreatingTestcase(false);
     }
   }
-
   async function handleDeleteTestcase(testcaseId: string) {
     setTestcaseToDelete(testcaseId);
     setIsDeleteDialogOpen(true);
   }
-
   async function confirmDeleteTestcase() {
     if (!testcaseToDelete) return;
-
     try {
       const res = await fetch(`/api/testcases/${testcaseToDelete}`, {
         method: "DELETE",
       });
-
       if (!res.ok) {
         throw new Error("Failed to delete test case");
       }
-
       toast.success("Test case deleted successfully!");
       fetchTestCases();
     } catch (error) {
@@ -378,10 +341,8 @@ export default function EditProblemPage() {
       toast.error("Failed to delete test case");
     }
   }
-
   async function handleUpdateTemplates() {
     setIsUpdatingTemplates(true);
-
     try {
       const res = await fetch(`/api/problems/${id}/template`, {
         method: "PUT",
@@ -390,11 +351,9 @@ export default function EditProblemPage() {
         },
         body: JSON.stringify(templates),
       });
-
       if (!res.ok) {
         throw new Error("Failed to update templates");
       }
-
       toast.success("Templates updated successfully!");
     } catch (error) {
       console.error("Error updating templates:", error);
@@ -403,7 +362,6 @@ export default function EditProblemPage() {
       setIsUpdatingTemplates(false);
     }
   }
-
   useEffect(() => {
     if (id) {
       fetchProblem();
@@ -413,11 +371,9 @@ export default function EditProblemPage() {
       fetchTemplates();
     }
   }, [id, fetchProblem, fetchTags, fetchProblemTags, fetchTestCases, fetchTemplates]);
-
   useEffect(() => {
     console.log("Test cases state updated:", testcases);
   }, [testcases]);
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -427,7 +383,6 @@ export default function EditProblemPage() {
       </div>
     );
   }
-
   if (!problem) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -440,7 +395,6 @@ export default function EditProblemPage() {
       </div>
     );
   }
-
   return (
     <div className="space-y-6">
       <div>
@@ -451,7 +405,6 @@ export default function EditProblemPage() {
           Update the problem details, tags, and test cases
         </p>
       </div>
-
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
         <Card>
           <CardHeader>
@@ -471,7 +424,6 @@ export default function EditProblemPage() {
                 disabled={isUpdating}
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="description">Problem Description</Label>
               <Textarea
@@ -483,7 +435,6 @@ export default function EditProblemPage() {
                 className="min-h-[100px]"
               />
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="tag">Tag (Optional)</Label>
               <Select
@@ -506,7 +457,6 @@ export default function EditProblemPage() {
                 </SelectContent>
               </Select>
             </div>
-
             <div className="flex gap-2 pt-4">
               <Button
                 onClick={handleUpdateProblem}
@@ -518,7 +468,6 @@ export default function EditProblemPage() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Test Cases</CardTitle>
@@ -581,7 +530,6 @@ export default function EditProblemPage() {
                 </div>
               </DialogContent>
             </Dialog>
-
             <div className="space-y-3">
               {testcases.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">
@@ -629,7 +577,6 @@ export default function EditProblemPage() {
             </div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Template Code</CardTitle>
@@ -646,7 +593,6 @@ export default function EditProblemPage() {
                 <TabsTrigger value="c">C</TabsTrigger>
                 <TabsTrigger value="cpp">C++</TabsTrigger>
               </TabsList>
-              
               <TabsContent value="python" className="space-y-2">
                 <Label htmlFor="python-template">Python Template</Label>
                 <div className="rounded-lg border overflow-hidden" style={{ height: '150px' }}>
@@ -670,7 +616,6 @@ export default function EditProblemPage() {
                   />
                 </div>
               </TabsContent>
-              
               <TabsContent value="java" className="space-y-2">
                 <Label htmlFor="java-template">Java Template</Label>
                 <div className="rounded-lg border overflow-hidden" style={{ height: '150px' }}>
@@ -694,7 +639,6 @@ export default function EditProblemPage() {
                   />
                 </div>
               </TabsContent>
-              
               <TabsContent value="javascript" className="space-y-2">
                 <Label htmlFor="javascript-template">JavaScript Template</Label>
                 <div className="rounded-lg border overflow-hidden" style={{ height: '150px' }}>
@@ -718,7 +662,6 @@ export default function EditProblemPage() {
                   />
                 </div>
               </TabsContent>
-              
               <TabsContent value="c" className="space-y-2">
                 <Label htmlFor="c-template">C Template</Label>
                 <div className="rounded-lg border overflow-hidden" style={{ height: '150px' }}>
@@ -742,7 +685,6 @@ export default function EditProblemPage() {
                   />
                 </div>
               </TabsContent>
-              
               <TabsContent value="cpp" className="space-y-2">
                 <Label htmlFor="cpp-template">C++ Template</Label>
                 <div className="rounded-lg border overflow-hidden" style={{ height: '150px' }}>
@@ -767,7 +709,6 @@ export default function EditProblemPage() {
                 </div>
               </TabsContent>
             </Tabs>
-            
             <Button
               onClick={handleUpdateTemplates}
               disabled={isUpdatingTemplates}
@@ -778,7 +719,6 @@ export default function EditProblemPage() {
           </CardContent>
         </Card>
       </div>
-
       <ConfirmDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
