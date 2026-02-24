@@ -1,17 +1,13 @@
 import "dotenv/config";
 import { neon } from "@neondatabase/serverless";
-
 const connection_string = process.env.DATABASE_URL;
 if (!connection_string) {
     throw new Error("DATABASE_URL environment variable is not defined");
 }
 const sql = neon(connection_string);
-
 async function main() {
     console.log("Starting evaluations database migration...");
-
     try {
-        // 1. Create Hackathon Evaluations Table
         await sql`
       CREATE TABLE IF NOT EXISTS hackathon_evaluations (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -31,33 +27,18 @@ async function main() {
       );
     `;
         console.log("✅ Created 'hackathon_evaluations' table.");
-
-        // 2. Add phase-related states to hackathons if not already sufficient
-        // Actually, the current states are DRAFT, PUBLISHED, ACTIVE, COMPLETED.
-        // We might want to add EVALUATION and RESULTS as explicit statuses for better control.
-        // But for now, we can use status to filter.
-        // Let's check status constraints.
-
         console.log("Checking hackathons status constraint...");
-
-        // This is a bit tricky with neon-serverless in a script without DDL info.
-        // We'll trust the existing status but maybe add a 'phase' column for more granularity.
-        // The spec mentions: Submission Phase, Evaluation Phase, Results Phase.
-
         await sql`
-            ALTER TABLE hackathons 
-            ADD COLUMN IF NOT EXISTS phase TEXT DEFAULT 'SUBMISSION' 
+            ALTER TABLE hackathons
+            ADD COLUMN IF NOT EXISTS phase TEXT DEFAULT 'SUBMISSION'
             CHECK (phase IN ('SUBMISSION', 'EVALUATION', 'RESULTS'));
         `;
         console.log("✅ Added 'phase' column to 'hackathons' table.");
-
     } catch (error) {
         console.error("❌ Migration failed:", error);
         process.exit(1);
     }
-
     console.log("Migration completed successfully.");
     process.exit(0);
 }
-
 main();
