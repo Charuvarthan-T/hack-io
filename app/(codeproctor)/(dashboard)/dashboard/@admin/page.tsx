@@ -22,7 +22,6 @@ import {
   ArrowRight,
   TrendingUp,
 } from "lucide-react";
-
 type DashboardData = {
   n_courses: number;
   n_instructors: number;
@@ -32,7 +31,6 @@ type DashboardData = {
   n_semesters: number;
   n_sections: number;
 };
-
 const adminPages = [
   {
     title: "Manage Users",
@@ -83,10 +81,8 @@ const adminPages = [
     bgColor: "bg-red-50 dark:bg-red-950/20",
   },
 ];
-
 export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
-
   useEffect(() => {
     const fetchData = async () => {
       const res = await fetch("/api/admin_dashboard");
@@ -95,10 +91,8 @@ export default function AdminDashboard() {
     };
     fetchData();
   }, []);
-
   const { data: session } = useSession();
   const user = session?.user;
-
   const statsCards = data
     ? [
         {
@@ -145,10 +139,9 @@ export default function AdminDashboard() {
         },
       ]
     : [];
-
   return (
     <div className="space-y-8 p-6">
-      {/* Welcome Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -163,8 +156,7 @@ export default function AdminDashboard() {
           Admin Dashboard
         </Badge>
       </div>
-
-      {/* Statistics Grid */}
+      {}
       {data && (
         <div>
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -193,8 +185,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
-
-      {/* Quick Actions */}
+      {}
       <div>
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
           <Layout className="h-6 w-6" />
