@@ -1,16 +1,13 @@
 import sql from "@/lib/db";
-
 export async function getAllTags() {
   const res = await sql`SELECT * FROM tags`;
   return res;
 }
-
 export async function addTagToProblem(problemId: string, tagId: string) {
   const res =
     await sql`INSERT INTO problems_tags (problem_id, tag_id) VALUES (${problemId}, ${tagId})`;
   return res;
 }
-
 export async function createTag(tagName: string) {
   try {
     await sql`INSERT INTO tags (name) VALUES (${tagName})`;
@@ -19,7 +16,6 @@ export async function createTag(tagName: string) {
     throw error;
   }
 }
-
 export async function getTags() {
   try {
     return await sql`SELECT * FROM tags`;
@@ -28,7 +24,6 @@ export async function getTags() {
     throw error;
   }
 }
-
 export async function addTagToTestcase(tagId: string, testcaseId: string) {
   try {
     const data =
@@ -39,13 +34,12 @@ export async function addTagToTestcase(tagId: string, testcaseId: string) {
     throw error;
   }
 }
-
 export async function getTagsForProblem(problemId: string) {
   try {
     const tags = await sql`
-      SELECT t.id, t.name 
-      FROM tags t 
-      JOIN problems_tags pt ON t.id = pt.tag_id 
+      SELECT t.id, t.name
+      FROM tags t
+      JOIN problems_tags pt ON t.id = pt.tag_id
       WHERE pt.problem_id = ${problemId}
     `;
     return tags;
@@ -54,11 +48,10 @@ export async function getTagsForProblem(problemId: string) {
     throw error;
   }
 }
-
 export async function removeTagFromProblem(problemId: string, tagId: string) {
   try {
     const result = await sql`
-      DELETE FROM problems_tags 
+      DELETE FROM problems_tags
       WHERE problem_id = ${problemId} AND tag_id = ${tagId}
     `;
     return result;
@@ -67,7 +60,6 @@ export async function removeTagFromProblem(problemId: string, tagId: string) {
     throw error;
   }
 }
-
 export async function updateProblemTag(
   problemId: string,
   oldTagId: string,
