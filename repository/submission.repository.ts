@@ -1,5 +1,4 @@
 import sql from "@/lib/db";
-
 export interface Submission {
     id: string;
     hackathon_id: string;
@@ -10,7 +9,6 @@ export interface Submission {
     created_at: Date;
     submitted_at: Date;
 }
-
 export interface CreateSubmissionDTO {
     hackathon_id: string;
     team_id: string;
@@ -18,7 +16,6 @@ export interface CreateSubmissionDTO {
     ppt_object_key: string;
     status?: "DRAFT" | "SUBMITTED";
 }
-
 export async function createSubmission(data: CreateSubmissionDTO) {
     try {
         const result = await sql`
@@ -32,11 +29,10 @@ export async function createSubmission(data: CreateSubmissionDTO) {
         throw error;
     }
 }
-
 export async function getSubmissionByTeam(hackathonId: string, teamId: string) {
     try {
         const result = await sql`
-            SELECT * FROM submissions 
+            SELECT * FROM submissions
             WHERE hackathon_id = ${hackathonId} AND team_id = ${teamId}
             ORDER BY submitted_at DESC
             LIMIT 1
@@ -47,7 +43,6 @@ export async function getSubmissionByTeam(hackathonId: string, teamId: string) {
         throw error;
     }
 }
-
 export async function getSubmissionById(id: string) {
     try {
         const result = await sql`
