@@ -1,6 +1,5 @@
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { ReactNode } from "react";
-
 interface DashboardLayoutProps {
   children: ReactNode;
   admin: ReactNode;
@@ -8,7 +7,6 @@ interface DashboardLayoutProps {
   student: ReactNode;
   judge: ReactNode;
 }
-
 export default async function DashboardLayout({
   children,
   admin,
@@ -17,7 +15,6 @@ export default async function DashboardLayout({
   judge,
 }: DashboardLayoutProps) {
   const user = await getAuthenticatedUser();
-
   if (!user) {
     return (
       <div className="flex flex-1 items-center justify-center">
@@ -30,25 +27,18 @@ export default async function DashboardLayout({
       </div>
     );
   }
-
-  // Render the appropriate dashboard based on user role
   if (user.role === "admin") {
     return <>{admin}</>;
   }
-
   if (user.role === "faculty") {
     return <>{faculty}</>;
   }
-
   if (user.role === "student") {
     return <>{student}</>;
   }
-
   if (user.role === "judge") {
     return <>{judge}</>;
   }
-
-  // Fallback for unknown roles
   return (
     <div className="flex flex-1 items-center justify-center">
       <div className="text-center">
