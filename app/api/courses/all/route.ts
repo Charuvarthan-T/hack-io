@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getAllCourses } from "../../../../repository/course.repository";
-
 export async function GET() {
   try {
     const result = await getAllCourses();
