@@ -1,16 +1,14 @@
 const { neon } = require('@neondatabase/serverless');
 const DATABASE_URL = "postgresql://neondb_owner:npg_SI0y3AGsmrfl@ep-empty-tree-a1klnm0j-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
 const sql = neon(DATABASE_URL);
-
 async function fetchLeaderboard() {
     try {
         const hacks = await sql`SELECT id, title FROM hackathons ORDER BY created_at DESC LIMIT 1`;
         if (hacks.length === 0) return;
         const hackathonId = hacks[0].id;
-
         const leaderboard = await sql`
             WITH judge_totals AS (
-                SELECT 
+                SELECT
                     submission_id,
                     judge_id,
                     (innovation_score + technical_complexity_score + implementation_quality_score + ui_ux_score + impact_score + presentation_quality_score + ui_score + backend_score + graphs_score + discord_interaction_score) as total_rubric_score
@@ -18,7 +16,7 @@ async function fetchLeaderboard() {
                 WHERE is_draft = FALSE
             ),
             submission_scores AS (
-                SELECT 
+                SELECT
                     s.id as submission_id,
                     s.team_id,
                     s.submitted_at,
@@ -46,5 +44,4 @@ async function fetchLeaderboard() {
         console.error(e);
     }
 }
-
 fetchLeaderboard();
