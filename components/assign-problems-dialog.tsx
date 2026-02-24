@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +24,6 @@ import {
   FileText,
   Trash2,
 } from "lucide-react";
-
 interface Problem {
   id: string;
   title: string;
@@ -34,19 +32,16 @@ interface Problem {
   created_by: string;
   type?: string;
 }
-
 interface TestCase {
   input: string;
   output: string;
 }
-
 interface AssignProblemsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   courseId: string;
   courseName: string;
 }
-
 export function AssignProblemsDialog({
   open,
   onOpenChange,
@@ -61,8 +56,6 @@ export function AssignProblemsDialog({
   const [activeView, setActiveView] = useState<
     "unassigned" | "assigned" | "create"
   >("unassigned");
-
-  // Create problem form state
   const [createForm, setCreateForm] = useState({
     title: "",
     description: "",
@@ -70,26 +63,20 @@ export function AssignProblemsDialog({
   const [testCases, setTestCases] = useState<TestCase[]>([
     { input: "", output: "" },
   ]);
-
   const fetchProblems = async () => {
     setLoading(true);
     try {
-      // Fetch assigned problems
       const assignedResponse = await fetch(
         `/api/courses/problems?courseId=${courseId}`
       );
       const assignedData = await assignedResponse.json();
-
-      // Fetch unassigned problems
       const unassignedResponse = await fetch(
         `/api/courses/problems?courseId=${courseId}&action=unassigned`
       );
       const unassignedData = await unassignedResponse.json();
-
       if (assignedData.success) {
         setAssignedProblems(assignedData.data || []);
       }
-
       if (unassignedData.success) {
         setUnassignedProblems(unassignedData.data || []);
       }
@@ -100,17 +87,14 @@ export function AssignProblemsDialog({
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (open && courseId) {
       fetchProblems();
       setSelectedProblems([]);
-      // Reset create form when dialog opens
       setCreateForm({ title: "", description: "" });
       setTestCases([{ input: "", output: "" }]);
     }
   }, [open, courseId]);
-
   const handleProblemSelection = (problemId: string, checked: boolean) => {
     if (checked) {
       setSelectedProblems((prev) => [...prev, problemId]);
@@ -118,13 +102,11 @@ export function AssignProblemsDialog({
       setSelectedProblems((prev) => prev.filter((id) => id !== problemId));
     }
   };
-
   const handleAssignProblems = async () => {
     if (selectedProblems.length === 0) {
       toast.error("Please select at least one problem to assign");
       return;
     }
-
     setSubmitting(true);
     try {
       const response = await fetch("/api/courses/problems", {
@@ -138,14 +120,12 @@ export function AssignProblemsDialog({
           action: "assign-multiple",
         }),
       });
-
       const result = await response.json();
-
       if (result.success) {
         toast.success(result.message);
         setSelectedProblems([]);
-        await fetchProblems(); // Refresh the lists
-        setActiveView("assigned"); // Switch to assigned view to see results
+        await fetchProblems();
+        setActiveView("assigned");
       } else {
         toast.error(result.message || "Failed to assign problems");
       }
@@ -156,7 +136,6 @@ export function AssignProblemsDialog({
       setSubmitting(false);
     }
   };
-
   const handleUnassignProblem = async (problemId: string) => {
     try {
       const response = await fetch("/api/courses/problems", {
@@ -169,12 +148,10 @@ export function AssignProblemsDialog({
           problemId,
         }),
       });
-
       const result = await response.json();
-
       if (result.success) {
         toast.success("Problem unassigned successfully");
-        await fetchProblems(); // Refresh the lists
+        await fetchProblems();
       } else {
         toast.error(result.message || "Failed to unassign problem");
       }
@@ -183,7 +160,6 @@ export function AssignProblemsDialog({
       toast.error("Failed to unassign problem");
     }
   };
-
   const handleDeleteProblem = async (
     problemId: string,
     problemTitle: string
@@ -195,7 +171,6 @@ export function AssignProblemsDialog({
     ) {
       return;
     }
-
     try {
       const response = await fetch(`/api/courses/${courseId}/problems`, {
         method: "DELETE",
@@ -206,12 +181,10 @@ export function AssignProblemsDialog({
           problemId,
         }),
       });
-
       const result = await response.json();
-
       if (result.success) {
         toast.success("Course-specific problem deleted successfully");
-        await fetchProblems(); // Refresh the lists
+        await fetchProblems();
       } else {
         toast.error(result.error || "Failed to delete problem");
       }
@@ -220,18 +193,14 @@ export function AssignProblemsDialog({
       toast.error("Failed to delete problem");
     }
   };
-
-  // Test case management functions
   const addTestCase = () => {
     setTestCases([...testCases, { input: "", output: "" }]);
   };
-
   const removeTestCase = (index: number) => {
     if (testCases.length > 1) {
       setTestCases(testCases.filter((_, i) => i !== index));
     }
   };
-
   const updateTestCase = (
     index: number,
     field: "input" | "output",
@@ -242,20 +211,15 @@ export function AssignProblemsDialog({
     );
     setTestCases(updatedTestCases);
   };
-
-  // Create course-specific problem
   const handleCreateProblem = async () => {
     if (!createForm.title.trim()) {
       toast.error("Problem title is required");
       return;
     }
-
     if (!createForm.description.trim()) {
       toast.error("Problem description is required");
       return;
     }
-
-    // Validate test cases
     const validTestCases = testCases.filter(
       (tc) => tc.input.trim() && tc.output.trim()
     );
@@ -263,7 +227,6 @@ export function AssignProblemsDialog({
       toast.error("At least one valid test case is required");
       return;
     }
-
     setSubmitting(true);
     try {
       const response = await fetch(`/api/courses/${courseId}/problems`, {
@@ -277,15 +240,13 @@ export function AssignProblemsDialog({
           testCases: validTestCases,
         }),
       });
-
       const result = await response.json();
-
       if (result.success) {
         toast.success("Course-specific problem created successfully");
         setCreateForm({ title: "", description: "" });
         setTestCases([{ input: "", output: "" }]);
-        await fetchProblems(); // Refresh the lists
-        setActiveView("assigned"); // Switch to assigned view to see the new problem
+        await fetchProblems();
+        setActiveView("assigned");
       } else {
         toast.error(result.error || "Failed to create problem");
       }
@@ -296,7 +257,6 @@ export function AssignProblemsDialog({
       setSubmitting(false);
     }
   };
-
   const ProblemCard = ({
     problem,
     isAssigned,
@@ -359,7 +319,6 @@ export function AssignProblemsDialog({
       </div>
     </div>
   );
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-60px h-100px">
@@ -370,8 +329,7 @@ export function AssignProblemsDialog({
             test cases
           </DialogDescription>
         </DialogHeader>
-
-        {/* Custom Tab Navigation */}
+        {}
         <div className="flex space-x-1 p-1 bg-muted rounded-lg mb-4">
           <button
             onClick={() => setActiveView("unassigned")}
@@ -407,8 +365,7 @@ export function AssignProblemsDialog({
             <span>Create New</span>
           </button>
         </div>
-
-        {/* Content Area */}
+        {}
         <div className="flex-1">
           {loading ? (
             <div className="flex items-center justify-center py-12">
@@ -417,7 +374,7 @@ export function AssignProblemsDialog({
             </div>
           ) : activeView === "create" ? (
             <div className="space-y-6 h-96 overflow-y-auto pr-2">
-              {/* Create Problem Form */}
+              {}
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="title">Problem Title *</Label>
@@ -430,7 +387,6 @@ export function AssignProblemsDialog({
                     placeholder="Enter problem title"
                   />
                 </div>
-
                 <div>
                   <Label htmlFor="description">Problem Description *</Label>
                   <Textarea
@@ -446,8 +402,7 @@ export function AssignProblemsDialog({
                     className="min-h-[100px]"
                   />
                 </div>
-
-                {/* Test Cases Section */}
+                {}
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <Label>Test Cases *</Label>
@@ -462,7 +417,6 @@ export function AssignProblemsDialog({
                       Add Test Case
                     </Button>
                   </div>
-
                   <div className="space-y-3 max-h-48 overflow-y-auto">
                     {testCases.map((testCase, index) => (
                       <div
@@ -557,7 +511,6 @@ export function AssignProblemsDialog({
             </div>
           )}
         </div>
-
         <DialogFooter className="flex items-center justify-between mt-4">
           <div className="text-sm text-muted-foreground">
             {activeView === "unassigned" && selectedProblems.length > 0 && (
