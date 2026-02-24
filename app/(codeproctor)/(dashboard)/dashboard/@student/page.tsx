@@ -25,7 +25,6 @@ import {
   Users,
 } from "lucide-react";
 import SkillRadarChart from "@/components/skill-radar-chart";
-
 interface Course {
   id: string;
   name: string;
@@ -35,7 +34,6 @@ interface Course {
   total_problems: number;
   solved_problems: number;
 }
-
 interface StudentInfo {
   section: {
     section_id: string;
@@ -45,7 +43,6 @@ interface StudentInfo {
     department_name: string;
   } | null;
 }
-
 interface DashboardData {
   student_info: StudentInfo;
   courses: Course[];
@@ -55,7 +52,6 @@ interface DashboardData {
     total_available: number;
   };
 }
-
 const quickActions = [
   {
     title: "Browse Problems",
@@ -82,18 +78,15 @@ const quickActions = [
     bgColor: "bg-purple-50 dark:bg-purple-950/20",
   },
 ];
-
 export default function StudentDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch("/api/student_dashboard");
         const json = await res.json();
-
         if (json.success) {
           setData(json.data);
         } else {
@@ -108,10 +101,8 @@ export default function StudentDashboard() {
     };
     fetchData();
   }, []);
-
   const { data: session } = useSession();
   const user = session?.user;
-
   if (loading) {
     return (
       <div className="space-y-8 p-6">
@@ -136,7 +127,6 @@ export default function StudentDashboard() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -151,7 +141,6 @@ export default function StudentDashboard() {
       </div>
     );
   }
-
   const statsCards = data
     ? [
         {
@@ -174,7 +163,6 @@ export default function StudentDashboard() {
         },
       ]
     : [];
-
   const solveRate =
     data && data.statistics.total_available > 0
       ? Math.round(
@@ -182,10 +170,9 @@ export default function StudentDashboard() {
             100
         )
       : 0;
-
   return (
     <div className="space-y-8 p-6">
-      {/* Welcome Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -204,18 +191,16 @@ export default function StudentDashboard() {
           </Badge>
         </div>
       </div>
-
-      {/* Skills Profile Section */}
+      {}
       <div className="flex flex-col xl:flex-row gap-6">
         <div className="flex-1">
            <SkillRadarChart />
         </div>
         <div className="w-full xl:w-[350px] space-y-4">
-           {/* We can put student info or a mini-stats card here later */}
+           {}
         </div>
       </div>
-
-      {/* Statistics Grid */}
+      {}
       {data && (
         <div>
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -244,8 +229,7 @@ export default function StudentDashboard() {
           </div>
         </div>
       )}
-
-      {/* Current Section Info */}
+      {}
       {data?.student_info.section && (
         <Card>
           <CardHeader>
@@ -275,8 +259,7 @@ export default function StudentDashboard() {
           </CardContent>
         </Card>
       )}
-
-      {/* My Courses */}
+      {}
       {data && data.courses.length > 0 && (
         <div>
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -289,7 +272,6 @@ export default function StudentDashboard() {
                 course.total_problems > 0
                   ? (course.solved_problems / course.total_problems) * 100
                   : 0;
-
               return (
                 <Card
                   key={index}
@@ -332,8 +314,7 @@ export default function StudentDashboard() {
           </div>
         </div>
       )}
-
-      {/* Quick Actions */}
+      {}
       <div>
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
           <Target className="h-6 w-6" />
@@ -369,8 +350,7 @@ export default function StudentDashboard() {
           })}
         </div>
       </div>
-
-      {/* Empty State for Courses */}
+      {}
       {data && data.courses.length === 0 && (
         <Card className="border-dashed">
           <CardHeader>
