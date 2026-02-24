@@ -2,11 +2,7 @@ import axios from "axios";
 import * as cheerio from "cheerio";
 import { CreateExternalHackathonDTO, createExternalHackathon } from "@/repository/external_hackathon.repository";
 import { SKILL_TAXONOMY, SkillType } from "./skill-tracker.service";
-
 export class ScraperService {
-    /**
-     * Scrapes hackathons from Devpost (example)
-     */
     static async scrapeDevpost() {
         console.log("Starting Devpost scraping...");
         try {
@@ -17,14 +13,12 @@ export class ScraperService {
             });
             const $ = cheerio.load(data);
             const hackathons: CreateExternalHackathonDTO[] = [];
-
             const elements = $(".hackathon-tile, .featured-hackathon").toArray();
             for (const element of elements) {
                 const title = $(element).find("h3, .title").text().trim();
                 const description = $(element).find(".oneline, .info").text().trim();
                 const external_url = $(element).find("a").attr("href") || "";
                 const deadlineText = $(element).find(".submission-period b, .status").text().trim();
-
                 let deadline: Date | undefined;
                 if (deadlineText) {
                     const match = deadlineText.match(/(\w+ \d+, \d+)/);
@@ -36,9 +30,7 @@ export class ScraperService {
                         deadline.setDate(deadline.getDate() + days);
                     }
                 }
-
                 if (title && external_url && external_url.startsWith("http") && (!deadline || deadline > new Date())) {
-                    // Pre-verify link working
                     const isValid = await this.validateLink(external_url);
                     if (isValid) {
                         hackathons.push({
@@ -53,7 +45,6 @@ export class ScraperService {
                     }
                 }
             }
-
             console.log(`Found ${hackathons.length} active and verified hackathons on Devpost.`);
             for (const hack of hackathons) {
                 await createExternalHackathon(hack);
@@ -64,10 +55,6 @@ export class ScraperService {
             throw error;
         }
     }
-
-    /**
-     * Scrapes hackathons from Unstop.
-     */
     static async scrapeUnstop() {
         console.log("Starting Unstop scraping...");
         try {
@@ -78,20 +65,15 @@ export class ScraperService {
             });
             const $ = cheerio.load(data);
             const hackathons: CreateExternalHackathonDTO[] = [];
-
             const elements = $(".competition-card, .listing-card, .event-card").toArray();
             for (const element of elements) {
                 const title = $(element).find(".title, h2, h3").first().text().trim();
                 const rawUrl = $(element).find("a").attr("href") || "";
-                
                 function emptyLink(l: string) { return !l || l === "#" || l === "javascript:void(0)"; }
                 const external_url = emptyLink(rawUrl) ? "" : (rawUrl.startsWith("http") ? rawUrl : "https://unstop.com" + rawUrl);
-                
                 const description = $(element).find(".subtitle, .description").text().trim();
-
                 const timeLeft = $(element).find(".time-left, .status, .day-left").text().trim();
                 let deadline: Date | undefined;
-
                 if (timeLeft.toLowerCase().includes("left") || timeLeft.toLowerCase().includes("ends")) {
                     const match = timeLeft.match(/(\d+)\s*(days?|hrs?|hours?)/i);
                     if (match) {
@@ -105,7 +87,6 @@ export class ScraperService {
                         }
                     }
                 }
-
                 if (title && external_url.length > 15 && (!deadline || deadline > new Date())) {
                     const isValid = await this.validateLink(external_url);
                     if (isValid) {
@@ -121,7 +102,6 @@ export class ScraperService {
                     }
                 }
             }
-
             console.log(`Found ${hackathons.length} active and verified hackathons on Unstop.`);
             for (const hack of hackathons) {
                 await createExternalHackathon(hack);
@@ -132,13 +112,8 @@ export class ScraperService {
             return [];
         }
     }
-
-    /**
-     * Validates if a link is actually working.
-     */
     static async validateLink(url: string): Promise<boolean> {
         try {
-            // Try HEAD first as it's lighter
             await axios.head(url, {
                 timeout: 5000,
                 maxRedirects: 3,
@@ -148,7 +123,6 @@ export class ScraperService {
             });
             return true;
         } catch (error) {
-            // Fallback to GET for sites that block HEAD
             try {
                 await axios.get(url, {
                     timeout: 8000,
@@ -164,14 +138,9 @@ export class ScraperService {
             }
         }
     }
-
-    /**
-     * Extracts skills from text based on keywords.
-     */
     static extractSkills(text: string): SkillType[] {
         const found: SkillType[] = [];
         const t = text.toLowerCase();
-
         const mapping: Record<string, SkillType[]> = {
             "web": ["frontend", "backend"],
             "react": ["frontend"],
@@ -197,7 +166,6 @@ export class ScraperService {
             "algorithm": ["competitive_programming"],
             "dsa": ["competitive_programming"]
         };
-
         for (const [keyword, skills] of Object.entries(mapping)) {
             if (t.includes(keyword)) {
                 skills.forEach(skill => {
@@ -205,7 +173,6 @@ export class ScraperService {
                 });
             }
         }
-
         return found;
     }
 }
