@@ -1,6 +1,5 @@
 import sql from "@/lib/db";
 import { course } from "@/types/types";
-
 export async function getAllCourses() {
   try {
     const data = await sql`select id, name from courses`;
@@ -10,7 +9,6 @@ export async function getAllCourses() {
     return { status: false, error: e };
   }
 }
-
 export async function getCoursesWithPagination(
   page: number,
   pageSize: number,
@@ -24,9 +22,7 @@ export async function getCoursesWithPagination(
     const safeSortBy = allowedSortColumns.includes(sortBy) ? sortBy : "id";
     const safeSortOrder = sortOrder === "desc" ? "DESC" : "ASC";
     const safeSortExpr = safeSortBy === "name" ? "LOWER(name)" : safeSortBy;
-
     let courses, totalResult;
-
     if (search) {
       const searchPattern = `%${search}%`;
       courses = await sql`
@@ -47,9 +43,7 @@ export async function getCoursesWithPagination(
       `;
       totalResult = await sql`SELECT COUNT(*) as count FROM courses`;
     }
-
     const total = parseInt(totalResult[0].count);
-
     return {
       data: courses,
       total,
@@ -62,7 +56,6 @@ export async function getCoursesWithPagination(
     throw error;
   }
 }
-
 export async function editCourse(body: course) {
   try {
     await sql`UPDATE courses SET name=${body.name} WHERE id=${body.id}`;
@@ -75,7 +68,6 @@ export async function editCourse(body: course) {
     return { success: false, message: `Update course ${body.id} failed` };
   }
 }
-
 export async function createCourse(body: { name: string }) {
   try {
     const res =
@@ -89,7 +81,6 @@ export async function createCourse(body: { name: string }) {
     return { success: false, message: `Add new course failed` };
   }
 }
-
 export async function deleteCourse(id: string) {
   try {
     await sql`DELETE FROM courses WHERE id=${id}`;
