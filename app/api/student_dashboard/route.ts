@@ -1,22 +1,15 @@
 import { requireAuth } from "@/lib/auth-helpers";
 import sql from "@/lib/db";
 import { getMyCoursesForStudent } from "@/repository/user.repository";
-
 export async function GET() {
   try {
     const user = await requireAuth();
-
-    // If user is not authenticated, requireAuth returns a NextResponse
     if ("json" in user) {
       return user;
     }
-
-    // Get student courses
     const studentCourses = await getMyCoursesForStudent(user.id);
-
-    // Get student's current section info
     const sectionInfo = await sql`
-            SELECT DISTINCT s.id as section_id, s.name as section_name, 
+            SELECT DISTINCT s.id as section_id, s.name as section_name,
                    sm.name as semester_name, sm.year, d.name as department_name
             FROM sections_users su
             JOIN sections s ON su.sectionid = s.id
@@ -25,27 +18,21 @@ export async function GET() {
             WHERE su.userid = ${user.id}
             LIMIT 1
         `;
-
-    // Get problems solved statistics
     const problemsStats = await sql`
-            SELECT 
+            SELECT
                 COUNT(CASE WHEN pu.is_completed = 'solved' THEN 1 END) as solved_count,
                 COUNT(*) as total_attempted
             FROM problems_users pu
             WHERE pu.userid = ${user.id}
         `;
-
-    // Get total available problems in student's courses
     const availableProblems = await sql`
             SELECT COUNT(*) as total_available
             FROM problems;
         `;
-
-    // Get course progress for each enrolled course
     const courseProgress = await Promise.all(
       studentCourses.map(async (course: any) => {
         const progress = await sql`
-                    SELECT 
+                    SELECT
                         COUNT(DISTINCT p.id) as total_problems,
                         COUNT(DISTINCT CASE WHEN pu.is_completed = 'solved' THEN p.id END) as solved_problems
                     FROM problems_courses pc
@@ -53,7 +40,6 @@ export async function GET() {
                     LEFT JOIN problems_users pu ON p.id = pu.problemid AND pu.userid = ${user.id}
                     WHERE pc.courseid = ${course.id}
                 `;
-
         return {
           ...course,
           total_problems: progress[0]?.total_problems || 0,
@@ -61,7 +47,6 @@ export async function GET() {
         };
       })
     );
-
     return new Response(
       JSON.stringify({
         success: true,
