@@ -1,32 +1,26 @@
 import sql from "@/lib/db";
-
 async function inspectLeaderboardData(hackathonId: string) {
     try {
         console.log(`Inspecting data for Hackathon: ${hackathonId}`);
-
         const teams = await sql`
-            SELECT id, name FROM hackathon_teams 
+            SELECT id, name FROM hackathon_teams
             WHERE hackathon_id = ${hackathonId}
         `;
         console.log("\nTeams in Hackathon:");
         console.table(teams);
-
         const submissions = await sql`
-            SELECT id, team_id, status, submitted_at FROM submissions 
+            SELECT id, team_id, status, submitted_at FROM submissions
             WHERE hackathon_id = ${hackathonId}
         `;
         console.log("\nSubmissions in Hackathon:");
         console.table(submissions);
-
         const evaluations = await sql`
             SELECT submission_id, judge_id, is_draft FROM hackathon_evaluations
         `;
         console.log("\nAll Evaluations (Total):", evaluations.length);
-
-        // Run the current leaderboard query logic to see raw results
         const rawLeaderboard = await sql`
             WITH judge_totals AS (
-                SELECT 
+                SELECT
                     submission_id,
                     judge_id,
                     (innovation_score + technical_complexity_score + implementation_quality_score + ui_ux_score + impact_score + presentation_quality_score + ui_score + backend_score + graphs_score + discord_interaction_score) as total_rubric_score
@@ -34,7 +28,7 @@ async function inspectLeaderboardData(hackathonId: string) {
                 WHERE is_draft = FALSE
             ),
             submission_scores AS (
-                SELECT 
+                SELECT
                     s.id as submission_id,
                     s.team_id,
                     s.submitted_at,
@@ -57,12 +51,9 @@ async function inspectLeaderboardData(hackathonId: string) {
         `;
         console.log("\nRaw Leaderboard Results:");
         console.table(rawLeaderboard);
-
     } catch (error) {
         console.error("Inspection failed:", error);
     }
 }
-
-// Replace with actual hackathon ID from logs if known, or search first
-const testHackathonId = "2525187e-d805-4f40-843b-283f5f3068e2"; // Example from previous logs
+const testHackathonId = "2525187e-d805-4f40-843b-283f5f3068e2";
 inspectLeaderboardData(testHackathonId);
