@@ -1,5 +1,4 @@
 import sql from "@/lib/db";
-
 export interface Evaluation {
     id: string;
     submission_id: string;
@@ -19,7 +18,6 @@ export interface Evaluation {
     created_at: Date;
     updated_at: Date;
 }
-
 export interface CreateEvaluationDTO {
     submission_id: string;
     judge_id: string;
@@ -36,26 +34,25 @@ export interface CreateEvaluationDTO {
     feedback?: string;
     is_draft?: boolean;
 }
-
 export async function createOrUpdateEvaluation(data: CreateEvaluationDTO) {
     try {
         const result = await sql`
             INSERT INTO hackathon_evaluations (
-                submission_id, judge_id, innovation_score, technical_complexity_score, 
-                implementation_quality_score, ui_ux_score, impact_score, 
-                presentation_quality_score, ui_score, backend_score, 
+                submission_id, judge_id, innovation_score, technical_complexity_score,
+                implementation_quality_score, ui_ux_score, impact_score,
+                presentation_quality_score, ui_score, backend_score,
                 graphs_score, discord_interaction_score, feedback, is_draft, updated_at
             )
             VALUES (
-                ${data.submission_id}, ${data.judge_id}, ${data.innovation_score}, 
-                ${data.technical_complexity_score}, ${data.implementation_quality_score}, 
+                ${data.submission_id}, ${data.judge_id}, ${data.innovation_score},
+                ${data.technical_complexity_score}, ${data.implementation_quality_score},
                 ${data.ui_ux_score}, ${data.impact_score}, ${data.presentation_quality_score},
-                ${data.ui_score}, ${data.backend_score}, ${data.graphs_score}, 
-                ${data.discord_interaction_score}, ${data.feedback || null}, 
+                ${data.ui_score}, ${data.backend_score}, ${data.graphs_score},
+                ${data.discord_interaction_score}, ${data.feedback || null},
                 ${data.is_draft || false}, NOW()
             )
-            ON CONFLICT (submission_id, judge_id) 
-            DO UPDATE SET 
+            ON CONFLICT (submission_id, judge_id)
+            DO UPDATE SET
                 innovation_score = EXCLUDED.innovation_score,
                 technical_complexity_score = EXCLUDED.technical_complexity_score,
                 implementation_quality_score = EXCLUDED.implementation_quality_score,
@@ -77,11 +74,10 @@ export async function createOrUpdateEvaluation(data: CreateEvaluationDTO) {
         throw error;
     }
 }
-
 export async function getEvaluation(submissionId: string, judgeId: string) {
     try {
         const result = await sql`
-            SELECT * FROM hackathon_evaluations 
+            SELECT * FROM hackathon_evaluations
             WHERE submission_id = ${submissionId} AND judge_id = ${judgeId}
         `;
         return result[0] as Evaluation || null;
@@ -90,11 +86,10 @@ export async function getEvaluation(submissionId: string, judgeId: string) {
         throw error;
     }
 }
-
 export async function getSubmissionEvaluations(submissionId: string) {
     try {
         const result = await sql`
-            SELECT e.*, u.name as judge_name 
+            SELECT e.*, u.name as judge_name
             FROM hackathon_evaluations e
             JOIN users u ON e.judge_id = u.id
             WHERE e.submission_id = ${submissionId} AND e.is_draft = FALSE
@@ -105,15 +100,11 @@ export async function getSubmissionEvaluations(submissionId: string) {
         throw error;
     }
 }
-
 export async function getHackathonLeaderboard(hackathonId: string) {
     try {
-        // Calculate average score per submission
-        // Total score = sum of rubrics
-        // Average score = average of (sum of rubrics from each judge)
         const leaderboard = await sql`
             WITH judge_totals AS (
-                SELECT 
+                SELECT
                     submission_id,
                     judge_id,
                     (innovation_score + technical_complexity_score + implementation_quality_score + ui_ux_score + impact_score + presentation_quality_score + ui_score + backend_score + graphs_score + discord_interaction_score) as total_rubric_score
@@ -121,7 +112,7 @@ export async function getHackathonLeaderboard(hackathonId: string) {
                 WHERE is_draft = FALSE
             ),
             submission_scores AS (
-                SELECT 
+                SELECT
                     s.id as submission_id,
                     s.team_id,
                     s.submitted_at,
@@ -147,8 +138,6 @@ export async function getHackathonLeaderboard(hackathonId: string) {
             SELECT * FROM team_best_entries
             ORDER BY final_average_score DESC NULLS LAST, team_name ASC
         `;
-        
-        // Debug logging to a local file
         try {
             const fs = require('fs');
             const path = require('path');
@@ -157,21 +146,19 @@ export async function getHackathonLeaderboard(hackathonId: string) {
         } catch (e) {
             console.error("Failed to write leaderboard debug log", e);
         }
-
         return leaderboard;
     } catch (error) {
         console.error("Error fetching hackathon leaderboard:", error);
         throw error;
     }
 }
-
 export async function getAssignedHackathonsForJudge(judgeId: string) {
     try {
         const result = await sql`
-            SELECT h.*, 
+            SELECT h.*,
                 (SELECT COUNT(*) FROM submissions s WHERE s.hackathon_id = h.id AND s.status = 'SUBMITTED') as total_submissions,
-                (SELECT COUNT(*) FROM hackathon_evaluations e 
-                 JOIN submissions s ON e.submission_id = s.id 
+                (SELECT COUNT(*) FROM hackathon_evaluations e
+                 JOIN submissions s ON e.submission_id = s.id
                  WHERE s.hackathon_id = h.id AND e.judge_id = ${judgeId} AND e.is_draft = FALSE) as evaluated_submissions
             FROM hackathons h
             JOIN hackathon_participants hp ON h.id = hp.hackathon_id
@@ -183,18 +170,17 @@ export async function getAssignedHackathonsForJudge(judgeId: string) {
         throw error;
     }
 }
-
 export async function getNextSubmissionToJudge(hackathonId: string, judgeId: string) {
     try {
         const result = await sql`
-            SELECT s.id 
+            SELECT s.id
             FROM submissions s
-            WHERE s.hackathon_id = ${hackathonId} 
+            WHERE s.hackathon_id = ${hackathonId}
             AND s.status = 'SUBMITTED'
             AND NOT EXISTS (
-                SELECT 1 FROM hackathon_evaluations e 
-                WHERE e.submission_id = s.id 
-                AND e.judge_id = ${judgeId} 
+                SELECT 1 FROM hackathon_evaluations e
+                WHERE e.submission_id = s.id
+                AND e.judge_id = ${judgeId}
                 AND e.is_draft = FALSE
             )
             ORDER BY s.submitted_at ASC
