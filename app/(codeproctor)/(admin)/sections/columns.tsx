@@ -12,14 +12,12 @@ import {
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
 interface getSectionType {
   id: string;
   section_name: string;
   semester_name: string;
   department_name: string;
 }
-
 export const createSectionColumns = (
   refetchData: () => Promise<void>,
   openEditDialog: (section: any) => void,
@@ -105,15 +103,12 @@ export const createSectionColumns = (
       const handleDeleteSection = async () => {
         onDeleteSection(row.original);
       };
-
       const handleEditSection = () => {
         openEditDialog(row.original);
       };
-
       const handleViewCourses = () => {
         router.push("/sections/" + row.original.id + "/courses");
       };
-
       return (
         <>
           <DropdownMenu>
