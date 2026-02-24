@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,9 +16,7 @@ import { Plus, Calendar, Users, Trash, UserPlus, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import RecommendedHackathons from "@/components/recommended-hackathons";
-
 import { useSession } from "next-auth/react";
-
 interface Hackathon {
     id: string;
     title: string;
@@ -31,30 +28,23 @@ interface Hackathon {
     user_role?: string;
     participant_count?: number;
 }
-
 import { useRouter } from "next/navigation";
-
 export default function HackathonsPage() {
     const router = useRouter();
     const { data: session } = useSession();
     const [hackathons, setHackathons] = useState<Hackathon[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-
-    // Form State
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [maxTeamSize, setMaxTeamSize] = useState(4);
-
-    // Permissions
     const canCreate = session?.user?.role === 'admin' || session?.user?.role === 'faculty';
     const canDelete = (hack: Hackathon) => {
         if (!session?.user) return false;
         return session.user.role === 'admin' || session.user.id === hack.created_by;
     };
-
     const fetchHackathons = async () => {
         try {
             const res = await fetch("/api/hackathons");
@@ -66,21 +56,17 @@ export default function HackathonsPage() {
             console.error("Failed to fetch hackathons");
         }
     };
-
     useEffect(() => {
         fetchHackathons();
     }, []);
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-
         if (maxTeamSize < 1) {
             toast.error("Team size must be at least 1");
             setLoading(false);
             return;
         }
-
         try {
             const res = await fetch("/api/hackathons", {
                 method: "POST",
@@ -94,12 +80,10 @@ export default function HackathonsPage() {
                     max_team_size: maxTeamSize
                 }),
             });
-
             if (res.ok) {
                 toast.success("Hackathon created successfully");
                 setIsOpen(false);
                 fetchHackathons();
-                // Reset form
                 setTitle("");
                 setDescription("");
                 setStartDate("");
@@ -114,15 +98,12 @@ export default function HackathonsPage() {
             setLoading(false);
         }
     };
-
     const handleDelete = async (id: string) => {
         if (!confirm("Are you sure you want to delete this hackathon?")) return;
-
         try {
             const res = await fetch(`/api/hackathons/${id}`, {
                 method: "DELETE",
             });
-
             if (res.ok) {
                 toast.success("Hackathon deleted");
                 fetchHackathons();
@@ -134,13 +115,11 @@ export default function HackathonsPage() {
             toast.error("An error occurred");
         }
     };
-
     const handleJoin = async (id: string) => {
         try {
             const res = await fetch(`/api/hackathons/${id}/join`, {
                 method: "POST",
             });
-
             if (res.ok) {
                 toast.success("Successfully joined hackathon!");
                 fetchHackathons();
@@ -152,17 +131,14 @@ export default function HackathonsPage() {
             toast.error("An error occurred");
         }
     };
-
     const handlePublish = async (id: string) => {
         if (!confirm("Are you sure you want to PUBLISH this hackathon? Participants will be able to join.")) return;
-
         try {
             const res = await fetch(`/api/hackathons/${id}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ status: "PUBLISHED" }),
             });
-
             if (res.ok) {
                 toast.success("Hackathon Published!");
                 fetchHackathons();
@@ -174,11 +150,9 @@ export default function HackathonsPage() {
             toast.error("An error occurred");
         }
     };
-
     const [participantsOpen, setParticipantsOpen] = useState(false);
     const [participants, setParticipants] = useState<any[]>([]);
     const [selectedHackathonId, setSelectedHackathonId] = useState<string | null>(null);
-
     const handleViewParticipants = async (hackId: string) => {
         try {
             const res = await fetch(`/api/hackathons/${hackId}/participants`);
@@ -194,10 +168,9 @@ export default function HackathonsPage() {
             toast.error("Error fetching participants");
         }
     };
-
     return (
         <div className="p-6 space-y-6">
-            {/* Participants Dialog */}
+            {}
             <Dialog open={participantsOpen} onOpenChange={setParticipantsOpen}>
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
@@ -230,7 +203,7 @@ export default function HackathonsPage() {
                                                     {new Date(p.created_at).toLocaleDateString()}
                                                 </td>
                                                 <td className="p-3">
-                                                    {/* Organizer can remove participants */}
+                                                    {}
                                                     {selectedHackathonId && (
                                                         <Button
                                                             variant="ghost"
@@ -245,8 +218,8 @@ export default function HackathonsPage() {
                                                                     });
                                                                     if (res.ok) {
                                                                         toast.success("Removed");
-                                                                        handleViewParticipants(selectedHackathonId); // Refresh list
-                                                                        fetchHackathons(); // Refresh count
+                                                                        handleViewParticipants(selectedHackathonId);
+                                                                        fetchHackathons();
                                                                     } else {
                                                                         toast.error("Failed to remove");
                                                                     }
@@ -266,7 +239,6 @@ export default function HackathonsPage() {
                     </div>
                 </DialogContent>
             </Dialog>
-
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Hackathons</h1>
@@ -274,7 +246,6 @@ export default function HackathonsPage() {
                         Manage your agentic hackathon events.
                     </p>
                 </div>
-
                 {canCreate && (
                     <Dialog open={isOpen} onOpenChange={setIsOpen}>
                         <DialogTrigger asChild>
@@ -348,12 +319,10 @@ export default function HackathonsPage() {
                     </Dialog>
                 )}
             </div>
-
-            {/* Recommendations Section */}
+            {}
             {session?.user?.role === 'student' && (
                 <RecommendedHackathons />
             )}
-
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {hackathons.map((hack) => (
                     <Card key={hack.id} className="hover:shadow-lg transition-shadow">
@@ -374,7 +343,7 @@ export default function HackathonsPage() {
                                     <Calendar className="mr-2 h-4 w-4" />
                                     <span>{new Date(hack.start_date).toLocaleDateString()}</span>
                                 </div>
-                                {/* Placeholder for participant count if we fetched it */}
+                                {}
                                 <div className="flex items-center">
                                     <Users className="mr-2 h-4 w-4" />
                                     <span>Participants ({hack.participant_count || 0})</span>
@@ -382,7 +351,7 @@ export default function HackathonsPage() {
                             </div>
                         </CardContent>
                         <CardFooter>
-                            {/* View Participants Button (If allowed) - Replaces View Details generic if Organizer */}
+                            {}
                             {canDelete(hack) || hack.user_role === 'JUDGE' ? (
                                 <Button variant="outline" className="flex-1" onClick={() => router.push(`/hackathons/${hack.id}/admin/participants`)}>
                                     <Users className="w-4 h-4 mr-2" /> Participants
@@ -392,8 +361,7 @@ export default function HackathonsPage() {
                                     View Details
                                 </Button>
                             )}
-
-                            {/* Role Indicator / Join Button */}
+                            {}
                             {hack.user_role ? (
                                 <Badge variant="outline" className="ml-2 h-9 px-3 border-green-500 text-green-500">
                                     {hack.user_role}
@@ -409,8 +377,7 @@ export default function HackathonsPage() {
                                     </Button>
                                 )
                             )}
-
-                            {/* Publish Button (Only for Organizers/Admin if DRAFT) */}
+                            {}
                             {canDelete(hack) && hack.status === 'DRAFT' && (
                                 <Button
                                     variant="default"
@@ -422,9 +389,7 @@ export default function HackathonsPage() {
                                     <Send className="h-4 w-4" />
                                 </Button>
                             )}
-
-
-                            {/* Delete Button */}
+                            {}
                             {canDelete(hack) && (
                                 <Button
                                     variant="destructive"
