@@ -6,17 +6,14 @@ import { user } from "@/types/types";
 import { DataTable } from "@/components/data-table";
 import { createColumns } from "./columns";
 import { Users, UserPlus, UserMinus, UserCheck } from "lucide-react";
-
 const fetchAssignedUsers = async (sectionId: string) => {
   const res = await fetch(`/api/sections/${sectionId}/users`);
   return res.json();
 };
-
 const fetchUnassignedUsers = async (sectionId: string) => {
   const res = await fetch(`/api/sections/${sectionId}/users?unassigned=true`);
   return res.json();
 };
-
 const assignUserToSection = async (sectionId: string, userId: string) => {
   const res = await fetch(`/api/sections/${sectionId}/users`, {
     method: "POST",
@@ -25,7 +22,6 @@ const assignUserToSection = async (sectionId: string, userId: string) => {
   });
   return res.json();
 };
-
 const unassignUserFromSection = async (sectionId: string, userId: string) => {
   const res = await fetch(`/api/sections/${sectionId}/users`, {
     method: "DELETE",
@@ -34,7 +30,6 @@ const unassignUserFromSection = async (sectionId: string, userId: string) => {
   });
   return res.json();
 };
-
 export default function SectionUsersPage() {
   const params = useParams();
   const sectionId = params?.id as string;
@@ -47,7 +42,6 @@ export default function SectionUsersPage() {
   const [selectedUnassignedUsers, setSelectedUnassignedUsers] = useState<
     user[]
   >([]);
-
   const fetchData = async () => {
     if (!sectionId) return;
     setLoading(true);
@@ -64,37 +58,33 @@ export default function SectionUsersPage() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchData();
   }, [sectionId]);
-
   const handleAssign = async (userId: string) => {
     if (!sectionId) return;
     setLoading(true);
     try {
       await assignUserToSection(sectionId, userId);
-      await fetchData(); // Refresh both lists
+      await fetchData();
     } catch (error) {
       console.error("Error assigning user:", error);
     } finally {
       setLoading(false);
     }
   };
-
   const handleUnassign = async (userId: string) => {
     if (!sectionId) return;
     setLoading(true);
     try {
       await unassignUserFromSection(sectionId, userId);
-      await fetchData(); // Refresh both lists
+      await fetchData();
     } catch (error) {
       console.error("Error unassigning user:", error);
     } finally {
       setLoading(false);
     }
   };
-
   const handleBulkAssign = async () => {
     if (!sectionId || selectedUnassignedUsers.length === 0) return;
     setLoading(true);
@@ -112,7 +102,6 @@ export default function SectionUsersPage() {
       setLoading(false);
     }
   };
-
   const handleBulkUnassign = async () => {
     if (!sectionId || selectedAssignedUsers.length === 0) return;
     setLoading(true);
@@ -130,21 +119,18 @@ export default function SectionUsersPage() {
       setLoading(false);
     }
   };
-
   const assignedColumns = createColumns(
     fetchData,
-    true, // isAssigned
-    undefined, // onAssign
-    handleUnassign // onUnassign
+    true,
+    undefined,
+    handleUnassign
   );
-
   const unassignedColumns = createColumns(
     fetchData,
-    false, // isAssigned
-    handleAssign, // onAssign
-    undefined // onUnassign
+    false,
+    handleAssign,
+    undefined
   );
-
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -160,9 +146,8 @@ export default function SectionUsersPage() {
           </div>
         </div>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Assigned Users Table */}
+        {}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -193,8 +178,7 @@ export default function SectionUsersPage() {
             />
           </div>
         </div>
-
-        {/* Unassigned Users Table */}
+        {}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
