@@ -26,7 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
 export const createColumns = (
   refetchData: () => Promise<void>
 ): ColumnDef<user>[] => [
@@ -130,11 +129,9 @@ export const createColumns = (
     enableHiding: false,
     cell: ({ row }) => {
       const [isDialogOpen, setIsDialogOpen] = useState(false);
-
       const handleAssignRole = () => {
         setIsDialogOpen(true);
       };
-
       async function assignRole(row: user, newRole: string) {
         await fetch(`/api/users/${row.id}/role`, {
           method: "POST",
@@ -174,7 +171,6 @@ export const createColumns = (
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent>
               <DialogHeader>
