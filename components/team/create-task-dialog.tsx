@@ -1,6 +1,4 @@
-
 "use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,29 +24,24 @@ import { format } from "date-fns";
 import { CalendarIcon, Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
-
 interface CreateTaskDialogProps {
     onTaskCreated: () => void;
-    members: any[]; // Simple member list to assign to
+    members: any[];
 }
-
 export function CreateTaskDialog({ onTaskCreated, members = [] }: CreateTaskDialogProps) {
     const params = useParams();
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [date, setDate] = useState<Date>();
     const [calendarOpen, setCalendarOpen] = useState(false);
-
     const [formData, setFormData] = useState({
         title: "",
         description: "",
         assigned_to: "",
     });
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.title) return;
-
         setLoading(true);
         try {
             const res = await fetch(`/api/hackathons/${params.id}/team/${params.teamId}/tasks`, {
@@ -59,7 +52,6 @@ export function CreateTaskDialog({ onTaskCreated, members = [] }: CreateTaskDial
                     due_at: date?.toISOString(),
                 }),
             });
-
             if (res.ok) {
                 toast.success("Task created");
                 setOpen(false);
@@ -75,7 +67,6 @@ export function CreateTaskDialog({ onTaskCreated, members = [] }: CreateTaskDial
             setLoading(false);
         }
     };
-
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
