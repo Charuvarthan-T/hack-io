@@ -25,14 +25,12 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
-
 interface Course {
   id: string;
   name: string;
   section_name: string;
   semester_name: string;
 }
-
 interface DashboardData {
   courses: Course[];
   statistics: {
@@ -50,7 +48,6 @@ interface DashboardData {
     course_name: string;
   }[];
 }
-
 const quickActions = [
   {
     title: "View All Problems",
@@ -77,7 +74,6 @@ const quickActions = [
     bgColor: "bg-purple-50 dark:bg-purple-950/20",
   },
 ];
-
 const getStatusIcon = (status: string) => {
   switch (status.toLowerCase()) {
     case "accepted":
@@ -93,7 +89,6 @@ const getStatusIcon = (status: string) => {
       return <AlertCircle className="h-4 w-4 text-gray-500" />;
   }
 };
-
 const getStatusBadgeVariant = (status: string) => {
   switch (status.toLowerCase()) {
     case "accepted":
@@ -109,18 +104,15 @@ const getStatusBadgeVariant = (status: string) => {
       return "outline";
   }
 };
-
 export default function FacultyDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch("/api/faculty_dashboard");
         const json = await res.json();
-
         if (json.success) {
           setData(json.data);
         } else {
@@ -135,10 +127,8 @@ export default function FacultyDashboard() {
     };
     fetchData();
   }, []);
-
   const { data: session } = useSession();
   const user = session?.user;
-
   if (loading) {
     return (
       <div className="space-y-8 p-6">
@@ -163,7 +153,6 @@ export default function FacultyDashboard() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -178,7 +167,6 @@ export default function FacultyDashboard() {
       </div>
     );
   }
-
   const statsCards = data
     ? [
         {
@@ -207,10 +195,9 @@ export default function FacultyDashboard() {
         },
       ]
     : [];
-
   return (
     <div className="space-y-8 p-6">
-      {/* Welcome Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -225,8 +212,7 @@ export default function FacultyDashboard() {
           Faculty Dashboard
         </Badge>
       </div>
-
-      {/* Statistics Grid */}
+      {}
       {data && (
         <div>
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -255,8 +241,7 @@ export default function FacultyDashboard() {
           </div>
         </div>
       )}
-
-      {/* My Courses */}
+      {}
       {data && data.courses.length > 0 && (
         <div>
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -305,8 +290,7 @@ export default function FacultyDashboard() {
           </div>
         </div>
       )}
-
-      {/* Quick Actions */}
+      {}
       <div>
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
           <TrendingUp className="h-6 w-6" />
@@ -342,8 +326,7 @@ export default function FacultyDashboard() {
           })}
         </div>
       </div>
-
-      {/* Empty State for Courses */}
+      {}
       {data && data.courses.length === 0 && (
         <Card className="border-dashed">
           <CardHeader>
