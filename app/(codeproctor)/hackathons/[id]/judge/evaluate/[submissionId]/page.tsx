@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,6 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ArrowLeft, ExternalLink, ShieldCheck, Save, Send, ArrowRight } from "lucide-react";
-
 interface BlindSubmission {
     id: string;
     repo_url: string;
@@ -18,7 +16,6 @@ interface BlindSubmission {
     hackathon_title: string;
     submitted_at: string;
 }
-
 const RUBRIC = [
     { id: "ui", label: "User Interface", description: "Visual aesthetics and design consistency." },
     { id: "backend", label: "Backend / Architecture", description: "Database design, API structure, and logic." },
@@ -31,7 +28,6 @@ const RUBRIC = [
     { id: "impact", label: "Impact / Practicality", description: "Potential real-world impact and feasibility." },
     { id: "presentation_quality", label: "Presentation Quality", description: "Quality of the demo and explanation." }
 ];
-
 export default function EvaluationPage() {
     const params = useParams();
     const router = useRouter();
@@ -46,15 +42,11 @@ export default function EvaluationPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const [readOnly, setReadOnly] = useState(false);
-
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch submission
                 const subRes = await fetch(`/api/hackathons/${params.id}/judge/submissions?submissionId=${params.submissionId}`);
                 if (subRes.ok) setSubmission(await subRes.json());
-
-                // Fetch existing evaluation
                 const evalRes = await fetch(`/api/hackathons/${params.id}/evaluations?submissionId=${params.submissionId}`);
                 if (evalRes.ok) {
                     const data = await evalRes.json();
@@ -84,12 +76,10 @@ export default function EvaluationPage() {
         };
         fetchData();
     }, [params.id, params.submissionId]);
-
     const handleScoreChange = (id: string, value: number[]) => {
         if (readOnly) return;
         setScores(prev => ({ ...prev, [id]: value[0] }));
     };
-
     const goToNext = async () => {
         try {
             const res = await fetch(`/api/hackathons/${params.id}/judge/next-submission`);
@@ -105,7 +95,6 @@ export default function EvaluationPage() {
             router.push(`/hackathons/${params.id}/judge`);
         }
     };
-
     const handleSubmit = async (final: boolean) => {
         setIsSaving(true);
         try {
@@ -127,7 +116,6 @@ export default function EvaluationPage() {
                     is_draft: !final
                 })
             });
-
             if (res.ok) {
                 toast.success(final ? "Evaluation submitted final!" : "Draft saved!");
                 if (final) {
@@ -143,12 +131,9 @@ export default function EvaluationPage() {
             setIsSaving(false);
         }
     };
-
     if (loading) return <div className="flex justify-center items-center py-20">Loading evaluation form...</div>;
     if (!submission) return <div className="text-center py-20">Submission not found</div>;
-
     const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
-
     return (
         <div className="container max-w-6xl mx-auto py-10 space-y-8">
             <div className="flex items-center justify-between">
@@ -159,9 +144,8 @@ export default function EvaluationPage() {
                     <Badge variant="outline" className="text-muted-foreground">Queue Mode</Badge>
                 </div>
             </div>
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left: Project Details (Anonymized) */}
+                {}
                 <div className="lg:col-span-1 space-y-6">
                     <Card className="sticky top-24">
                         <CardHeader>
@@ -172,14 +156,12 @@ export default function EvaluationPage() {
                             <div className="p-3 bg-blue-500/5 border border-blue-500/20 rounded-md flex items-center gap-2 text-sm text-blue-500">
                                 <ShieldCheck className="h-4 w-4" /> Student & Team identity hidden
                             </div>
-
                             <div>
                                 <Label className="text-xs uppercase text-muted-foreground">GitHub Repository</Label>
                                 <a href={submission.repo_url} target="_blank" className="flex items-center gap-2 text-primary hover:underline mt-1">
                                     {submission.repo_url} <ExternalLink className="h-3 w-3" />
                                 </a>
                             </div>
-
                             <div>
                                 <Label className="text-xs uppercase text-muted-foreground">Presentation / Demo</Label>
                                 <div className="p-2 bg-secondary/30 rounded-md mt-1 break-all text-xs font-mono">
@@ -198,8 +180,7 @@ export default function EvaluationPage() {
                         </CardFooter>
                     </Card>
                 </div>
-
-                {/* Right: Rubric Form */}
+                {}
                 <div className="lg:col-span-2 space-y-6">
                     <Card>
                         <CardHeader>
@@ -234,7 +215,6 @@ export default function EvaluationPage() {
                                     </div>
                                 ))}
                             </div>
-
                             <div className="space-y-3 pt-6 border-t">
                                 <Label className="text-lg font-bold">Judge's Notes</Label>
                                 <Textarea
