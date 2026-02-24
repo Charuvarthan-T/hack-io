@@ -32,17 +32,14 @@ import { course, semester } from "@/types/types";
 import { toast } from "sonner";
 import { totalmem } from "os";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-
 type SemesterCourse = {
   course_id: string;
   course_name: string;
 };
-
 export default function SemesterCoursesPage() {
   const params = useParams();
   const router = useRouter();
   const semesterId = params.id as string;
-
   const [semester, setSemester] = useState<semester | null>(null);
   const [assignedCourses, setAssignedCourses] = useState<SemesterCourse[]>([]);
   const [availableCourses, setAvailableCourses] = useState<course[]>([]);
@@ -55,22 +52,17 @@ export default function SemesterCoursesPage() {
     id: string;
     name: string;
   } | null>(null);
-
   useEffect(() => {
     fetchData();
   }, [semesterId]);
-
   async function fetchData() {
     setLoading(true);
     try {
-      // Fetch semester details
       const semesterResponse = await fetch(`/api/semesters/${semesterId}`);
       if (semesterResponse.ok) {
         const semesterData = await semesterResponse.json();
         setSemester(semesterData[0]);
       }
-
-      // Fetch assigned courses for this semester
       const assignedResponse = await fetch(
         `/api/semesters/${semesterId}/courses`
       );
@@ -78,8 +70,6 @@ export default function SemesterCoursesPage() {
         const assignedData = await assignedResponse.json();
         setAssignedCourses(assignedData.data);
       }
-
-      // Fetch all available courses
       const coursesResponse = await fetch("/api/courses/all");
       if (coursesResponse.ok) {
         const coursesData = await coursesResponse.json();
@@ -91,13 +81,11 @@ export default function SemesterCoursesPage() {
       setLoading(false);
     }
   }
-
   async function handleAssignCourse() {
     if (!selectedCourseId) {
       toast.error("Please select a course to assign");
       return;
     }
-
     setAssignLoading(true);
     try {
       const response = await fetch(`/api/semesters/${semesterId}/courses`, {
@@ -109,7 +97,6 @@ export default function SemesterCoursesPage() {
           courseId: selectedCourseId,
         }),
       });
-
       if (response.ok) {
         setIsAssignDialogOpen(false);
         setSelectedCourseId("");
@@ -128,15 +115,12 @@ export default function SemesterCoursesPage() {
       setAssignLoading(false);
     }
   }
-
   async function handleUnassignCourse(courseId: string, courseName: string) {
     setCourseToUnassign({ id: courseId, name: courseName });
     setIsUnassignDialogOpen(true);
   }
-
   async function confirmUnassignCourse() {
     if (!courseToUnassign) return;
-
     try {
       const response = await fetch(`/api/semesters/${semesterId}/courses`, {
         method: "DELETE",
@@ -147,7 +131,6 @@ export default function SemesterCoursesPage() {
           courseId: courseToUnassign.id,
         }),
       });
-
       if (response.ok) {
         await fetchData();
         toast.success("Course unassigned successfully");
@@ -162,13 +145,10 @@ export default function SemesterCoursesPage() {
       toast.error("Failed to unassign course");
     }
   }
-
-  // Filter out already assigned courses from available courses
   const unassignedCourses = availableCourses.filter(
     (course) =>
       !assignedCourses.some((assigned) => assigned.course_id === course.id)
   );
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -176,7 +156,6 @@ export default function SemesterCoursesPage() {
       </div>
     );
   }
-
   return (
     <div className="container mx-auto py-6">
       <div className="flex items-center gap-4 mb-6">
@@ -191,7 +170,6 @@ export default function SemesterCoursesPage() {
           )}
         </div>
       </div>
-
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-xl font-semibold">Assigned Courses</h2>
@@ -200,7 +178,6 @@ export default function SemesterCoursesPage() {
             {assignedCourses.length !== 1 ? "s" : ""} assigned
           </p>
         </div>
-
         <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -259,7 +236,6 @@ export default function SemesterCoursesPage() {
           </DialogContent>
         </Dialog>
       </div>
-
       {assignedCourses.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-16">
@@ -305,7 +281,6 @@ export default function SemesterCoursesPage() {
           ))}
         </div>
       )}
-
       <ConfirmDialog
         open={isUnassignDialogOpen}
         onOpenChange={setIsUnassignDialogOpen}
