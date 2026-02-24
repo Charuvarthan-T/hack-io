@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { problem } from "@/types/types";
@@ -10,11 +9,9 @@ import { Plus, ArrowLeft } from "lucide-react";
 import { AssignProblemsDialog } from "@/components/assign-problems-dialog";
 import { useSession } from "next-auth/react";
 import { createCourseProblemColumns } from "./columns";
-
 export default function CourseProblemsPage() {
   const { data: session } = useSession();
   const userRole = session?.user?.role;
-
   const params = useParams();
   const courseId = params.courseId as string;
   const [problems, setProblems] = useState<problem[]>([]);
@@ -22,30 +19,23 @@ export default function CourseProblemsPage() {
   const [error, setError] = useState<string | null>(null);
   const [courseName, setCourseName] = useState<string>("");
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
-
-  // Calculate problem statistics
   const solvedCount = problems.filter(
     (p) => p.solved_status === "solved"
   ).length;
   const unsolvedCount = problems.filter(
     (p) => p.solved_status === "unsolved"
   ).length;
-
   const fetchCourseProblems = async () => {
     try {
       setLoading(true);
       const response = await fetch(
         `/api/courses/problems?courseId=${courseId}`
       );
-
       if (!response.ok) {
         throw new Error("Failed to fetch course problems");
       }
-
       const data = await response.json();
-
       if (data.success) {
-        // Add mock solved status for demonstration
         const problemsWithStatus = (data.data || []).map(
           (problem: any, index: number) => ({
             ...problem,
@@ -53,9 +43,7 @@ export default function CourseProblemsPage() {
           })
         );
         setProblems(problemsWithStatus);
-        // Get course name from the first problem if available
         if (data.data && data.data.length > 0) {
-          // You might want to fetch course details separately
           setCourseName(`Course ${courseId}`);
         }
       } else {
@@ -68,22 +56,18 @@ export default function CourseProblemsPage() {
       setLoading(false);
     }
   };
-
   const courseProblemsColumns = createCourseProblemColumns(
     userRole ?? "Student",
     fetchCourseProblems
   );
-
   useEffect(() => {
     if (courseId) {
       fetchCourseProblems();
     }
   }, [courseId]);
-
   const handleRefresh = () => {
     window.location.reload();
   };
-
   if (loading) {
     return (
       <div className="container mx-auto py-10">
@@ -93,7 +77,6 @@ export default function CourseProblemsPage() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="container mx-auto py-10">
@@ -103,7 +86,6 @@ export default function CourseProblemsPage() {
       </div>
     );
   }
-
   return (
     <div className="container mx-auto py-10">
       <div className="flex items-center justify-between mb-6">
@@ -136,13 +118,11 @@ export default function CourseProblemsPage() {
           )}
         </div>
       </div>
-
       <DataTable
         columns={courseProblemsColumns}
         data={problems}
         searchColumn="title"
       />
-
       {userRole !== "student" && (
         <AssignProblemsDialog
           open={assignDialogOpen}
