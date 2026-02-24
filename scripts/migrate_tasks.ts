@@ -1,19 +1,12 @@
-
 import { neon } from "@neondatabase/serverless";
 import * as dotenv from "dotenv";
-
-// Load environment variables
 dotenv.config({ path: ".env.local" });
-dotenv.config(); // Fallback to .env
-
+dotenv.config();
 const connection_string = process.env.DATABASE_URL;
-
 if (!connection_string) {
     throw new Error("DATABASE_URL environment variable is not defined");
 }
-
 const sql = neon(connection_string);
-
 async function main() {
     console.log("Starting migration...");
     try {
@@ -38,5 +31,4 @@ async function main() {
         process.exit(1);
     }
 }
-
 main();
