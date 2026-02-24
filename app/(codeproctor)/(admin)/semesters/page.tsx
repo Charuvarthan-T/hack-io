@@ -25,7 +25,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-
 export default function SemestersPage() {
   const [data, setData] = useState<semester[]>([]);
   const [loading, setLoading] = useState(false);
@@ -48,17 +47,14 @@ export default function SemestersPage() {
   >([]);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [selectedSemester, setSelectedSemester] = useState<string>("");
-
   useEffect(() => {
     getData();
   }, [pagination, sorting, globalFilter]);
-
   async function getData(): Promise<void> {
     setLoading(true);
     try {
       const sortBy = sorting.length > 0 ? sorting[0].id : "id";
       const sortOrder = sorting.length > 0 && sorting[0].desc ? "desc" : "asc";
-
       const params = new URLSearchParams({
         page: (pagination.pageIndex + 1).toString(),
         pageSize: pagination.pageSize.toString(),
@@ -66,7 +62,6 @@ export default function SemestersPage() {
         sortBy,
         sortOrder,
       });
-
       const semesters = await fetch(`/api/semesters?${params.toString()}`);
       const departments = await fetch(`/api/departments/all`);
       if (!departments.ok) {
@@ -76,12 +71,10 @@ export default function SemestersPage() {
       const deptRes = await departments.json();
       console.log(deptRes);
       setDepartments(deptRes.data || []);
-
       if (!semesters.ok) {
         toast("Failed to fetch semesters");
         throw new Error("Failed to fetch semesters");
       }
-
       const res = await semesters.json();
       setData(res.data || []);
       setTotalRows(res.total || 0);
@@ -94,11 +87,9 @@ export default function SemestersPage() {
       setLoading(false);
     }
   }
-
   async function refetchData(): Promise<void> {
     await getData();
   }
-
   async function handleCreateSemester(): Promise<void> {
     if (
       selectedSemester === "" ||
@@ -108,20 +99,15 @@ export default function SemestersPage() {
       toast("Please select a semester, department, and enter the year");
       return;
     }
-
-    // Find the department name based on selected department ID
     const selectedDept = departments.find(
       (dept: any) => dept.id === selectedDepartment
     );
     const selectedDeptName = selectedDept ? selectedDept.name : "";
-
     if (!selectedDeptName) {
       toast("Department not found. Please try again.");
       return;
     }
-
     const generatedSemesterName = `${newSemester.year}-Semester-${selectedSemester}-${selectedDeptName}`;
-
     setCreateLoading(true);
     try {
       const response = await fetch("/api/semesters", {
@@ -135,7 +121,6 @@ export default function SemestersPage() {
           department_id: selectedDepartment,
         }),
       });
-
       if (response.ok) {
         setIsCreateDialogOpen(false);
         setNewSemester({ name: "", year: "" });
@@ -154,13 +139,11 @@ export default function SemestersPage() {
       setCreateLoading(false);
     }
   }
-
   async function handleEditSemester(): Promise<void> {
     if (!editSemester?.name.trim() || !String(editSemester?.year).trim()) {
       toast("Please enter both semester name and year");
       return;
     }
-
     setEditLoading(true);
     try {
       const response = await fetch("/api/semesters", {
@@ -175,7 +158,6 @@ export default function SemestersPage() {
           dept_id: editSemester.dept_id,
         }),
       });
-
       if (response.ok) {
         setIsEditDialogOpen(false);
         setEditSemester(null);
@@ -192,12 +174,10 @@ export default function SemestersPage() {
       setEditLoading(false);
     }
   }
-
   function openEditDialog(semester: semester): void {
     setEditSemester({ ...semester });
     setIsEditDialogOpen(true);
   }
-
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -283,7 +263,7 @@ export default function SemestersPage() {
                   </SelectContent>
                 </Select>
               </div>
-              {/* Preview of semester name */}
+              {}
               {selectedSemester && selectedDepartment && newSemester.year && (
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right text-sm text-muted-foreground">
@@ -342,8 +322,7 @@ export default function SemestersPage() {
           loading={loading}
         />
       </div>
-
-      {/* Edit Semester Dialog */}
+      {}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
