@@ -1,5 +1,4 @@
 "use client";
-
 import * as React from "react";
 import {
   ColumnDef,
@@ -14,7 +13,6 @@ import {
   VisibilityState,
 } from "@tanstack/react-table";
 import { ChevronDown } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -31,7 +29,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -52,7 +49,6 @@ interface DataTableProps<TData, TValue> {
   onRowSelectionChange?: (selectedRows: TData[]) => void;
   loading?: boolean;
 }
-
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -80,7 +76,6 @@ export function DataTable<TData, TValue>({
     pageIndex: 0,
     pageSize: 7,
   });
-
   const table = useReactTable({
     data,
     columns,
@@ -108,8 +103,6 @@ export function DataTable<TData, TValue>({
     manualSorting,
     manualFiltering,
   });
-
-  // Handle row selection changes
   React.useEffect(() => {
     if (onRowSelectionChange) {
       const selectedRows = table
@@ -118,7 +111,6 @@ export function DataTable<TData, TValue>({
       onRowSelectionChange(selectedRows);
     }
   }, [rowSelection, onRowSelectionChange, table]);
-
   return (
     <div className="w-full p-4">
       <div className="flex items-center py-4">
@@ -143,7 +135,6 @@ export function DataTable<TData, TValue>({
             className="max-w-sm"
           />
         )}
-
       </div>
       <div className="overflow-hidden rounded-md border">
         <Table>
