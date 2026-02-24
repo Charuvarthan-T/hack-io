@@ -1,9 +1,7 @@
 import "dotenv/config";
 import sql from "../lib/db";
-
 async function main() {
     console.log("Starting database migration...");
-
     try {
         await sql`
       CREATE TABLE IF NOT EXISTS submissions (
@@ -18,20 +16,15 @@ async function main() {
       );
     `;
         console.log("✅ Created 'submissions' table.");
-
-        // Create index for faster lookups by hackathon and team
         await sql`
       CREATE INDEX IF NOT EXISTS idx_submissions_hackathon_team ON submissions(hackathon_id, team_id);
     `;
         console.log("✅ Created index 'idx_submissions_hackathon_team'.");
-
     } catch (error) {
         console.error("❌ Migration failed:", error);
         process.exit(1);
     }
-
     console.log("Migration completed successfully.");
     process.exit(0);
 }
-
 main();
