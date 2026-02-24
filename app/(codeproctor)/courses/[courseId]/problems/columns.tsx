@@ -1,5 +1,4 @@
 "use client";
-
 import { problem } from "@/types/types";
 import { ArrowUpDown, MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,28 +13,20 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
-
-// Create a separate component for the actions dropdown
 const ActionsDropdown = ({ problem }: { problem: problem }) => {
   const router = useRouter();
-
   const handleView = () => {
     router.push(`/problems/${problem.id}`);
   };
-
   const handleEdit = () => {
     router.push(`/problems/${problem.id}/edit`);
   };
-
   const handleDelete = () => {
-    // TODO: Implement delete functionality
     console.log("Delete problem:", problem.id);
   };
-
   const handleCopyId = () => {
     navigator.clipboard.writeText(problem.id);
   };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -67,7 +58,6 @@ const ActionsDropdown = ({ problem }: { problem: problem }) => {
     </DropdownMenu>
   );
 };
-
 export const courseProblemsColumns: ColumnDef<problem>[] = [
   {
     accessorKey: "id",
