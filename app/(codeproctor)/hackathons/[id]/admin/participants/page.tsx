@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -20,7 +19,6 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
   } from "@/components/ui/alert-dialog";
-
 interface Participant {
     id: string;
     name: string;
@@ -30,7 +28,6 @@ interface Participant {
     team_name?: string;
     team_id?: string;
 }
-
 export default function AdminParticipantsPage() {
     const params = useParams();
     const router = useRouter();
@@ -38,9 +35,7 @@ export default function AdminParticipantsPage() {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [loading, setLoading] = useState(true);
     const [removing, setRemoving] = useState<string | null>(null);
-
     const hackathonId = params.id as string;
-
     const fetchParticipants = async () => {
         try {
             const res = await fetch(`/api/hackathons/${hackathonId}/participants`);
@@ -60,13 +55,11 @@ export default function AdminParticipantsPage() {
             setLoading(false);
         }
     };
-
     useEffect(() => {
         if (hackathonId) {
             fetchParticipants();
         }
     }, [hackathonId]);
-
     const handleRemove = async (userId: string) => {
         setRemoving(userId);
         try {
@@ -75,7 +68,6 @@ export default function AdminParticipantsPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ targetUserId: userId })
             });
-
             if (res.ok) {
                 toast.success("Participant removed");
                 setParticipants(prev => prev.filter(p => p.id !== userId));
@@ -89,9 +81,7 @@ export default function AdminParticipantsPage() {
             setRemoving(null);
         }
     };
-
     if (loading) return <div className="p-10 text-center">Loading...</div>;
-
     return (
         <div className="container max-w-5xl mx-auto py-10 space-y-8">
             <div className="flex items-center space-x-4 mb-6">
@@ -103,7 +93,6 @@ export default function AdminParticipantsPage() {
                     <p className="text-muted-foreground">Hackathon ID: {hackathonId}</p>
                 </div>
             </div>
-
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -171,7 +160,7 @@ export default function AdminParticipantsPage() {
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
                                                             <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                            <AlertDialogAction 
+                                                            <AlertDialogAction
                                                                 onClick={() => handleRemove(p.id)}
                                                                 className="bg-red-600 hover:bg-red-700"
                                                             >
