@@ -1,5 +1,4 @@
 import sql from "@/lib/db";
-
 export interface ExternalHackathon {
     id: string;
     title: string;
@@ -7,12 +6,11 @@ export interface ExternalHackathon {
     deadline: Date | null;
     mode: "online" | "offline" | null;
     external_url: string;
-    skills: string[]; // Normalized skills needed
+    skills: string[];
     source: string | null;
     created_at: Date;
     updated_at: Date;
 }
-
 export interface CreateExternalHackathonDTO {
     title: string;
     description?: string;
@@ -22,7 +20,6 @@ export interface CreateExternalHackathonDTO {
     skills?: string[];
     source?: string;
 }
-
 export async function createExternalHackathon(data: CreateExternalHackathonDTO) {
     try {
         const result = await sql`
@@ -43,11 +40,10 @@ export async function createExternalHackathon(data: CreateExternalHackathonDTO) 
         throw error;
     }
 }
-
 export async function getUpcomingExternalHackathons(limit: number = 10) {
     try {
         const result = await sql`
-            SELECT * FROM external_hackathons 
+            SELECT * FROM external_hackathons
             WHERE deadline IS NULL OR deadline >= NOW()
             ORDER BY deadline ASC NULLS LAST
             LIMIT ${limit}
@@ -58,25 +54,17 @@ export async function getUpcomingExternalHackathons(limit: number = 10) {
         throw error;
     }
 }
-
 export async function getRecommendedExternalHackathons(studentSkills: Record<string, number>, limit: number = 5) {
     try {
-        // Fetch all upcoming hackathons
         const hackathons = await getUpcomingExternalHackathons(50);
-
-        // Compute relevance in JS (easier than complex SQL for JSONB weights)
         const scored = hackathons.map(h => {
             let score = 0;
             const hSkills = h.skills || [];
-
             hSkills.forEach(skill => {
                 score += (studentSkills[skill] || 0);
             });
-
             return { ...h, relevanceScore: score };
         });
-
-        // Rank, filter (only show matches), and take top X
         return scored
             .filter(h => h.relevanceScore > 0)
             .sort((a, b) => b.relevanceScore - a.relevanceScore)
