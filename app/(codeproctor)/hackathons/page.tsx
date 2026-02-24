@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { Plus, Calendar, Users, Trash, UserPlus, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import RecommendedHackathons from "@/components/recommended-hackathons";
 
 import { useSession } from "next-auth/react";
 
@@ -347,6 +348,11 @@ export default function HackathonsPage() {
                     </Dialog>
                 )}
             </div>
+
+            {/* Recommendations Section */}
+            {session?.user?.role === 'student' && (
+                <RecommendedHackathons />
+            )}
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {hackathons.map((hack) => (

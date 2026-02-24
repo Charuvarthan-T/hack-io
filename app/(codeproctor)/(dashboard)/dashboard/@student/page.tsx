@@ -24,6 +24,7 @@ import {
   Building2,
   Users,
 } from "lucide-react";
+import SkillRadarChart from "@/components/skill-radar-chart";
 
 interface Course {
   id: string;
@@ -201,6 +202,16 @@ export default function StudentDashboard() {
             <GraduationCap className="h-4 w-4" />
             Student Dashboard
           </Badge>
+        </div>
+      </div>
+
+      {/* Skills Profile Section */}
+      <div className="flex flex-col xl:flex-row gap-6">
+        <div className="flex-1">
+           <SkillRadarChart />
+        </div>
+        <div className="w-full xl:w-[350px] space-y-4">
+           {/* We can put student info or a mini-stats card here later */}
         </div>
       </div>
 
