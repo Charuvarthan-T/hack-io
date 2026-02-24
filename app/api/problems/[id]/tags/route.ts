@@ -3,7 +3,6 @@ import {
   getTagsForProblem,
   removeTagFromProblem,
 } from "@/repository/tag.repository";
-
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -30,7 +29,6 @@ export async function GET(
     );
   }
 }
-
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -38,7 +36,6 @@ export async function POST(
   try {
     const resolvedParams = await params;
     const { tagId } = await req.json();
-
     if (!tagId) {
       return new Response(JSON.stringify({ error: "tagId is required" }), {
         status: 400,
@@ -47,7 +44,6 @@ export async function POST(
         },
       });
     }
-
     const res = await addTagToProblem(resolvedParams.id, tagId);
     return new Response(
       JSON.stringify({
@@ -74,7 +70,6 @@ export async function POST(
     );
   }
 }
-
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -82,7 +77,6 @@ export async function PUT(
   try {
     const resolvedParams = await params;
     const { oldTagId, newTagId } = await req.json();
-
     if (!newTagId) {
       return new Response(JSON.stringify({ error: "newTagId is required" }), {
         status: 400,
@@ -91,15 +85,10 @@ export async function PUT(
         },
       });
     }
-
-    // Remove old tag if exists
     if (oldTagId) {
       await removeTagFromProblem(resolvedParams.id, oldTagId);
     }
-
-    // Add new tag
     await addTagToProblem(resolvedParams.id, newTagId);
-
     return new Response(
       JSON.stringify({
         message: "Tag updated successfully",
@@ -124,7 +113,6 @@ export async function PUT(
     );
   }
 }
-
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -132,7 +120,6 @@ export async function DELETE(
   try {
     const resolvedParams = await params;
     const { tagId } = await req.json();
-
     if (!tagId) {
       return new Response(JSON.stringify({ error: "tagId is required" }), {
         status: 400,
@@ -141,9 +128,7 @@ export async function DELETE(
         },
       });
     }
-
     await removeTagFromProblem(resolvedParams.id, tagId);
-
     return new Response(
       JSON.stringify({
         message: "Tag removed successfully",
