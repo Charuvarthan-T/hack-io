@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ArrowLeft, Clock, CheckCircle2, Circle, Code, Trophy } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-
 interface Problem {
   id: string;
   title: string;
@@ -17,32 +15,25 @@ interface Problem {
   order_index: number | null;
   is_solved?: boolean;
 }
-
 export default function TakeContestPage() {
   const params = useParams();
   const router = useRouter();
   const contestId = params.id as string;
-
   const [contest, setContest] = useState<any>(null);
   const [problems, setProblems] = useState<Problem[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
-
   useEffect(() => {
     fetchContestData();
   }, [contestId]);
-
   useEffect(() => {
     if (!contest) return;
-
     const interval = setInterval(() => {
       calculateTimeRemaining();
     }, 1000);
-
     return () => clearInterval(interval);
   }, [contest]);
-
   const fetchContestData = async () => {
     try {
       setLoading(true);
@@ -51,17 +42,13 @@ export default function TakeContestPage() {
         fetch(`/api/contests/${contestId}/problems`),
         fetch(`/api/contests/${contestId}/submissions`),
       ]);
-
       if (!contestRes.ok) throw new Error("Failed to fetch contest");
-
       const contestData = await contestRes.json();
       setContest(contestData.contest);
-
       if (problemsRes.ok) {
         const problemsData = await problemsRes.json();
         setProblems(problemsData.problems || []);
       }
-
       if (submissionsRes.ok) {
         const submissionsData = await submissionsRes.json();
         setSubmissions(submissionsData.submissions || []);
@@ -73,24 +60,19 @@ export default function TakeContestPage() {
       setLoading(false);
     }
   };
-
   const calculateTimeRemaining = () => {
     if (!contest) return;
-
     const now = new Date();
     const endTime = new Date(contest.end_time);
     const diff = endTime.getTime() - now.getTime();
-
     if (diff <= 0) {
       setTimeRemaining("Contest Ended");
       return;
     }
-
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
     if (days > 0) {
       setTimeRemaining(`${days}d ${hours}h ${minutes}m`);
     } else if (hours > 0) {
@@ -99,26 +81,20 @@ export default function TakeContestPage() {
       setTimeRemaining(`${minutes}m ${seconds}s`);
     }
   };
-
   const isProblemSolved = (problemId: string) => {
     return submissions.some((s) => s.problem_id === problemId && s.is_solved);
   };
-
   const getTotalPoints = () => {
     return submissions
       .filter((s) => s.is_solved)
       .reduce((sum, s) => sum + (s.points_earned || 0), 0);
   };
-
   const getSolvedCount = () => {
     return submissions.filter((s) => s.is_solved).length;
   };
-
   const handleSolveProblem = (problemId: string) => {
-    // Navigate to contest problem page
     router.push(`/contests/${contestId}/problems/${problemId}`);
   };
-
   const isContestActive = () => {
     if (!contest) return false;
     const now = new Date();
@@ -126,7 +102,6 @@ export default function TakeContestPage() {
     const endTime = new Date(contest.end_time);
     return now >= startTime && now <= endTime;
   };
-
   const formatDate = (dateString: string | Date) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
@@ -137,7 +112,6 @@ export default function TakeContestPage() {
       minute: "2-digit",
     }).format(date);
   };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -145,7 +119,6 @@ export default function TakeContestPage() {
       </div>
     );
   }
-
   if (!contest) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -153,9 +126,7 @@ export default function TakeContestPage() {
       </div>
     );
   }
-
   const active = isContestActive();
-
   return (
     <div className="container mx-auto py-10">
       <Button
@@ -166,9 +137,8 @@ export default function TakeContestPage() {
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Contests
       </Button>
-
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Content */}
+        {}
         <div className="lg:col-span-2">
           <Card className="mb-6">
             <CardHeader>
@@ -207,7 +177,6 @@ export default function TakeContestPage() {
               </div>
             </CardContent>
           </Card>
-
           <Card>
             <CardHeader>
               <CardTitle>Problems</CardTitle>
@@ -269,15 +238,14 @@ export default function TakeContestPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Sidebar */}
+        {}
         <div className="lg:col-span-1">
           <Card className="sticky top-4">
             <CardHeader>
               <CardTitle>Your Progress</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Timer */}
+              {}
               {active && (
                 <div className="text-center p-4 bg-accent rounded-lg">
                   <div className="flex items-center justify-center gap-2 text-muted-foreground mb-2">
@@ -287,10 +255,8 @@ export default function TakeContestPage() {
                   <div className="text-3xl font-bold">{timeRemaining}</div>
                 </div>
               )}
-
               <Separator />
-
-              {/* Score */}
+              {}
               <div className="space-y-4">
                 <div className="text-center p-4 bg-primary/10 rounded-lg">
                   <div className="text-muted-foreground text-sm mb-1">Total Points</div>
@@ -298,7 +264,6 @@ export default function TakeContestPage() {
                     {getTotalPoints()}
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-3 border rounded-lg">
                     <div className="text-2xl font-bold text-green-500">
@@ -313,8 +278,7 @@ export default function TakeContestPage() {
                     <div className="text-xs text-muted-foreground">Remaining</div>
                   </div>
                 </div>
-
-                {/* Progress Bar */}
+                {}
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-muted-foreground">Progress</span>
@@ -339,10 +303,8 @@ export default function TakeContestPage() {
                   </div>
                 </div>
               </div>
-
               <Separator />
-
-              {/* Actions */}
+              {}
               <div className="space-y-2">
                 <Button
                   variant="outline"
