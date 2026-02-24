@@ -2,13 +2,10 @@ import "dotenv/config";
 import axios from "axios";
 import sql from "../lib/db";
 import { createExternalHackathon } from "../repository/external_hackathon.repository";
-
 async function cleanupAndSeed() {
     console.log("🧹 Cleaning up external_hackathons table...");
     await sql`DELETE FROM external_hackathons`;
-
     console.log("🌱 Seeding ONLY verified REAL hackathons...");
-
     const hackathons = [
         {
             title: "LA Hacks 2026",
@@ -56,11 +53,8 @@ async function cleanupAndSeed() {
             source: "Unstop"
         }
     ];
-
     for (const hack of hackathons) {
         process.stdout.write(`🔍 Validating ${hack.title}... `);
-        
-        // Use a lightweight validation for the seed script
         try {
             await axios.get(hack.external_url, { timeout: 10000, maxRedirects: 5 });
             await createExternalHackathon(hack);
@@ -69,9 +63,7 @@ async function cleanupAndSeed() {
             console.log("❌ Broken! Skipping.");
         }
     }
-
     console.log(`✅ Success! Seeded ${hackathons.length} high-quality, verified hackathons.`);
     process.exit(0);
 }
-
 cleanupAndSeed();
