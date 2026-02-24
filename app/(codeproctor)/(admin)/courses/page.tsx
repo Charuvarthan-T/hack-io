@@ -18,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-
 export default function CoursesPage() {
   const [data, setData] = useState<course[]>([]);
   const [loading, setLoading] = useState(false);
@@ -38,17 +37,14 @@ export default function CoursesPage() {
   const [editLoading, setEditLoading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState<course | null>(null);
-
   useEffect(() => {
     getData();
   }, [pagination, sorting, globalFilter]);
-
   async function getData(): Promise<void> {
     setLoading(true);
     try {
       const sortBy = sorting.length > 0 ? sorting[0].id : "id";
       const sortOrder = sorting.length > 0 && sorting[0].desc ? "desc" : "asc";
-
       const params = new URLSearchParams({
         page: (pagination.pageIndex + 1).toString(),
         pageSize: pagination.pageSize.toString(),
@@ -56,13 +52,10 @@ export default function CoursesPage() {
         sortBy,
         sortOrder,
       });
-
       const courses = await fetch(`/api/courses?${params.toString()}`);
-
       if (!courses.ok) {
         throw new Error("Failed to fetch courses");
       }
-
       const res = await courses.json();
       setData(res.data);
       setTotalRows(res.total);
@@ -75,17 +68,14 @@ export default function CoursesPage() {
       setLoading(false);
     }
   }
-
   async function refetchData(): Promise<void> {
     await getData();
   }
-
   async function handleCreateCourse(): Promise<void> {
     if (!newCourseName.trim()) {
       toast.error("Please enter a course name");
       return;
     }
-
     setCreateLoading(true);
     try {
       const response = await fetch("/api/courses", {
@@ -95,7 +85,6 @@ export default function CoursesPage() {
         },
         body: JSON.stringify({ name: newCourseName.trim() }),
       });
-
       if (response.ok) {
         setIsCreateDialogOpen(false);
         setNewCourseName("");
@@ -114,13 +103,11 @@ export default function CoursesPage() {
       setCreateLoading(false);
     }
   }
-
   async function handleEditCourse(): Promise<void> {
     if (!editCourse?.name.trim()) {
       toast.error("Please enter a course name");
       return;
     }
-
     setEditLoading(true);
     try {
       const response = await fetch("/api/courses", {
@@ -133,7 +120,6 @@ export default function CoursesPage() {
           name: editCourse.name.trim(),
         }),
       });
-
       if (response.ok) {
         setIsEditDialogOpen(false);
         setEditCourse(null);
@@ -152,25 +138,20 @@ export default function CoursesPage() {
       setEditLoading(false);
     }
   }
-
   function openEditDialog(course: course): void {
     setEditCourse({ ...course });
     setIsEditDialogOpen(true);
   }
-
   function openDeleteDialog(course: course): void {
     setCourseToDelete(course);
     setIsDeleteDialogOpen(true);
   }
-
   async function handleDeleteCourse(): Promise<void> {
     if (!courseToDelete) return;
-
     try {
       const response = await fetch(`/api/courses?id=${courseToDelete.id}`, {
         method: "DELETE",
       });
-
       if (response.ok) {
         await refetchData();
         toast.success("Course deleted successfully");
@@ -185,7 +166,6 @@ export default function CoursesPage() {
       toast.error("Failed to delete course");
     }
   }
-
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -267,7 +247,6 @@ export default function CoursesPage() {
           loading={loading}
         />
       </div>
-
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -315,7 +294,6 @@ export default function CoursesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       <ConfirmDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
