@@ -3,7 +3,6 @@ import {
   getProblemById,
   editProblem,
 } from "@/repository/problem.repository";
-
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -11,7 +10,6 @@ export async function GET(
   try {
     const {id} = await params;
     const problem = await getProblemById(id);
-
     if (!problem) {
       return new Response(JSON.stringify({ error: "Problem not found" }), {
         status: 404,
@@ -20,7 +18,6 @@ export async function GET(
         },
       });
     }
-
     return new Response(JSON.stringify(problem), {
       status: 200,
       headers: {
@@ -37,7 +34,6 @@ export async function GET(
     });
   }
 }
-
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -45,7 +41,6 @@ export async function DELETE(
   try {
     const { id } = await params;
     const result = await deleteProblem(id);
-
     if (!result) {
       return new Response(JSON.stringify({ error: "Problem not found" }), {
         status: 404,
@@ -54,7 +49,6 @@ export async function DELETE(
         },
       });
     }
-
     return new Response(
       JSON.stringify({ message: "Problem deleted successfully" }),
       {
@@ -74,7 +68,6 @@ export async function DELETE(
     });
   }
 }
-
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -83,7 +76,6 @@ export async function PUT(
     const resolvedParams = await params;
     const body = await req.json();
     const { title, description } = body;
-
     if (!title || !description) {
       return new Response(
         JSON.stringify({ error: "Title and description are required" }),
@@ -95,9 +87,7 @@ export async function PUT(
         }
       );
     }
-
     const updatedProblem = await editProblem(resolvedParams.id, { title, description });
-
     if (!updatedProblem) {
       return new Response(JSON.stringify({ error: "Problem not found" }), {
         status: 404,
@@ -106,7 +96,6 @@ export async function PUT(
         },
       });
     }
-
     return new Response(JSON.stringify(updatedProblem), {
       status: 200,
       headers: {
