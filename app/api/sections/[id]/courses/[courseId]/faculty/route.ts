@@ -1,15 +1,11 @@
 import { getAvailableFaculty, assignFacultyToCourse, removeFacultyFromCourse } from "@/repository/section.repository";
-
-// GET: Get available faculty for a specific course-section combination
 export async function GET(
-  request: Request, 
+  request: Request,
   { params }: { params: { id: string; courseId: string } }
 ) {
   try {
     const { id: sectionId, courseId } = await params;
-    
     const result = await getAvailableFaculty(courseId, sectionId);
-    
     return new Response(JSON.stringify(result), {
       headers: { "Content-Type": "application/json" },
     });
@@ -21,25 +17,20 @@ export async function GET(
     );
   }
 }
-
-// POST: Assign faculty to a course-section combination
 export async function POST(
-  request: Request, 
+  request: Request,
   { params }: { params: { id: string; courseId: string } }
 ) {
   try {
     const { id: sectionId, courseId } = await params;
     const { facultyId } = await request.json();
-    
     if (!facultyId) {
       return new Response(
         JSON.stringify({ status: false, error: "Faculty ID is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    
     const result = await assignFacultyToCourse(courseId, sectionId, facultyId);
-    
     return new Response(JSON.stringify(result), {
       headers: { "Content-Type": "application/json" },
     });
@@ -51,26 +42,21 @@ export async function POST(
     );
   }
 }
-
-// DELETE: Remove faculty assignment from a course-section combination
 export async function DELETE(
-  request: Request, 
+  request: Request,
   { params }: { params: { id: string; courseId: string } }
 ) {
   try {
     const { id: sectionId, courseId } = await params;
     const url = new URL(request.url);
     const facultyId = url.searchParams.get('facultyId');
-    
     if (!facultyId) {
       return new Response(
         JSON.stringify({ status: false, error: "Faculty ID is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    
     const result = await removeFacultyFromCourse(courseId, sectionId, facultyId);
-    
     return new Response(JSON.stringify(result), {
       headers: { "Content-Type": "application/json" },
     });
