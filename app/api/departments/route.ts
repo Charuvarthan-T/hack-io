@@ -5,21 +5,16 @@ import {
   editDepartment,
   deleteDepartment,
 } from "@/repository/department.repository";
-
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
     const search = searchParams.get("search") || "";
     const sortBy = searchParams.get("sortBy") || "id";
     const sortOrder = searchParams.get("sortOrder") || "asc";
-
     const result = await getDepartmentsWithPagination(page, pageSize, search, sortBy, sortOrder);
-
     return NextResponse.json(result);
-
   } catch (error) {
     console.error("Error fetching departments:", error);
     return NextResponse.json(
@@ -28,12 +23,10 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const result = await createDepartment(body);
-
     if (result.success) {
       return NextResponse.json({ message: result.message }, { status: 201 });
     } else {
@@ -47,12 +40,10 @@ export async function POST(request: Request) {
     );
   }
 }
-
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const result = await editDepartment(body);
-
     if (result.success) {
       return NextResponse.json({ message: result.message });
     } else {
@@ -66,21 +57,17 @@ export async function PUT(request: Request) {
     );
   }
 }
-
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
-
     if (!id) {
       return NextResponse.json(
         { error: "Department ID is required" },
         { status: 400 }
       );
     }
-
     const result = await deleteDepartment(id);
-
     if (result.success) {
       return NextResponse.json({ message: result.message });
     } else {
