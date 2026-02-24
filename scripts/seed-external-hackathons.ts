@@ -1,10 +1,7 @@
 import "dotenv/config";
 import { createExternalHackathon } from "../repository/external_hackathon.repository";
-
 async function seed() {
     console.log("Seeding verified, working external hackathons...");
-
-    // These are real, high-profile hackathons with stable URLs
     const hackathons = [
         {
             title: "LA Hacks 2026",
@@ -38,7 +35,7 @@ async function seed() {
             description: "Build impactful solutions using Google's newest AI capabilities and Gemini Live Agent.",
             deadline: new Date("2026-05-15"),
             mode: "online" as const,
-            external_url: "https://devpost.com/hackathons", // Fallback to landing if deep link is dynamic
+            external_url: "https://devpost.com/hackathons",
             skills: ["ai_ml", "backend"],
             source: "Devpost"
         },
@@ -52,13 +49,10 @@ async function seed() {
             source: "Unstop"
         }
     ];
-
     for (const hack of hackathons) {
         await createExternalHackathon(hack);
     }
-
     console.log(`✅ Seeded ${hackathons.length} REAL active external hackathons.`);
     process.exit(0);
 }
-
 seed();
