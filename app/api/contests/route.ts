@@ -7,16 +7,12 @@ import {
   createContest,
   getContestsForStudent,
 } from "@/repository/contest.repository";
-
-// GET /api/contests - Get all contests or paginated contests
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const searchParams = req.nextUrl.searchParams;
     const pageParam = searchParams.get("page");
     const pageSizeParam = searchParams.get("pageSize");
@@ -26,13 +22,10 @@ export async function GET(req: NextRequest) {
     const sortBy = searchParams.get("sortBy") || "created_at";
     const sortOrder = searchParams.get("sortOrder") || "desc";
     const forStudent = searchParams.get("forStudent") === "true";
-
-    // If student, return only contests they can access
     if (forStudent || session.user.role === "student") {
       const contests = await getContestsForStudent(session.user.id);
       return NextResponse.json( contests );
     }
-
     const result = await getContestsWithPagination(
       page,
       pageSize,
@@ -50,21 +43,15 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-
-// POST /api/contests - Create a new contest
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    // Only admin and faculty can create contests
     if (session.user.role !== "admin" && session.user.role !== "faculty") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-
     const body = await req.json();
     const {
       title,
@@ -74,14 +61,12 @@ export async function POST(req: NextRequest) {
       duration_minutes,
       is_active,
     } = body;
-
     if (!title || !start_time || !end_time) {
       return NextResponse.json(
         { error: "Title, start_time, and end_time are required" },
         { status: 400 }
       );
     }
-
     const contest = await createContest({
       title,
       description,
@@ -91,7 +76,6 @@ export async function POST(req: NextRequest) {
       duration_minutes,
       is_active,
     });
-
     return NextResponse.json({ contest }, { status: 201 });
   } catch (error) {
     console.error("Error creating contest:", error);
