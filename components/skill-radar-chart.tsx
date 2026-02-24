@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import {
     Radar,
@@ -23,13 +22,11 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-
 export default function SkillRadarChart() {
     const [data, setData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<string | null>(null);
     const [updating, setUpdating] = useState(false);
-
     const fetchSkills = async () => {
         try {
             const res = await fetch("/api/student/skills");
@@ -37,15 +34,12 @@ export default function SkillRadarChart() {
             if (json.success) {
                 const skills = json.skills || {};
                 const taxonomy = json.taxonomy || [];
-
-                // Ensure every taxonomy item has a value (even if 0)
                 const chartData = taxonomy.map((skill: string) => ({
                     subject: skill.replace("_", " ").toUpperCase(),
                     A: (skills[skill] || 0) * 100,
                     fullMark: 100,
                     original: skill
                 }));
-
                 setData(chartData);
                 setLastUpdated(json.last_updated);
             }
@@ -55,11 +49,9 @@ export default function SkillRadarChart() {
             setLoading(false);
         }
     };
-
     useEffect(() => {
         fetchSkills();
     }, []);
-
     const handleManualUpdate = async (skill: string, value: number) => {
         setUpdating(true);
         try {
@@ -78,7 +70,6 @@ export default function SkillRadarChart() {
             setUpdating(false);
         }
     };
-
     if (loading) {
         return (
             <Card className="w-full h-[220px] flex items-center justify-center bg-black/40 border-white/10 backdrop-blur-md">
@@ -86,15 +77,13 @@ export default function SkillRadarChart() {
             </Card>
         );
     }
-
     return (
         <Card className="relative overflow-hidden group border-white/10 bg-gradient-to-br from-zinc-900 to-black p-4 backdrop-blur-xl transition-all hover:border-blue-500/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]">
-            {/* Background Glow */}
+            {}
             <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-blue-600/10 blur-[80px]" />
             <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full bg-purple-600/10 blur-[80px]" />
-
             <div className="flex flex-col md:flex-row items-center gap-6">
-                {/* Compact Radar Chart */}
+                {}
                 <div className="h-[180px] w-[180px] shrink-0 relative">
                     <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-xl animate-pulse" />
                     <ResponsiveContainer width="100%" height="100%">
@@ -122,8 +111,7 @@ export default function SkillRadarChart() {
                         </RadarChart>
                     </ResponsiveContainer>
                 </div>
-
-                {/* Skill Stats & Actions */}
+                {}
                 <div className="flex-1 w-full space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
@@ -138,7 +126,6 @@ export default function SkillRadarChart() {
                             </div>
                             <p className="text-[10px] text-zinc-500">Normalizing activity across platform...</p>
                         </div>
-
                         <Dialog>
                             <DialogTrigger asChild>
                                 <Button size="sm" variant="outline" className="h-7 gap-1.5 px-3 rounded-full border-white/10 bg-white/5 hover:bg-white/10 hover:border-blue-500/50 text-[10px] font-bold text-zinc-400 hover:text-white uppercase tracking-wider">
@@ -173,7 +160,6 @@ export default function SkillRadarChart() {
                             </DialogContent>
                         </Dialog>
                     </div>
-
                     <div className="grid grid-cols-2 gap-2">
                         {data.slice(0, 4).map((item) => (
                             <div key={item.original} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2 flex flex-col gap-1 hover:bg-white/[0.05] transition-colors">
@@ -187,7 +173,6 @@ export default function SkillRadarChart() {
                             </div>
                         ))}
                     </div>
-
                     <div className="flex items-center justify-between pt-1">
                         <span className="text-[9px] text-zinc-600 italic">Last sync {lastUpdated ? new Date(lastUpdated).toLocaleDateString() : "Never"}</span>
                         <div className="flex gap-1.5">
