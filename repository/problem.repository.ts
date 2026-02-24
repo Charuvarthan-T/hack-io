@@ -187,10 +187,10 @@ export async function awardPointsForProblem(
     }
 
     await sql`
-    INSERT INTO problems_users (userid, problemid, is_completed)
-    VALUES (${userId}, ${problemId}, 'solved')
+    INSERT INTO problems_users (userid, problemid, is_completed, updated_at)
+    VALUES (${userId}, ${problemId}, 'solved', NOW())
     ON CONFLICT (userid, problemid)
-    DO UPDATE SET is_completed = 'solved'`;
+    DO UPDATE SET is_completed = 'solved', updated_at = NOW()`;
 
     await sql`
     UPDATE users
