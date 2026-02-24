@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -10,27 +9,21 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Loader2, ArrowLeft } from "lucide-react";
-
 export default function AdminSettingsPage() {
     const params = useParams();
     const router = useRouter();
     const hackathonId = params.id as string;
-
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-
     const [discordEnabled, setDiscordEnabled] = useState(false);
-
     const [serverType, setServerType] = useState<"INTERNAL" | "EXTERNAL">("INTERNAL");
     const [inviteLink, setInviteLink] = useState("");
     const [categoryId, setCategoryId] = useState("");
-
     useEffect(() => {
         if (hackathonId) {
             fetchHackathon();
         }
     }, [hackathonId]);
-
     const fetchHackathon = async () => {
         try {
             const res = await fetch(`/api/hackathons/${hackathonId}`);
@@ -48,7 +41,6 @@ export default function AdminSettingsPage() {
             setLoading(false);
         }
     };
-
     const handleSave = async () => {
         setSaving(true);
         try {
@@ -57,13 +49,11 @@ export default function AdminSettingsPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     discord_enabled: discordEnabled,
-
                     discord_server_type: serverType,
                     discord_invite_link: inviteLink,
                     discord_category_id: categoryId
                 }),
             });
-
             if (res.ok) {
                 toast.success("Settings saved successfully");
             } else {
@@ -76,11 +66,9 @@ export default function AdminSettingsPage() {
             setSaving(false);
         }
     };
-
     if (loading) {
         return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
     }
-
     return (
         <div className="container mx-auto p-6 max-w-3xl">
             <div className="mb-6">
@@ -90,7 +78,6 @@ export default function AdminSettingsPage() {
                 <h1 className="text-3xl font-bold">Hackathon Settings</h1>
                 <p className="text-muted-foreground">Manage configuration for this event.</p>
             </div>
-
             <Card className="mb-8">
                 <CardHeader>
                     <CardTitle>Discord Integration</CardTitle>
@@ -111,7 +98,6 @@ export default function AdminSettingsPage() {
                             onCheckedChange={setDiscordEnabled}
                         />
                     </div>
-
                     {discordEnabled && (
                         <div className="space-y-6 animate-in slide-in-from-top-2">
                             <div className="space-y-3">
@@ -141,7 +127,6 @@ export default function AdminSettingsPage() {
                                     </div>
                                 </RadioGroup>
                             </div>
-
                             {serverType === "INTERNAL" && (
                                 <div className="space-y-2">
                                     <Label htmlFor="category">Discord Category ID</Label>
@@ -156,7 +141,6 @@ export default function AdminSettingsPage() {
                                     </p>
                                 </div>
                             )}
-
                             {serverType === "EXTERNAL" && (
                                 <div className="space-y-2">
                                     <Label htmlFor="invite">Discord Invite Link</Label>
@@ -173,7 +157,6 @@ export default function AdminSettingsPage() {
                             )}
                         </div>
                     )}
-
                     <div className="flex justify-end pt-4">
                         <Button onClick={handleSave} disabled={saving}>
                             {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
