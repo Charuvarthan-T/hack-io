@@ -18,14 +18,11 @@ import {
 import Editor from "@monaco-editor/react";
 import { ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
-
 export default function editor() {
   const [language, setLanguage] = useState<string>("javascript");
-  const [languageCode, setLanguageCode] = useState(63); // Node.js JavaScript (default)
+  const [languageCode, setLanguageCode] = useState(63);
   const [output, setOutput] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  // Language mapping for Monaco Editor
   const getMonacoLanguage = (lang: string): string => {
     switch (lang) {
       case "c++": return "cpp";
@@ -36,8 +33,6 @@ export default function editor() {
       default: return "javascript";
     }
   };
-
-  // Language-specific default code templates
   const getDefaultCode = (lang: string): string => {
     switch (lang) {
       case "python":
@@ -45,12 +40,10 @@ export default function editor() {
 def solution():
     # Write your solution here
     pass
-
 # Test your solution
 if __name__ == "__main__":
     result = solution()
     print(result)`;
-      
       case "javascript":
         return `// JavaScript Solution Here`;
       case "java":
@@ -58,74 +51,54 @@ if __name__ == "__main__":
 public class Main {
     public static void main(String[] args) {
         Main sol = new Main();
-        // Test your solution
         System.out.println(sol.solve());
     }
-    
     public int solve() {
-        // Write your solution here
         return 0;
     }
 }`;
-      
       case "c++":
         return `// C++ Solution
 #include <iostream>
 #include <vector>
 #include <string>
 using namespace std;
-
 class Solution {
 public:
     int solve() {
-        // Write your solution here
         return 0;
     }
 };
-
 int main() {
     Solution sol;
-    // Test your solution
     cout << sol.solve() << endl;
     return 0;
 }`;
-      
       case "c":
         return `// C Solution
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 int solve() {
-    // Write your solution here
     return 0;
 }
-
 int main() {
-    // Test your solution
     printf("%d\\n", solve());
     return 0;
 }`;
-      
       default:
         return "// Write your solution here...";
     }
   };
-
   const [code, setCode] = useState<string>(getDefaultCode("javascript"));
-
-  // Update code when language changes
   useEffect(() => {
     setCode(getDefaultCode(language));
   }, [language]);
-
   async function handleClick() {
     setIsLoading(true);
     const apiUrl = process.env.NEXT_PUBLIC_JUDGE0_API_URL;
-
     if (apiUrl) {
       const url = `${apiUrl}/submissions?base64_encoded=false&wait=true`;
-
       const options = {
         method: "POST",
         headers: {
@@ -150,7 +123,6 @@ int main() {
       }
     }
   }
-
   return (
     <div>
       <div className="flex justify-between">
@@ -165,7 +137,7 @@ int main() {
               <DropdownMenuCheckboxItem
                 onClick={() => {
                   setLanguage("python");
-                  setLanguageCode(71); // Python 3
+                  setLanguageCode(71);
                 }}
               >
                 Python
@@ -173,7 +145,7 @@ int main() {
               <DropdownMenuCheckboxItem
                 onClick={() => {
                   setLanguage("javascript");
-                  setLanguageCode(63); // Node.js JavaScript
+                  setLanguageCode(63);
                 }}
               >
                 JavaScript
@@ -181,7 +153,7 @@ int main() {
               <DropdownMenuCheckboxItem
                 onClick={() => {
                   setLanguage("java");
-                  setLanguageCode(62); // Java 13
+                  setLanguageCode(62);
                 }}
               >
                 Java
@@ -189,7 +161,7 @@ int main() {
               <DropdownMenuCheckboxItem
                 onClick={() => {
                   setLanguage("c++");
-                  setLanguageCode(54); // C++ (GCC 9.2.0)
+                  setLanguageCode(54);
                 }}
               >
                 C++
@@ -197,7 +169,7 @@ int main() {
               <DropdownMenuCheckboxItem
                 onClick={() => {
                   setLanguage("c");
-                  setLanguageCode(50); // C (GCC 9.2.0)
+                  setLanguageCode(50);
                 }}
               >
                 C
@@ -212,7 +184,7 @@ int main() {
       <div className="flex h-screen gap-4">
         <div className="w-1/2">
           <Editor
-            key={language} // Force re-render when language changes
+            key={language}
             height="80vh"
             language={getMonacoLanguage(language)}
             value={code}
