@@ -1,5 +1,4 @@
 "use client";
-
 import { course } from "@/types/types";
 import { ArrowUpDown, Plus, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,13 +15,10 @@ import {
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-
-// Create a separate component for the action cell to manage dialog state
 const ActionCell = ({ course }: { course: course }) => {
   const { data: session } = useSession();
   const user = session?.user;
   const [dialogOpen, setDialogOpen] = useState(false);
-
   return (
     <>
       <Button
@@ -43,19 +39,14 @@ const ActionCell = ({ course }: { course: course }) => {
     </>
   );
 };
-
-// Create a separate component for the dropdown actions
 const ActionsDropdown = ({ course }: { course: course }) => {
   const router = useRouter();
-
   const handleViewProblems = () => {
     router.push(`/my-courses/${course.id}/problems`);
   };
-
   const handleCopyCourseId = () => {
     navigator.clipboard.writeText(course.id);
   };
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -77,7 +68,6 @@ const ActionsDropdown = ({ course }: { course: course }) => {
     </DropdownMenu>
   );
 };
-
 export const createCourseColumns = (userRole: string) => {
   const myCourseColumns: ColumnDef<course>[] = [
     {
@@ -121,7 +111,6 @@ export const createCourseColumns = (userRole: string) => {
       header: "Actions",
       cell: ({ row }) => {
         const course = row.original;
-
         return (
           <div className="flex justify-between">
             <ActionsDropdown course={course} />
@@ -131,5 +120,5 @@ export const createCourseColumns = (userRole: string) => {
       },
     },
   ];
-  return myCourseColumns; 
+  return myCourseColumns;
 };
