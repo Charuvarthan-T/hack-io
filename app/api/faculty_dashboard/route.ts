@@ -1,49 +1,35 @@
 import { requireAuth } from "@/lib/auth-helpers";
 import sql from "@/lib/db";
 import { getMyCoursesForFaculty } from "@/repository/user.repository";
-
 export async function GET() {
   try {
     const user = await requireAuth();
-
-    // If user is not authenticated, requireAuth returns a NextResponse
     if ("json" in user) {
       return user;
     }
-
-    // Get faculty courses
     const facultyCourses = await getMyCoursesForFaculty(user.id);
-
-    // Get course statistics
     const coursesCount = await sql`
             SELECT COUNT(DISTINCT fcs.courseid) as count
             FROM faculty_courses_section fcs
             WHERE fcs.userid = ${user.id}
         `;
-
-    // Get sections count
     const sectionsCount = await sql`
             SELECT COUNT(DISTINCT fcs.sectionid) as count
             FROM faculty_courses_section fcs
             WHERE fcs.userid = ${user.id}
         `;
-
-    // Get students count across all courses
     const studentsCount = await sql`
             SELECT COUNT(DISTINCT su.userid) as count
             FROM faculty_courses_section fcs
             JOIN sections_users su ON fcs.sectionid = su.sectionid
             WHERE fcs.userid = ${user.id}
         `;
-
-    // Get total problems across faculty courses
     const problemsCount = await sql`
             SELECT COUNT(DISTINCT pc.problemid) as count
             FROM faculty_courses_section fcs
             JOIN problems_courses pc ON fcs.courseid = pc.courseid
             WHERE fcs.userid = ${user.id}
         `;
-
     return new Response(
       JSON.stringify({
         success: true,
