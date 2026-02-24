@@ -6,6 +6,7 @@ interface DashboardLayoutProps {
   admin: ReactNode;
   faculty: ReactNode;
   student: ReactNode;
+  judge: ReactNode;
 }
 
 export default async function DashboardLayout({
@@ -13,6 +14,7 @@ export default async function DashboardLayout({
   admin,
   faculty,
   student,
+  judge,
 }: DashboardLayoutProps) {
   const user = await getAuthenticatedUser();
 
@@ -40,6 +42,10 @@ export default async function DashboardLayout({
 
   if (user.role === "student") {
     return <>{student}</>;
+  }
+
+  if (user.role === "judge") {
+    return <>{judge}</>;
   }
 
   // Fallback for unknown roles

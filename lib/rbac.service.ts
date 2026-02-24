@@ -71,15 +71,28 @@ export class RBACService {
 
         // 3. Conditional / Resource-Specific Checks
         if (action === 'SCORE_PROJECT' && role === 'JUDGE') {
-            // Additional check: Is this judge assigned to this project?
-            // For MVP, we allow judges to score any project unless we add specific assignment logic.
-            // But we MUST enforce Blind Judging at the data access level, not just here.
+            // Check Hackathon Phase
+            const { getHackathonById } = await import("@/repository/hackathon.repository");
+            const hackathon = await getHackathonById(hackathonId);
+            if (hackathon?.phase !== 'EVALUATION') {
+                console.warn(`RBAC: Judge denied scoring during ${hackathon?.phase} phase`);
+                return false;
+            }
+
+            // Check if already evaluated (Finalized)
+            const { getEvaluation } = await import("@/repository/evaluation.repository");
+            if (resourceId) {
+                const evaluation = await getEvaluation(resourceId, userId);
+                if (evaluation && !evaluation.is_draft) {
+                    console.warn(`RBAC: Judge denied scoring finalized evaluation ${resourceId}`);
+                    return false;
+                }
+            }
+
             return true;
         }
 
         if (action === 'VIEW_PROJECT') {
-            // All roles can view projects, but DATA returned differs.
-            // The Service simply says "Yes you can view", the Controller must sanitize.
             return true;
         }
 

@@ -12,6 +12,7 @@ export interface Hackathon {
     start_date: Date;
     end_date: Date;
     status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "COMPLETED";
+    phase: "SUBMISSION" | "EVALUATION" | "RESULTS";
     created_by: string;
     max_team_size: number;
     created_at: Date;
@@ -194,16 +195,40 @@ export async function getSubmissionForBlindJudging(submissionId: string) {
     try {
         const result = await sql`
       SELECT 
-        id,
-        problem_id,
-        code_content, 
-        language,
-        submission_time
-      FROM contest_submissions 
-      WHERE id = ${submissionId}
+        s.id,
+        s.hackathon_id,
+        s.repo_url, 
+        s.ppt_object_key,
+        s.submitted_at,
+        h.title as hackathon_title
+      FROM submissions s
+      JOIN hackathons h ON s.hackathon_id = h.id
+      WHERE s.id = ${submissionId}
     `;
+        return result[0] || null;
     } catch (error) {
         console.error("Error getting blind submission:", error);
+        throw error;
+    }
+}
+
+export async function getAssignedSubmissionsForJudge(hackathonId: string, judgeId: string) {
+    try {
+        // For now, judges see all submissions in the hackathon. 
+        // We link them to whether they have already evaluated it.
+        const result = await sql`
+            SELECT 
+                s.id,
+                s.submitted_at,
+                (SELECT id FROM hackathon_evaluations WHERE submission_id = s.id AND judge_id = ${judgeId}) as evaluation_id,
+                (SELECT is_draft FROM hackathon_evaluations WHERE submission_id = s.id AND judge_id = ${judgeId}) as is_draft
+            FROM submissions s
+            WHERE s.hackathon_id = ${hackathonId} AND s.status = 'SUBMITTED'
+            ORDER BY s.submitted_at DESC
+        `;
+        return result;
+    } catch (error) {
+        console.error("Error getting assigned submissions:", error);
         throw error;
     }
 }
@@ -275,10 +300,10 @@ export async function joinTeam(teamId: string, userId: string) {
             VALUES (${teamId}, ${userId})
             RETURNING *
         `;
-        
+
         // Fetch team details for event
         const team = await sql`SELECT hackathon_id FROM hackathon_teams WHERE id = ${teamId}`;
-        
+
         // Emit Event
         await emitEvent("team.member.added", {
             team_id: teamId,

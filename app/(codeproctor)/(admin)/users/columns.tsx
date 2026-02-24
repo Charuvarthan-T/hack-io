@@ -193,6 +193,7 @@ export const createColumns = (
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="faculty">Faculty</SelectItem>
                   <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="judge">Judge</SelectItem>
                 </SelectContent>
               </Select>
             </DialogContent>

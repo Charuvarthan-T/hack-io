@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Calendar, Users, Clock, ArrowRight, UserPlus, Users as UsersIcon, Settings, Send } from "lucide-react";
+import { Calendar, Users, Clock, ArrowRight, UserPlus, Users as UsersIcon, Settings, Send, ShieldCheck, Trophy } from "lucide-react";
 import { SubmissionModal } from "@/components/hackathon/SubmissionModal";
 import { AssignJudgesDialog } from "@/components/hackathon/AssignJudgesDialog";
 
@@ -23,6 +23,7 @@ interface HackathonDetails {
     start_date: string;
     end_date: string;
     status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "COMPLETED";
+    phase: "SUBMISSION" | "EVALUATION" | "RESULTS";
     max_team_size: number;
     user_status: {
         role: "ORGANIZER" | "PARTICIPANT" | "JUDGE" | "MENTOR" | null;
@@ -226,50 +227,104 @@ export default function HackathonDetailsPage() {
     const isOrganizerOrAdmin = user_status?.role === 'ORGANIZER' || session?.user?.role === 'admin';
 
     return (
-        <div className="container max-w-4xl mx-auto py-10 space-y-8">
+        <div className="container max-w-6xl mx-auto py-10 space-y-8">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <Badge className="mb-2" variant={status === 'ACTIVE' ? 'default' : 'secondary'}>
-                        {status}
-                    </Badge>
-                    <h1 className="text-4xl font-bold tracking-tight">{hackathon.title}</h1>
-                    <div className="flex items-center gap-4 mt-1">
-                        <p className="text-muted-foreground">
-                            Hosted by Protocol (Organizer)
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <Badge variant={status === 'ACTIVE' ? 'default' : 'secondary'}>
+                                {status}
+                            </Badge>
+                            <Badge variant="outline">
+                                {hackathon.phase} Phase
+                            </Badge>
+                        </div>
+                        <h1 className="text-5xl font-extrabold tracking-tight">{hackathon.title}</h1>
+                        <p className="text-muted-foreground flex items-center gap-2">
+                            Hosted by <span className="font-semibold text-foreground underline decoration-primary/50">Protocol</span>
                         </p>
-                        {isOrganizerOrAdmin && (
-                            <Button variant="outline" size="sm" onClick={() => router.push(`/hackathons/${hackathon.id}/admin/participants`)}>
-                                <UsersIcon className="h-4 w-4 mr-2" /> Manage Participants
+                    </div>
+
+                    {/* Action Group: Public & Role Specific */}
+                    <div className="flex flex-wrap gap-4 md:items-center">
+                        {/* Countdown inside header for better alignment */}
+                        {(status === 'PUBLISHED' || status === 'ACTIVE') && (
+                            <div className="flex flex-col items-end pr-4 border-r border-secondary-foreground/10">
+                                <span className="text-[10px] font-black uppercase text-muted-foreground tracking-tighter">
+                                    {status === 'ACTIVE' ? "Ends In" :
+                                        (status === 'PUBLISHED' && new Date() > new Date(hackathon.start_date) ? "Ends In" : "Starts In")
+                                    }
+                                </span>
+                                <span className={`text-2xl font-black font-mono leading-none ${(status === 'ACTIVE' || (status === 'PUBLISHED' && new Date() > new Date(hackathon.start_date)))
+                                    ? 'text-red-500 underline decoration-red-500/30' : 'text-primary'
+                                    }`}>
+                                    {timeLeft}
+                                </span>
+                            </div>
+                        )}
+
+                        <div className="flex gap-2">
+                            <Button variant="outline" className="border-secondary-foreground/20 hover:bg-secondary/20" onClick={() => router.push(`/hackathons/${hackathon.id}/leaderboard`)}>
+                                <Trophy className="h-4 w-4 mr-2 text-yellow-500" /> Leaderboard
                             </Button>
-                        )}
-                        {isOrganizerOrAdmin && (
-                            <Button variant="outline" size="sm" onClick={() => router.push(`/hackathons/${hackathon.id}/admin/settings`)}>
-                                <Settings className="h-4 w-4 mr-2" /> Settings
-                            </Button>
-                        )}
-                        {isOrganizerOrAdmin && (
-                            <AssignJudgesDialog hackathonId={hackathon.id} trigger={<Button variant="outline" size="sm">Assign Judges</Button>} />
-                        )}
+                            {user_status.role === 'JUDGE' && (
+                                <Button variant="default" className="bg-primary hover:bg-primary/90 shadow-xl shadow-primary/20 transition-all active:scale-95" onClick={() => router.push(`/hackathons/${hackathon.id}/judge`)}>
+                                    <ShieldCheck className="h-4 w-4 mr-2" /> Judge Dashboard
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Countdown Card */}
-                {(status === 'PUBLISHED' || status === 'ACTIVE') && (
-                    <Card className="min-w-[200px] bg-secondary/50 border-none">
-                        <CardContent className="p-4 text-center">
-                            <p className="text-xs text-muted-foreground uppercase font-semibold">
-                                {status === 'ACTIVE' ? "Ends In" :
-                                    (status === 'PUBLISHED' && new Date() > new Date(hackathon.start_date) ? "Ends In" : "Starts In")
-                                }
-                            </p>
-                            <p className={`text-2xl font-mono font-bold mt-1 ${(status === 'ACTIVE' || (status === 'PUBLISHED' && new Date() > new Date(hackathon.start_date)))
-                                    ? 'text-red-500' : 'text-primary'
-                                }`}>
-                                {timeLeft}
-                            </p>
-                        </CardContent>
-                    </Card>
+                {/* Organizer Toolbar */}
+                {isOrganizerOrAdmin && (
+                    <div className="flex flex-wrap items-center gap-3 p-4 bg-secondary/20 rounded-xl border border-secondary/50 shadow-sm">
+                        <div className="flex items-center gap-2 mr-4 border-r pr-4 border-secondary-foreground/10">
+                            <Settings className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Organizer Tools</span>
+                        </div>
+                        <Button variant="secondary" size="sm" onClick={() => router.push(`/hackathons/${hackathon.id}/admin/participants`)}>
+                            <UsersIcon className="h-4 w-4 mr-2" /> Participants
+                        </Button>
+                        <Button variant="secondary" size="sm" onClick={() => router.push(`/hackathons/${hackathon.id}/admin/settings`)}>
+                            <Settings className="h-4 w-4 mr-2" /> Settings
+                        </Button>
+                        <AssignJudgesDialog hackathonId={hackathon.id} trigger={
+                            <Button variant="secondary" size="sm">
+                                <UsersIcon className="h-4 w-4 mr-2" /> Assign Judges
+                            </Button>
+                        } />
+                        
+                        <div className="flex-1" />
+
+                        {/* Phase Compact Switcher */}
+                        <div className="flex items-center gap-2 bg-background/50 p-1 rounded-lg border">
+                            <span className="text-[10px] font-bold px-2 uppercase text-muted-foreground">Phase</span>
+                            <div className="flex gap-1">
+                                {(['SUBMISSION', 'EVALUATION', 'RESULTS'] as const).map((p) => (
+                                    <Button 
+                                        key={p} 
+                                        variant={hackathon.phase === p ? "default" : "ghost"} 
+                                        size="sm" 
+                                        className={`text-[10px] h-7 px-3 ${hackathon.phase === p ? 'shadow-sm' : ''}`}
+                                        onClick={async () => {
+                                            const res = await fetch(`/api/hackathons/${hackathon.id}`, {
+                                                method: "PATCH",
+                                                body: JSON.stringify({ phase: p })
+                                            });
+                                            if (res.ok) {
+                                                toast.success(`Phase updated to ${p}`);
+                                                fetchDetails();
+                                            }
+                                        }}
+                                    >
+                                        {p}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
                 )}
             </div>
 
