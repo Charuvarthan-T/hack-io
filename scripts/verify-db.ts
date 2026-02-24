@@ -1,19 +1,16 @@
 import "dotenv/config";
 import sql from "../lib/db";
-
 async function check() {
     try {
         const columns = await sql`
-            SELECT column_name, data_type 
-            FROM information_schema.columns 
+            SELECT column_name, data_type
+            FROM information_schema.columns
             WHERE table_name = 'problems_users';
         `;
         console.log("Columns in 'problems_users':", columns);
-
-        // Test the exact query that fails
         const testQuery = await sql`
-            SELECT 
-                p.id, 
+            SELECT
+                p.id,
                 p.difficulty,
                 ARRAY_AGG(t.name) as tags,
                 pu.updated_at as solved_at
@@ -26,11 +23,9 @@ async function check() {
             LIMIT 1
         `;
         console.log("Test query result:", testQuery);
-
     } catch (error) {
         console.error("Column check failed:", error);
     }
     process.exit(0);
 }
-
 check();
