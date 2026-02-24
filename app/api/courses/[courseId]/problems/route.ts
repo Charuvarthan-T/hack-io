@@ -2,7 +2,6 @@ import { requireAuth } from "@/lib/auth-helpers";
 import { createProblemWithTestCases, deleteProblem } from "@/repository/problem.repository";
 import { NextRequest } from "next/server";
 import { randomUUID } from "crypto";
-
 export async function POST(
   req: NextRequest,
   { params }: { params: { courseId: string } }
@@ -12,28 +11,21 @@ export async function POST(
     if (user instanceof Response) {
       return user;
     }
-
     const { courseId } = params;
     const body = await req.json();
     const { title, description, testCases } = body;
-
-    // Validate required fields
     if (!title || !description) {
       return new Response(
         JSON.stringify({ error: "Title and description are required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-
-    // Validate test cases
     if (!testCases || !Array.isArray(testCases) || testCases.length === 0) {
       return new Response(
         JSON.stringify({ error: "At least one test case is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-
-    // Validate each test case
     for (const testCase of testCases) {
       if (!testCase.input || !testCase.output) {
         return new Response(
@@ -42,7 +34,6 @@ export async function POST(
         );
       }
     }
-
     const problemData = {
       problemid: randomUUID(),
       title,
@@ -50,9 +41,7 @@ export async function POST(
       created_by: user.id,
       course: courseId,
     };
-
     const problem = await createProblemWithTestCases(problemData, testCases);
-
     return new Response(
       JSON.stringify({
         success: true,
@@ -69,7 +58,6 @@ export async function POST(
     );
   }
 }
-
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { courseId: string } }
@@ -79,29 +67,22 @@ export async function DELETE(
     if (user instanceof Response) {
       return user;
     }
-
     const { courseId } = params;
     const body = await req.json();
     const { problemId } = body;
-
     if (!problemId) {
       return new Response(
         JSON.stringify({ error: "Problem ID is required" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-
-    // Delete the course-specific problem entirely from the problems table
-    // This will also cascade delete related test cases and other relationships
     const deletedProblem = await deleteProblem(problemId);
-
     if (!deletedProblem) {
       return new Response(
         JSON.stringify({ error: "Problem not found or could not be deleted" }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
-
     return new Response(
       JSON.stringify({
         success: true,
