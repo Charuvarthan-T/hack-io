@@ -1,9 +1,7 @@
-
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getTeamMembers } from "@/repository/hackathon.repository";
-
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string; teamId: string }> }
@@ -14,7 +12,6 @@ export async function GET(
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const members = await getTeamMembers(teamId);
     return NextResponse.json(members);
   } catch (error) {
