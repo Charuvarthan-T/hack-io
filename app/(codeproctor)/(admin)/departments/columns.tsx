@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ColumnDef } from "@tanstack/react-table";
 import { toast } from "sonner";
-
 export const createDepartmentColumns = (
   refetchData: () => Promise<void>,
   openEditDialog: (department: department) => void,
@@ -75,11 +74,9 @@ export const createDepartmentColumns = (
       const handleDeleteDepartment = async () => {
         onDeleteDepartment(row.original);
       };
-
       const handleEditDepartment = () => {
         openEditDialog(row.original);
       };
-
       return (
         <>
           <DropdownMenu>
