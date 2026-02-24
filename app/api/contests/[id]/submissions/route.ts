@@ -5,22 +5,17 @@ import {
   getUserContestSubmissions,
   recordContestSubmission,
 } from "@/repository/contest.repository";
-
-// GET /api/contests/[id]/submissions - Get user's submissions for a contest
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const { id: contestId } = await params;
     const submissions = await getUserContestSubmissions(contestId, session.user.id);
-
     return NextResponse.json({ submissions });
   } catch (error) {
     console.error("Error fetching contest submissions:", error);
@@ -30,30 +25,24 @@ export async function GET(
     );
   }
 }
-
-// POST /api/contests/[id]/submissions - Record a contest submission
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session || !session.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     const { id: contestId } = await params;
     const body = await req.json();
     const { problemId, isSolved, pointsEarned } = body;
-
     if (!problemId) {
       return NextResponse.json(
         { error: "Problem ID is required" },
         { status: 400 }
       );
     }
-
     const submission = await recordContestSubmission(
       contestId,
       session.user.id,
@@ -61,7 +50,6 @@ export async function POST(
       isSolved || false,
       pointsEarned || 0
     );
-
     return NextResponse.json({ submission }, { status: 201 });
   } catch (error) {
     console.error("Error recording contest submission:", error);
