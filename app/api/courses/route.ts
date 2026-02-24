@@ -1,12 +1,10 @@
 import { NextResponse, NextRequest } from "next/server";
-// Course API endpoints
 import {
   getCoursesWithPagination,
   createCourse,
   editCourse,
   deleteCourse,
 } from "../../../repository/course.repository";
-
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -25,7 +23,6 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -43,7 +40,6 @@ export async function POST(request: Request) {
     );
   }
 }
-
 export async function PUT(request: Request) {
   try {
     const body = await request.json();
@@ -61,7 +57,6 @@ export async function PUT(request: Request) {
     );
   }
 }
-
 export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
