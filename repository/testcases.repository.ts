@@ -1,10 +1,8 @@
 import sql from "@/lib/db";
-
 export interface testCase {
   input: string;
   output: string;
 }
-
 export async function createTestCase(newTestCase: testCase) {
   try {
     await sql`INSERT INTO testcases (input, output) VALUES (${newTestCase.input}, ${newTestCase.output})`;
@@ -13,7 +11,6 @@ export async function createTestCase(newTestCase: testCase) {
     throw error;
   }
 }
-
 export async function getTestCasesByProblemId(problemId: string) {
   try {
     const testcases =
@@ -24,7 +21,6 @@ export async function getTestCasesByProblemId(problemId: string) {
     throw error;
   }
 }
-
 export async function getAllTestCases() {
   try {
     const testcases = await sql`SELECT * FROM testcases`;
@@ -34,7 +30,6 @@ export async function getAllTestCases() {
     throw error;
   }
 }
-
 export async function addTestCaseToProblem(
   problemId: string,
   testcaseId: string
@@ -46,20 +41,16 @@ export async function addTestCaseToProblem(
     throw error;
   }
 }
-
 export async function createAndAssignTestcase(
   problemId: string,
   testcase: { name: string; input: string; output: string }
 ) {
   const { input, output } = testcase;
-
   const res =
     await sql`INSERT INTO testcases (input, output) VALUES (${input}, ${output}) RETURNING id`;
   const testcaseId = res[0].id;
-
   await addTestCaseToProblem(problemId, testcaseId);
 }
-
 export async function deleteTestCase(testcaseId: string) {
   try {
     await sql`DELETE FROM problems_testcases WHERE testcase_id = ${testcaseId}`;
