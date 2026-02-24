@@ -1,5 +1,4 @@
 "use client";
-
 import { use, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,30 +8,21 @@ import { MessageSquare, Code, CheckSquare, UploadCloud, Users, ArrowLeft } from 
 import { toast } from "sonner";
 import { TaskList } from "@/components/team/task-list";
 import { SubmissionModal } from "@/components/hackathon/SubmissionModal";
-
 export default function TeamWorkspacePage({ params }: { params: Promise<{ id: string; teamId: string }> }) {
-    // Unwrap params using use() hook or await if in async component, but this is client component.
-    // In Next 15 client components, params is a promise but can be unwrapped with React.use() if needed,
-    // or just accessed via useParams() hook which is easier for client components.
-
     const router = useRouter();
     const routerParams = useParams();
     const hackathonId = routerParams.id as string;
     const teamId = routerParams.teamId as string;
-
     const [activeTab, setActiveTab] = useState("overview");
     const [members, setMembers] = useState<any[]>([]);
     const [hackathonSettings, setHackathonSettings] = useState<any>(null);
-
     useEffect(() => {
         if (hackathonId) {
-            // Fetch hackathon settings
             fetch(`/api/hackathons/${hackathonId}`)
                 .then(res => res.json())
                 .then(data => setHackathonSettings(data))
                 .catch(err => console.error("Failed to fetch hackathon", err));
         }
-
         if (teamId) {
             fetch(`/api/hackathons/${hackathonId}/team/${teamId}/members`)
                 .then(res => res.json())
@@ -42,10 +32,9 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                 .catch(err => console.error("Failed to fetch members", err));
         }
     }, [teamId, hackathonId]);
-
     return (
         <div className="flex flex-col h-[calc(100vh-4rem)]">
-            {/* Workspace Header */}
+            {}
             <div className="border-b bg-background p-4 flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                     <Button variant="ghost" size="icon" onClick={() => router.push(`/hackathons/${hackathonId}`)}>
@@ -60,7 +49,7 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                     <Button variant="outline" size="sm">
                         <Users className="h-4 w-4 mr-2" /> Team Members
                     </Button>
-                    <SubmissionModal 
+                    <SubmissionModal
                         hackathonId={hackathonId}
                         trigger={
                             <Button size="sm" className="bg-green-600 hover:bg-green-700">
@@ -70,8 +59,7 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                     />
                 </div>
             </div>
-
-            {/* Workspace Content */}
+            {}
             <div className="flex-1 overflow-hidden">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
                     <div className="border-b px-4">
@@ -90,7 +78,6 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                             </TabsTrigger>
                         </TabsList>
                     </div>
-
                     <div className="flex-1 p-6 overflow-auto bg-muted/10">
                         <TabsContent value="overview" className="h-full m-0 space-y-6">
                             <Card>
@@ -103,7 +90,6 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                                     </p>
                                 </CardContent>
                             </Card>
-
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <Card>
                                     <CardHeader>
@@ -129,19 +115,16 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                                 </Card>
                             </div>
                         </TabsContent>
-
                         <TabsContent value="tasks" className="h-full m-0">
                             <div className="h-full overflow-auto">
                                 <TaskList members={members} />
                             </div>
                         </TabsContent>
-
                         <TabsContent value="code" className="h-full m-0">
                             <div className="flex items-center justify-center h-full text-muted-foreground">
                                 Collaborative IDE Integration (Coming Soon)
                             </div>
                         </TabsContent>
-
                         <TabsContent value="chat" className="h-full m-0">
                             {hackathonSettings?.discord_enabled ? (
                                 <div className="flex flex-col items-center justify-center h-full space-y-4">
@@ -157,9 +140,8 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                                         className="bg-[#5865F2] hover:bg-[#4752C4]"
                                         onClick={() => {
                                             const link = hackathonSettings.discord_server_type === "INTERNAL"
-                                                ? "https://discord.gg/BRwWs4Nj" // Official Hack.io Server
+                                                ? "https://discord.gg/BRwWs4Nj"
                                                 : hackathonSettings.discord_invite_link;
-
                                             if (link) window.open(link, "_blank");
                                             else toast.error("Discord link is currently unavailable.");
                                         }}
