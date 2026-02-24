@@ -1,12 +1,8 @@
-
 import { NextResponse } from "next/server";
 import sql from "@/lib/db";
-
 export async function GET() {
     try {
         console.log("Initializing Hack.io RBAC Schema...");
-
-        // 1. Create Hackathons Table
         await sql`
       CREATE TABLE IF NOT EXISTS hackathons (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -20,8 +16,6 @@ export async function GET() {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-
-        // 2. Create Hackathon Participants Table (The RBAC Map)
         await sql`
       CREATE TABLE IF NOT EXISTS hackathon_participants (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -32,13 +26,10 @@ export async function GET() {
         UNIQUE(hackathon_id, user_id)
       );
     `;
-
-        // 3. Create Index for fast permission checks
         await sql`
-      CREATE INDEX IF NOT EXISTS idx_hackathon_participants_lookup 
+      CREATE INDEX IF NOT EXISTS idx_hackathon_participants_lookup
       ON hackathon_participants(hackathon_id, user_id);
     `;
-
         console.log("Schema initialization successful.");
         return NextResponse.json({ success: true, message: "Hack.io RBAC tables created." });
     } catch (error) {
