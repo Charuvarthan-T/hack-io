@@ -1,18 +1,14 @@
 import sql from "@/lib/db";
-
 export interface CourseProblemAssignment {
   problemid: string;
   courseid: string;
 }
-
 export async function assignProblemToCourse(problemId: string, courseId: string) {
   try {
-    // Check if the assignment already exists
     const existing = await sql`
-      SELECT 1 FROM problems_courses 
+      SELECT 1 FROM problems_courses
       WHERE problemid = ${problemId} AND courseid = ${courseId}
     `;
-    
     if (existing.length > 0) {
       return {
         success: true,
@@ -20,9 +16,8 @@ export async function assignProblemToCourse(problemId: string, courseId: string)
         data: null
       };
     }
-    
     const result = await sql`
-      INSERT INTO problems_courses (problemid, courseid) 
+      INSERT INTO problems_courses (problemid, courseid)
       VALUES (${problemId}, ${courseId})
       RETURNING *
     `;
@@ -40,11 +35,10 @@ export async function assignProblemToCourse(problemId: string, courseId: string)
     };
   }
 }
-
 export async function unassignProblemFromCourse(problemId: string, courseId: string) {
   try {
     const result = await sql`
-      DELETE FROM problems_courses 
+      DELETE FROM problems_courses
       WHERE problemid = ${problemId} AND courseid = ${courseId}
       RETURNING *
     `;
@@ -62,14 +56,12 @@ export async function unassignProblemFromCourse(problemId: string, courseId: str
     };
   }
 }
-
 export async function getCourseProblems(courseId: string) {
   try {
-    // Get both assigned general problems and course-specific problems
     const problems = await sql`
       (
         SELECT p.id, p.title, p.description, p.created_at, u.name AS created_by, 'assigned' as type
-        FROM problems p 
+        FROM problems p
         INNER JOIN problems_courses pc ON p.id = pc.problemid
         INNER JOIN users u ON p.created_by = u.id
         WHERE pc.courseid = ${courseId} AND p.course IS NULL
@@ -77,7 +69,7 @@ export async function getCourseProblems(courseId: string) {
       UNION ALL
       (
         SELECT p.id, p.title, p.description, p.created_at, u.name AS created_by, 'course-specific' as type
-        FROM problems p 
+        FROM problems p
         INNER JOIN users u ON p.created_by = u.id
         WHERE p.course = ${courseId}
       )
@@ -96,12 +88,11 @@ export async function getCourseProblems(courseId: string) {
     };
   }
 }
-
 export async function getUnassignedProblems(courseId: string) {
   try {
     const problems = await sql`
       SELECT p.id, p.title, p.description, p.created_at, u.name AS created_by
-      FROM problems p 
+      FROM problems p
       INNER JOIN users u ON p.created_by = u.id
       WHERE p.course IS NULL AND p.id NOT IN (
         SELECT problemid FROM problems_courses WHERE courseid = ${courseId}
@@ -121,23 +112,18 @@ export async function getUnassignedProblems(courseId: string) {
     };
   }
 }
-
 export async function assignMultipleProblems(problemIds: string[], courseId: string) {
   try {
     let assignedCount = 0;
     let skippedCount = 0;
-    
     for (const problemId of problemIds) {
-      // Check if the assignment already exists
       const existing = await sql`
-        SELECT 1 FROM problems_courses 
+        SELECT 1 FROM problems_courses
         WHERE problemid = ${problemId} AND courseid = ${courseId}
       `;
-      
       if (existing.length === 0) {
-        // Only insert if it doesn't exist
         await sql`
-          INSERT INTO problems_courses (problemid, courseid) 
+          INSERT INTO problems_courses (problemid, courseid)
           VALUES (${problemId}, ${courseId})
         `;
         assignedCount++;
@@ -145,12 +131,10 @@ export async function assignMultipleProblems(problemIds: string[], courseId: str
         skippedCount++;
       }
     }
-    
     let message = `Successfully assigned ${assignedCount} problems to course`;
     if (skippedCount > 0) {
       message += ` (${skippedCount} were already assigned)`;
     }
-    
     return {
       success: true,
       message,
