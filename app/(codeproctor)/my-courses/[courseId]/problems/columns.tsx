@@ -1,5 +1,4 @@
 "use client";
-
 import { problem } from "@/types/types";
 import { ArrowUpDown, MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,6 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { deleteProblem } from "@/repository/problem.repository";
 import { useState } from "react";
 import { toast } from "sonner";
-
 const ActionsDropdown = ({
   problem,
   userRole,
@@ -32,21 +30,17 @@ const ActionsDropdown = ({
 }) => {
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
   const handleView = () => {
     router.push(`/problems/${problem.id}`);
   };
-
   const handleEdit = () => {
     router.push(`/problems/${problem.id}/edit`);
   };
-
   async function handleDelete() {
     try {
       const res = await fetch(`/api/problems/${problem.id}`, {
         method: "DELETE",
       });
-
       if (res.ok) {
         setIsDeleteDialogOpen(false);
         await refetch();
@@ -60,15 +54,12 @@ const ActionsDropdown = ({
       toast.error("An error occurred while deleting the problem");
     }
   }
-
   const handleDeleteClick = () => {
     setIsDeleteDialogOpen(true);
   };
-
   const handleCopyId = () => {
     navigator.clipboard.writeText(problem.id);
   };
-
   return (
     <>
       <DropdownMenu>
@@ -119,7 +110,6 @@ const ActionsDropdown = ({
     </>
   );
 };
-
 export const createCourseProblemColumns = (
   userRole: string,
   fetchCourseProblems: () => Promise<void>
