@@ -24,7 +24,6 @@ import {
     Code,
     Users
 } from "lucide-react";
-
 interface HackathonInfo {
     id: string;
     title: string;
@@ -33,13 +32,11 @@ interface HackathonInfo {
     total_submissions: number;
     evaluated_submissions: number;
 }
-
 export default function JudgeDashboard() {
     const { data: session } = useSession();
     const user = session?.user;
     const [hackathons, setHackathons] = useState<HackathonInfo[]>([]);
     const [loading, setLoading] = useState(true);
-
     useEffect(() => {
         const fetchHackathons = async () => {
             try {
@@ -56,10 +53,9 @@ export default function JudgeDashboard() {
         };
         fetchHackathons();
     }, []);
-
     return (
         <div className="space-y-8 p-6">
-            {/* Welcome Header */}
+            {}
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-4xl font-black tracking-tighter">
@@ -74,14 +70,12 @@ export default function JudgeDashboard() {
                     Judge Portal
                 </Badge>
             </div>
-
-            {/* Assigned Hackathons */}
+            {}
             <div className="space-y-4">
                 <h2 className="text-2xl font-black flex items-center gap-2 tracking-tight">
                     <Trophy className="h-6 w-6 text-yellow-500" />
                     Assigned Hackathons
                 </h2>
-
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3].map((i) => (
@@ -94,7 +88,6 @@ export default function JudgeDashboard() {
                             const progress = h.total_submissions > 0
                                 ? Math.round((h.evaluated_submissions / h.total_submissions) * 100)
                                 : 0;
-
                             return (
                                 <Card key={h.id} className="group hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border-primary/5 hover:border-primary/20 overflow-hidden">
                                     <div className="h-2 w-full bg-secondary/30">
@@ -148,8 +141,7 @@ export default function JudgeDashboard() {
                     </Card>
                 )}
             </div>
-
-            {/* Info Card */}
+            {}
             <Card className="bg-primary/5 border-primary/20 shadow-inner">
                 <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2 font-bold">
