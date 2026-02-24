@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -37,7 +36,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-
 export default function ContestsPage() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -52,14 +50,11 @@ export default function ContestsPage() {
     duration_minutes: "",
     is_active: false,
   });
-
   const isAdmin =
     session?.user?.role === "admin" || session?.user?.role === "faculty";
-
   useEffect(() => {
     fetchContests();
   }, [isAdmin]);
-
   const fetchContests = async () => {
     try {
       setLoading(true);
@@ -77,15 +72,12 @@ export default function ContestsPage() {
       setLoading(false);
     }
   };
-
   const handleCreateContest = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!formData.title || !formData.start_time || !formData.end_time) {
       toast.error("Please fill in all required fields");
       return;
     }
-
     try {
       const response = await fetch("/api/contests", {
         method: "POST",
@@ -97,9 +89,7 @@ export default function ContestsPage() {
             : null,
         }),
       });
-
       if (!response.ok) throw new Error("Failed to create contest");
-
       const data = await response.json();
       toast.success("Contest created successfully");
       setIsCreateDialogOpen(false);
@@ -111,24 +101,20 @@ export default function ContestsPage() {
         duration_minutes: "",
         is_active: false,
       });
-
       router.push(`/contests/${data.contest.id}`);
     } catch (error) {
       console.error("Error creating contest:", error);
       toast.error("Failed to create contest");
     }
   };
-
   const getContestStatus = (contest: contest) => {
     const now = new Date();
     const startTime = new Date(contest.start_time);
     const endTime = new Date(contest.end_time);
-
     if (now < startTime) return "upcoming";
     if (now > endTime) return "ended";
     return "active";
   };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "upcoming":
@@ -141,7 +127,6 @@ export default function ContestsPage() {
         return null;
     }
   };
-
   const formatDate = (dateString: string | Date) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
@@ -152,12 +137,10 @@ export default function ContestsPage() {
       minute: "2-digit",
     }).format(date);
   };
-
   const getProgressPercentage = (solved: number, total: number) => {
     if (total === 0) return 0;
     return Math.round((solved / total) * 100);
   };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -165,8 +148,6 @@ export default function ContestsPage() {
       </div>
     );
   }
-
-  // Admin/Faculty View - Table
   if (isAdmin) {
     return (
       <div>
@@ -183,7 +164,6 @@ export default function ContestsPage() {
           </Button>
         </div>
         <DataTable columns={columns} data={contests}/>
-
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogContent className="sm:max-w-[600px]">
             <form onSubmit={handleCreateContest}>
@@ -299,8 +279,6 @@ export default function ContestsPage() {
       </div>
     );
   }
-
-  // Student View - Cards
   const upcomingContests = contests.filter(
     (c) => getContestStatus(c) === "upcoming"
   );
@@ -308,7 +286,6 @@ export default function ContestsPage() {
     (c) => getContestStatus(c) === "active"
   );
   const endedContests = contests.filter((c) => getContestStatus(c) === "ended");
-
   return (
     <div className="container mx-auto py-10">
       <div className="mb-6">
@@ -317,7 +294,6 @@ export default function ContestsPage() {
           View and participate in assigned coding contests
         </p>
       </div>
-
       {contests.length === 0 ? (
         <Card>
           <CardContent className="py-10">
@@ -329,7 +305,7 @@ export default function ContestsPage() {
         </Card>
       ) : (
         <div className="space-y-8">
-          {/* Active Contests */}
+          {}
           {activeContests.length > 0 && (
             <div>
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -408,8 +384,7 @@ export default function ContestsPage() {
               </div>
             </div>
           )}
-
-          {/* Upcoming Contests */}
+          {}
           {upcomingContests.length > 0 && (
             <div>
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -458,8 +433,7 @@ export default function ContestsPage() {
               </div>
             </div>
           )}
-
-          {/* Ended Contests */}
+          {}
           {endedContests.length > 0 && (
             <div>
               <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
