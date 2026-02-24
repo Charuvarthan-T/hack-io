@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -44,12 +43,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { contest } from "@/types/types";
-
 export default function ContestDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const contestId = params.id as string;
-
   const [contest, setContest] = useState<contest | null>(null);
   const [loading, setLoading] = useState(true);
   const [problems, setProblems] = useState<any[]>([]);
@@ -70,11 +67,9 @@ export default function ContestDetailsPage() {
     duration_minutes: "",
     is_active: false,
   });
-
   useEffect(() => {
     fetchContestData();
   }, [contestId]);
-
   const fetchContestData = async () => {
     try {
       setLoading(true);
@@ -87,15 +82,12 @@ export default function ContestDetailsPage() {
       setLoading(false);
     }
   };
-
   const fetchContest = async () => {
     try {
       const response = await fetch(`/api/contests/${contestId}`);
       if (!response.ok) throw new Error("Failed to fetch contest");
       const data = await response.json();
       setContest(data.contest);
-      
-      // Set edit form data
       if (data.contest) {
         setEditFormData({
           title: data.contest.title,
@@ -113,7 +105,6 @@ export default function ContestDetailsPage() {
       toast.error("Failed to load contest");
     }
   };
-
   const fetchProblems = async () => {
     try {
       const response = await fetch(`/api/contests/${contestId}/problems`);
@@ -124,7 +115,6 @@ export default function ContestDetailsPage() {
       console.error("Error fetching problems:", error);
     }
   };
-
   const fetchSections = async () => {
     try {
       const response = await fetch(`/api/contests/${contestId}/sections`);
@@ -135,7 +125,6 @@ export default function ContestDetailsPage() {
       console.error("Error fetching sections:", error);
     }
   };
-
   const fetchAvailableProblems = async () => {
     try {
       const response = await fetch(
@@ -148,7 +137,6 @@ export default function ContestDetailsPage() {
       console.error("Error fetching available problems:", error);
     }
   };
-
   const fetchAvailableSections = async () => {
     try {
       const response = await fetch(
@@ -161,13 +149,11 @@ export default function ContestDetailsPage() {
       console.error("Error fetching available sections:", error);
     }
   };
-
   const handleAddProblem = async () => {
     if (!selectedProblem) {
       toast.error("Please select a problem");
       return;
     }
-
     try {
       const response = await fetch(`/api/contests/${contestId}/problems`, {
         method: "POST",
@@ -177,9 +163,7 @@ export default function ContestDetailsPage() {
           points: parseInt(problemPoints) || 10,
         }),
       });
-
       if (!response.ok) throw new Error("Failed to add problem");
-
       toast.success("Problem added to contest");
       setIsAddProblemDialogOpen(false);
       setSelectedProblem("");
@@ -190,18 +174,14 @@ export default function ContestDetailsPage() {
       toast.error("Failed to add problem");
     }
   };
-
   const handleRemoveProblem = async (problemId: string) => {
     if (!confirm("Are you sure you want to remove this problem?")) return;
-
     try {
       const response = await fetch(
         `/api/contests/${contestId}/problems?problemId=${problemId}`,
         { method: "DELETE" }
       );
-
       if (!response.ok) throw new Error("Failed to remove problem");
-
       toast.success("Problem removed from contest");
       fetchProblems();
     } catch (error) {
@@ -209,22 +189,18 @@ export default function ContestDetailsPage() {
       toast.error("Failed to remove problem");
     }
   };
-
   const handleAddSection = async () => {
     if (!selectedSection) {
       toast.error("Please select a section");
       return;
     }
-
     try {
       const response = await fetch(`/api/contests/${contestId}/sections`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sectionId: selectedSection }),
       });
-
       if (!response.ok) throw new Error("Failed to add section");
-
       toast.success("Section added to contest");
       setIsAddSectionDialogOpen(false);
       setSelectedSection("");
@@ -234,18 +210,14 @@ export default function ContestDetailsPage() {
       toast.error("Failed to add section");
     }
   };
-
   const handleRemoveSection = async (sectionId: string) => {
     if (!confirm("Are you sure you want to remove this section?")) return;
-
     try {
       const response = await fetch(
         `/api/contests/${contestId}/sections?sectionId=${sectionId}`,
         { method: "DELETE" }
       );
-
       if (!response.ok) throw new Error("Failed to remove section");
-
       toast.success("Section removed from contest");
       fetchSections();
     } catch (error) {
@@ -253,10 +225,8 @@ export default function ContestDetailsPage() {
       toast.error("Failed to remove section");
     }
   };
-
   const handleUpdateContest = async (e: React.FormEvent) => {
     e.preventDefault();
-
     try {
       const response = await fetch(`/api/contests/${contestId}`, {
         method: "PUT",
@@ -268,9 +238,7 @@ export default function ContestDetailsPage() {
             : null,
         }),
       });
-
       if (!response.ok) throw new Error("Failed to update contest");
-
       toast.success("Contest updated successfully");
       setIsEditDialogOpen(false);
       fetchContest();
@@ -279,7 +247,6 @@ export default function ContestDetailsPage() {
       toast.error("Failed to update contest");
     }
   };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -287,7 +254,6 @@ export default function ContestDetailsPage() {
       </div>
     );
   }
-
   if (!contest) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -295,7 +261,6 @@ export default function ContestDetailsPage() {
       </div>
     );
   }
-
   return (
     <div className="container mx-auto py-10">
       <div className="mb-6">
@@ -307,7 +272,6 @@ export default function ContestDetailsPage() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Contests
         </Button>
-
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-3xl font-bold mb-2">{contest.title}</h1>
@@ -357,13 +321,11 @@ export default function ContestDetailsPage() {
           </div>
         </div>
       </div>
-
       <Tabs defaultValue="problems" className="w-full">
         <TabsList>
           <TabsTrigger value="problems">Problems</TabsTrigger>
           <TabsTrigger value="sections">Sections</TabsTrigger>
         </TabsList>
-
         <TabsContent value="problems">
           <Card>
             <CardHeader>
@@ -420,7 +382,6 @@ export default function ContestDetailsPage() {
             </CardContent>
           </Card>
         </TabsContent>
-
         <TabsContent value="sections">
           <Card>
             <CardHeader>
@@ -478,8 +439,7 @@ export default function ContestDetailsPage() {
           </Card>
         </TabsContent>
       </Tabs>
-
-      {/* Add Problem Dialog */}
+      {}
       <Dialog
         open={isAddProblemDialogOpen}
         onOpenChange={setIsAddProblemDialogOpen}
@@ -529,8 +489,7 @@ export default function ContestDetailsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Add Section Dialog */}
+      {}
       <Dialog
         open={isAddSectionDialogOpen}
         onOpenChange={setIsAddSectionDialogOpen}
@@ -570,8 +529,7 @@ export default function ContestDetailsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Edit Contest Dialog */}
+      {}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <form onSubmit={handleUpdateContest}>
