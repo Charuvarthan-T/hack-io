@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
 interface LeaderboardEntry {
   submission_id: string;
   team_name: string;
@@ -23,16 +21,13 @@ interface LeaderboardEntry {
   final_average_score: number;
   judge_count: number;
 }
-
 export default function HackathonLeaderboardPage() {
   const params = useParams();
   const router = useRouter();
   const hackathonId = params.id as string;
-
   const [hackathon, setHackathon] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
-
   const fetchLeaderboardData = async () => {
     try {
       setLoading(true);
@@ -40,10 +35,8 @@ export default function HackathonLeaderboardPage() {
         fetch(`/api/hackathons/${hackathonId}`),
         fetch(`/api/hackathons/${hackathonId}/leaderboard`),
       ]);
-
       if (!hackRes.ok) throw new Error("Failed to fetch hackathon");
       setHackathon(await hackRes.json());
-
       if (leaderboardRes.ok) {
           const data = await leaderboardRes.json();
           setLeaderboard(data.leaderboard || []);
@@ -62,11 +55,9 @@ export default function HackathonLeaderboardPage() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (hackathonId) fetchLeaderboardData();
   }, [hackathonId]);
-
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1: return <Trophy className="h-5 w-5 text-yellow-500" />;
@@ -75,16 +66,13 @@ export default function HackathonLeaderboardPage() {
       default: return <User className="h-5 w-5 text-muted-foreground" />;
     }
   };
-
   if (loading) return <div className="flex justify-center items-center h-screen text-lg">Loading leaderboard...</div>;
   if (!hackathon) return <div className="flex justify-center items-center h-screen text-lg">Hackathon not found</div>;
-
   return (
     <div className="container mx-auto py-10 space-y-8">
       <Button variant="ghost" onClick={() => router.push(`/hackathons/${hackathonId}`)} className="mb-4">
         <ArrowLeft className="mr-2 h-4 w-4" /> Back to Hackathon
       </Button>
-
       <div className="flex flex-col items-center text-center space-y-2">
           <Badge variant="secondary" className="mb-2">Leaderboard</Badge>
           <h1 className="text-4xl font-bold">{hackathon.title}</h1>
@@ -93,7 +81,6 @@ export default function HackathonLeaderboardPage() {
               <Badge variant="outline" className="px-3 py-1">Phase: {hackathon.phase}</Badge>
           </div>
       </div>
-
       {leaderboard.length === 0 ? (
           <Card className="max-w-md mx-auto">
               <CardContent className="py-20 text-center space-y-4">
@@ -108,7 +95,7 @@ export default function HackathonLeaderboardPage() {
           </Card>
       ) : (
           <div className="space-y-8">
-              {/* Podium */}
+              {}
               <div className="flex flex-wrap justify-center items-end gap-4 pb-8">
                   {leaderboard[1] && (
                       <Card className="w-64 order-2 md:order-1 h-fit bg-secondary/20 border-2 border-gray-400">
@@ -151,8 +138,7 @@ export default function HackathonLeaderboardPage() {
                       </Card>
                   )}
               </div>
-
-              {/* Table */}
+              {}
               <Card>
                   <CardHeader>
                       <CardTitle>Detailed Rankings</CardTitle>
