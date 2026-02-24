@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,7 +8,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
 interface ConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -20,7 +18,6 @@ interface ConfirmDialogProps {
   cancelText?: string;
   variant?: "default" | "destructive";
 }
-
 export function ConfirmDialog({
   open,
   onOpenChange,
@@ -35,7 +32,6 @@ export function ConfirmDialog({
     onConfirm();
     onOpenChange(false);
   };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
