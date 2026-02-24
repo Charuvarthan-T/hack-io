@@ -1,5 +1,4 @@
 "use client";
-
 import { ColumnDef } from "@tanstack/react-table";
 import { contest } from "@/types/types";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +14,6 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { toast } from "sonner";
-
 export const columns: ColumnDef<contest>[] = [
   {
     accessorKey: "title",
@@ -107,18 +105,15 @@ export const columns: ColumnDef<contest>[] = [
       const contest = row.original;
       const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
       const [isDeleting, setIsDeleting] = useState(false);
-
       const handleDelete = async () => {
         setIsDeleting(true);
         try {
           const response = await fetch(`/api/contests/${contest.id}`, {
             method: "DELETE",
           });
-
           if (response.ok) {
             toast.success("Contest deleted successfully");
             setIsDeleteDialogOpen(false);
-            // Refresh the page to update the list
             window.location.reload();
           } else {
             const error = await response.json();
@@ -131,7 +126,6 @@ export const columns: ColumnDef<contest>[] = [
           setIsDeleting(false);
         }
       };
-
       return (
         <>
           <div className="flex items-center gap-2">
@@ -165,7 +159,6 @@ export const columns: ColumnDef<contest>[] = [
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
-
           <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <DialogContent>
               <DialogHeader>
