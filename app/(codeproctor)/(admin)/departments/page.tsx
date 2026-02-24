@@ -18,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-
 export default function DepartmentsPage() {
   const [data, setData] = useState<department[]>([]);
   const [loading, setLoading] = useState(false);
@@ -39,17 +38,14 @@ export default function DepartmentsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [departmentToDelete, setDepartmentToDelete] =
     useState<department | null>(null);
-
   useEffect(() => {
     getData();
   }, [pagination, sorting, globalFilter]);
-
   async function getData(): Promise<void> {
     setLoading(true);
     try {
       const sortBy = sorting.length > 0 ? sorting[0].id : "id";
       const sortOrder = sorting.length > 0 && sorting[0].desc ? "desc" : "asc";
-
       const params = new URLSearchParams({
         page: (pagination.pageIndex + 1).toString(),
         pageSize: pagination.pageSize.toString(),
@@ -57,13 +53,10 @@ export default function DepartmentsPage() {
         sortBy,
         sortOrder,
       });
-
       const departments = await fetch(`/api/departments?${params.toString()}`);
-
       if (!departments.ok) {
         throw new Error("Failed to fetch departments");
       }
-
       const res = await departments.json();
       setData(res.data);
       setTotalRows(res.total);
@@ -76,17 +69,14 @@ export default function DepartmentsPage() {
       setLoading(false);
     }
   }
-
   async function refetchData(): Promise<void> {
     await getData();
   }
-
   async function handleCreateDepartment(): Promise<void> {
     if (!newDepartmentName.trim()) {
       toast.error("Please enter a department name");
       return;
     }
-
     setCreateLoading(true);
     try {
       const response = await fetch("/api/departments", {
@@ -96,7 +86,6 @@ export default function DepartmentsPage() {
         },
         body: JSON.stringify({ name: newDepartmentName.trim() }),
       });
-
       if (response.ok) {
         setIsCreateDialogOpen(false);
         setNewDepartmentName("");
@@ -115,13 +104,11 @@ export default function DepartmentsPage() {
       setCreateLoading(false);
     }
   }
-
   async function handleEditDepartment(): Promise<void> {
     if (!editDepartment?.name.trim()) {
       toast.error("Please enter a department name");
       return;
     }
-
     setEditLoading(true);
     try {
       const response = await fetch("/api/departments", {
@@ -134,7 +121,6 @@ export default function DepartmentsPage() {
           name: editDepartment.name.trim(),
         }),
       });
-
       if (response.ok) {
         setIsEditDialogOpen(false);
         setEditDepartment(null);
@@ -153,20 +139,16 @@ export default function DepartmentsPage() {
       setEditLoading(false);
     }
   }
-
   function openEditDialog(department: department): void {
     setEditDepartment({ ...department });
     setIsEditDialogOpen(true);
   }
-
   function openDeleteDialog(department: department): void {
     setDepartmentToDelete(department);
     setIsDeleteDialogOpen(true);
   }
-
   async function handleDeleteDepartment(): Promise<void> {
     if (!departmentToDelete) return;
-
     try {
       const response = await fetch(
         `/api/departments?id=${departmentToDelete.id}`,
@@ -174,7 +156,6 @@ export default function DepartmentsPage() {
           method: "DELETE",
         }
       );
-
       if (response.ok) {
         await refetchData();
         toast.success("Department deleted successfully");
@@ -189,7 +170,6 @@ export default function DepartmentsPage() {
       toast.error("Failed to delete department");
     }
   }
-
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -271,7 +251,6 @@ export default function DepartmentsPage() {
           loading={loading}
         />
       </div>
-
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -319,7 +298,6 @@ export default function DepartmentsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
       <ConfirmDialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
