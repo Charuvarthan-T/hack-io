@@ -1,5 +1,4 @@
 "use client"
-
 import * as React from "react"
 import {
   ChevronDownIcon,
@@ -11,10 +10,8 @@ import {
   getDefaultClassNames,
   DayButton,
 } from "react-day-picker"
-
 import { cn } from "@/lib/utils"
 import { Button, buttonVariants } from "@/components/ui/button"
-
 function Calendar({
   className,
   classNames,
@@ -28,7 +25,6 @@ function Calendar({
   buttonVariant?: React.ComponentProps<typeof Button>["variant"]
 }) {
   const defaultClassNames = getDefaultClassNames()
-
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -148,7 +144,6 @@ function Calendar({
               <ChevronLeftIcon className={cn("size-4", className)} {...props} />
             )
           }
-
           if (orientation === "right") {
             return (
               <ChevronRightIcon
@@ -157,7 +152,6 @@ function Calendar({
               />
             )
           }
-
           return (
             <ChevronDownIcon className={cn("size-4", className)} {...props} />
           )
@@ -178,7 +172,6 @@ function Calendar({
     />
   )
 }
-
 function CalendarDayButton({
   className,
   day,
@@ -186,12 +179,10 @@ function CalendarDayButton({
   ...props
 }: React.ComponentProps<typeof DayButton>) {
   const defaultClassNames = getDefaultClassNames()
-
   const ref = React.useRef<HTMLButtonElement>(null)
   React.useEffect(() => {
     if (modifiers.focused) ref.current?.focus()
   }, [modifiers.focused])
-
   return (
     <Button
       ref={ref}
@@ -216,5 +207,4 @@ function CalendarDayButton({
     />
   )
 }
-
 export { Calendar, CalendarDayButton }
