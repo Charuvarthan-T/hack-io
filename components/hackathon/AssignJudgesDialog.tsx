@@ -4,26 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-
 interface Judge {
   id: string;
   name: string;
   email: string;
 }
-
 interface AssignJudgesDialogProps {
   hackathonId: string;
   trigger?: React.ReactNode;
   initialAssigned?: string[];
   onAssigned?: (ids: string[]) => void;
 }
-
 export function AssignJudgesDialog({ hackathonId, trigger, initialAssigned = [], onAssigned }: AssignJudgesDialogProps) {
   const [open, setOpen] = useState(false);
   const [judges, setJudges] = useState<Judge[]>([]);
   const [selected, setSelected] = useState<string[]>(initialAssigned);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     if (open) {
       fetch(`/api/hackathons/${hackathonId}/judges`)
@@ -31,9 +27,6 @@ export function AssignJudgesDialog({ hackathonId, trigger, initialAssigned = [],
         .then(data => setJudges(data.judges || []));
     }
   }, [open, hackathonId]);
-
-
-
   const handleSave = async () => {
     setLoading(true);
     try {
@@ -52,15 +45,9 @@ export function AssignJudgesDialog({ hackathonId, trigger, initialAssigned = [],
       setLoading(false);
     }
   };
-
-
-
   const toggleJudge = (id: string) => {
     setSelected(sel => sel.includes(id) ? sel.filter(j => j !== id) : [...sel, id]);
   };
-
-
-  
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || <Button>Assign Judges</Button>}</DialogTrigger>
