@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -8,21 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Clock, CheckCircle, AlertCircle, ArrowRight, Trophy } from "lucide-react";
-
 interface SubmissionSummary {
     id: string;
     submitted_at: string;
     evaluation_id: string | null;
     is_draft: boolean | null;
 }
-
 export default function JudgeDashboardPage() {
     const params = useParams();
     const router = useRouter();
     const { data: session } = useSession();
     const [submissions, setSubmissions] = useState<SubmissionSummary[]>([]);
     const [loading, setLoading] = useState(true);
-
     const fetchSubmissions = async () => {
         try {
             const res = await fetch(`/api/hackathons/${params.id}/judge/submissions`);
@@ -38,21 +34,17 @@ export default function JudgeDashboardPage() {
             setLoading(false);
         }
     };
-
     useEffect(() => {
         if (params.id) {
             fetchSubmissions();
         }
     }, [params.id]);
-
     const stats = {
         total: submissions.length,
         completed: submissions.filter(s => s.evaluation_id && !s.is_draft).length,
         pending: submissions.filter(s => !s.evaluation_id || s.is_draft).length
     };
-
     if (loading) return <div className="flex justify-center items-center py-20">Loading dashboard...</div>;
-
     return (
         <div className="container max-w-5xl mx-auto py-10 space-y-8">
             <div className="flex justify-between items-center">
@@ -61,8 +53,8 @@ export default function JudgeDashboardPage() {
                     <p className="text-muted-foreground">Evaluation Phase - Hackathon Submissions</p>
                 </div>
                 <div className="flex gap-4">
-                    <Button 
-                        variant="outline" 
+                    <Button
+                        variant="outline"
                         className="bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 font-bold"
                         onClick={() => router.push(`/hackathons/${params.id}/leaderboard`)}
                     >
@@ -78,7 +70,6 @@ export default function JudgeDashboardPage() {
                     </Card>
                 </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {submissions.map((sub, index) => (
                     <Card key={sub.id} className="hover:shadow-md transition-shadow">
@@ -111,7 +102,6 @@ export default function JudgeDashboardPage() {
                     </Card>
                 ))}
             </div>
-
             {submissions.length === 0 && (
                 <div className="text-center py-20 bg-muted/20 rounded-lg border-2 border-dashed">
                     <p className="text-muted-foreground">No submissions found for this hackathon.</p>
