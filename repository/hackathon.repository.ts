@@ -1,10 +1,5 @@
-
 import sql from "@/lib/db";
-
-// Role Enum
 export type HackathonRole = "ORGANIZER" | "PARTICIPANT" | "JUDGE" | "MENTOR";
-
-// Hackathon Interface
 export interface Hackathon {
     id: string;
     title: string;
@@ -22,8 +17,6 @@ export interface Hackathon {
     discord_invite_link?: string;
     discord_category_id?: string;
 }
-
-// Hackathon Participant Interface
 export interface HackathonParticipant {
     id: string;
     hackathon_id: string;
@@ -31,8 +24,6 @@ export interface HackathonParticipant {
     role: HackathonRole;
     created_at: Date;
 }
-
-// DTOs
 export interface CreateHackathonDTO {
     title: string;
     description?: string;
@@ -42,9 +33,6 @@ export interface CreateHackathonDTO {
     status?: "DRAFT" | "PUBLISHED" | "ACTIVE" | "COMPLETED";
     max_team_size?: number;
 }
-
-// ==================== Hackathon CRUD ====================
-
 export async function createHackathon(data: CreateHackathonDTO) {
     try {
         const result = await sql`
@@ -58,7 +46,6 @@ export async function createHackathon(data: CreateHackathonDTO) {
         throw error;
     }
 }
-
 export async function getHackathonById(id: string) {
     try {
         const result = await sql`SELECT * FROM hackathons WHERE id = ${id}`;
@@ -68,21 +55,18 @@ export async function getHackathonById(id: string) {
         throw error;
     }
 }
-
 export async function getHackathonsWithUserRole(userId?: string) {
     try {
         if (!userId) {
             return await sql`SELECT *, NULL as user_role FROM hackathons ORDER BY created_at DESC`;
         }
-
-        // Join to get the specific user's role if it exists, and count total participants
         const result = await sql`
-            SELECT 
-                h.*, 
+            SELECT
+                h.*,
                 hp.role as user_role,
                 (SELECT COUNT(*) FROM hackathon_participants WHERE hackathon_id = h.id AND role = 'PARTICIPANT') as participant_count
             FROM hackathons h
-            LEFT JOIN hackathon_participants hp 
+            LEFT JOIN hackathon_participants hp
             ON h.id = hp.hackathon_id AND hp.user_id = ${userId}
             ORDER BY h.created_at DESC
         `;
@@ -92,7 +76,6 @@ export async function getHackathonsWithUserRole(userId?: string) {
         throw error;
     }
 }
-
 export async function deleteHackathon(id: string) {
     try {
         const result = await sql`DELETE FROM hackathons WHERE id = ${id} RETURNING *`;
@@ -102,13 +85,12 @@ export async function deleteHackathon(id: string) {
         throw error;
     }
 }
-
 export async function updateHackathonStatus(id: string, status: "DRAFT" | "PUBLISHED" | "ACTIVE" | "COMPLETED") {
     try {
         const result = await sql`
-      UPDATE hackathons 
+      UPDATE hackathons
       SET status = ${status}, updated_at = NOW()
-      WHERE id = ${id} 
+      WHERE id = ${id}
       RETURNING *
     `;
         return result[0] as Hackathon;
@@ -117,15 +99,12 @@ export async function updateHackathonStatus(id: string, status: "DRAFT" | "PUBLI
         throw error;
     }
 }
-
-// ==================== Role Management ====================
-
 export async function addParticipant(hackathonId: string, userId: string, role: HackathonRole) {
     try {
         const result = await sql`
       INSERT INTO hackathon_participants (hackathon_id, user_id, role)
       VALUES (${hackathonId}, ${userId}, ${role})
-      ON CONFLICT (hackathon_id, user_id) 
+      ON CONFLICT (hackathon_id, user_id)
       DO UPDATE SET role = ${role}
       RETURNING *
     `;
@@ -135,11 +114,10 @@ export async function addParticipant(hackathonId: string, userId: string, role: 
         throw error;
     }
 }
-
 export async function getUserRole(hackathonId: string, userId: string): Promise<HackathonRole | null> {
     try {
         const result = await sql`
-      SELECT role FROM hackathon_participants 
+      SELECT role FROM hackathon_participants
       WHERE hackathon_id = ${hackathonId} AND user_id = ${userId}
     `;
         return result[0]?.role as HackathonRole || null;
@@ -148,15 +126,14 @@ export async function getUserRole(hackathonId: string, userId: string): Promise<
         throw error;
     }
 }
-
 export async function getHackathonParticipants(hackathonId: string) {
     try {
         const result = await sql`
             SELECT DISTINCT ON (u.id)
-                u.id, 
-                u.name, 
-                u.email, 
-                hp.role, 
+                u.id,
+                u.name,
+                u.email,
+                hp.role,
                 hp.created_at,
                 t.name as team_name,
                 t.id as team_id
@@ -173,11 +150,10 @@ export async function getHackathonParticipants(hackathonId: string) {
         throw error;
     }
 }
-
 export async function removeHackathonParticipant(hackathonId: string, userId: string) {
     try {
         const result = await sql`
-      DELETE FROM hackathon_participants 
+      DELETE FROM hackathon_participants
       WHERE hackathon_id = ${hackathonId} AND user_id = ${userId}
       RETURNING *
     `;
@@ -187,17 +163,13 @@ export async function removeHackathonParticipant(hackathonId: string, userId: st
         throw error;
     }
 }
-
-// ==================== Blind Judging Data Access ====================
-
-// This function purposely excludes user/team identity information
 export async function getSubmissionForBlindJudging(submissionId: string) {
     try {
         const result = await sql`
-      SELECT 
+      SELECT
         s.id,
         s.hackathon_id,
-        s.repo_url, 
+        s.repo_url,
         s.ppt_object_key,
         s.submitted_at,
         h.title as hackathon_title
@@ -211,13 +183,10 @@ export async function getSubmissionForBlindJudging(submissionId: string) {
         throw error;
     }
 }
-
 export async function getAssignedSubmissionsForJudge(hackathonId: string, judgeId: string) {
     try {
-        // For now, judges see all submissions in the hackathon. 
-        // We link them to whether they have already evaluated it.
         const result = await sql`
-            SELECT 
+            SELECT
                 s.id,
                 s.submitted_at,
                 (SELECT id FROM hackathon_evaluations WHERE submission_id = s.id AND judge_id = ${judgeId}) as evaluation_id,
@@ -232,21 +201,12 @@ export async function getAssignedSubmissionsForJudge(hackathonId: string, judgeI
         throw error;
     }
 }
-
-// ==================== Team Management ====================
-
 export interface CreateTeamDTO {
     hackathon_id: string;
     name: string;
     created_by: string;
 }
-
-
 import { emitEvent } from "@/lib/events";
-
-// ... existing imports ...
-
-// ... createTeam modifications ...
 export async function createTeam(data: CreateTeamDTO) {
     try {
         const team = await sql`
@@ -254,32 +214,26 @@ export async function createTeam(data: CreateTeamDTO) {
             VALUES (${data.hackathon_id}, ${data.name}, ${data.created_by})
             RETURNING *
         `;
-
-        // Add creator as first member
         await sql`
             INSERT INTO hackathon_team_members (team_id, user_id)
             VALUES (${team[0].id}, ${data.created_by})
         `;
-
-        // Emit Event
         await emitEvent("team.created", {
             team_id: team[0].id,
             hackathon_id: data.hackathon_id,
             name: data.name,
             created_by: data.created_by
         });
-
         return team[0];
     } catch (error) {
         console.error("Error creating team:", error);
         throw error;
     }
 }
-
 export async function getTeamForUser(hackathonId: string, userId: string) {
     try {
         const result = await sql`
-            SELECT t.*, 
+            SELECT t.*,
                    (SELECT COUNT(*) FROM hackathon_team_members WHERE team_id = t.id) as member_count
             FROM hackathon_teams t
             JOIN hackathon_team_members tm ON t.id = tm.team_id
@@ -291,8 +245,6 @@ export async function getTeamForUser(hackathonId: string, userId: string) {
         throw error;
     }
 }
-
-// ... joinTeam modifications ...
 export async function joinTeam(teamId: string, userId: string) {
     try {
         const result = await sql`
@@ -300,24 +252,18 @@ export async function joinTeam(teamId: string, userId: string) {
             VALUES (${teamId}, ${userId})
             RETURNING *
         `;
-
-        // Fetch team details for event
         const team = await sql`SELECT hackathon_id FROM hackathon_teams WHERE id = ${teamId}`;
-
-        // Emit Event
         await emitEvent("team.member.added", {
             team_id: teamId,
             hackathon_id: team[0]?.hackathon_id,
             user_id: userId
         });
-
         return result[0];
     } catch (error) {
         console.error("Error joining team:", error);
         throw error;
     }
 }
-
 export async function findUserByEmail(email: string) {
     try {
         const result = await sql`SELECT id, name, email, image FROM users WHERE email = ${email}`;
@@ -327,7 +273,6 @@ export async function findUserByEmail(email: string) {
         throw error;
     }
 }
-
 export async function getTeamMemberCount(teamId: string) {
     try {
         const result = await sql`
@@ -339,12 +284,10 @@ export async function getTeamMemberCount(teamId: string) {
         throw error;
     }
 }
-
-
 export async function getTeamMembers(teamId: string) {
     try {
         const result = await sql`
-            SELECT u.id, u.name, u.email, u.image 
+            SELECT u.id, u.name, u.email, u.image
             FROM hackathon_team_members tm
             JOIN users u ON tm.user_id = u.id
             WHERE tm.team_id = ${teamId}
@@ -355,7 +298,6 @@ export async function getTeamMembers(teamId: string) {
         throw error;
     }
 }
-
 export async function updateHackathonDiscordSettings(id: string, settings: { discord_enabled: boolean; discord_server_type?: "INTERNAL" | "EXTERNAL"; discord_invite_link?: string; discord_category_id?: string }) {
     try {
         const result = await sql`
