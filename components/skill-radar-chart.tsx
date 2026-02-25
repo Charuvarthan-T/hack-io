@@ -10,7 +10,8 @@ import {
 } from "recharts";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, Zap } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Plus, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -72,18 +73,33 @@ export default function SkillRadarChart() {
     };
     if (loading) {
         return (
-            <Card className="w-full h-[220px] flex items-center justify-center bg-black/40 border-white/10 backdrop-blur-md">
-                <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+            <Card className="w-full h-[220px] p-4 flex gap-6 bg-card dark:bg-black/40 border-border dark:border-white/10 backdrop-blur-md">
+                <Skeleton className="h-[180px] w-[180px] rounded-full shrink-0" />
+                <div className="flex-1 space-y-4 pt-2">
+                    <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                            <Skeleton className="h-5 w-32" />
+                            <Skeleton className="h-3 w-48" />
+                        </div>
+                        <Skeleton className="h-8 w-20 rounded-full" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4 mt-6">
+                        <Skeleton className="h-12 w-full rounded-lg" />
+                        <Skeleton className="h-12 w-full rounded-lg" />
+                        <Skeleton className="h-12 w-full rounded-lg" />
+                        <Skeleton className="h-12 w-full rounded-lg" />
+                    </div>
+                </div>
             </Card>
         );
     }
     return (
-        <Card className="relative overflow-hidden group border-white/10 bg-gradient-to-br from-zinc-900 to-black p-4 backdrop-blur-xl transition-all hover:border-blue-500/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]">
-            {}
+        <Card className="relative overflow-hidden group border-border dark:border-white/10 bg-card dark:bg-gradient-to-br dark:from-zinc-900 dark:to-black p-4 backdrop-blur-xl hover:scale-[1.01] hover:shadow-lg transition-all duration-200">
+            { }
             <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-blue-600/10 blur-[80px]" />
             <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full bg-purple-600/10 blur-[80px]" />
             <div className="flex flex-col md:flex-row items-center gap-6">
-                {}
+                { }
                 <div className="h-[180px] w-[180px] shrink-0 relative">
                     <div className="absolute inset-0 bg-blue-500/5 rounded-full blur-xl animate-pulse" />
                     <ResponsiveContainer width="100%" height="100%">
@@ -111,28 +127,33 @@ export default function SkillRadarChart() {
                         </RadarChart>
                     </ResponsiveContainer>
                 </div>
-                {}
+                { }
                 <div className="flex-1 w-full space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                                <h3 className="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
+                                <h3 className="text-sm font-bold tracking-tight text-foreground flex items-center gap-1.5">
                                     <Zap className="h-3.5 w-3.5 text-blue-400" />
                                     SKILL PROFILE
                                 </h3>
-                                <Badge variant="secondary" className="h-4 px-1.5 text-[8px] bg-blue-500/10 text-blue-400 border-blue-500/20 uppercase tracking-widest">
-                                    Agent Powered
-                                </Badge>
+                                <div className="relative group inline-flex h-5 items-center justify-center overflow-hidden rounded-full border border-purple-500/30 bg-purple-500/10 px-2 shadow-sm transition-colors hover:bg-purple-500/20">
+                                    <span className="flex items-center gap-1.5 relative z-10 text-purple-400 font-semibold text-[9px] uppercase tracking-widest">
+                                        <span className="relative flex h-1.5 w-1.5">
+                                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-purple-500"></span>
+                                        </span>
+                                        Agent Powered
+                                    </span>
+                                </div>
                             </div>
-                            <p className="text-[10px] text-zinc-500">Normalizing activity across platform...</p>
+                            <p className="text-[10px] text-muted-foreground">Normalizing activity across platform...</p>
                         </div>
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button size="sm" variant="outline" className="h-7 gap-1.5 px-3 rounded-full border-white/10 bg-white/5 hover:bg-white/10 hover:border-blue-500/50 text-[10px] font-bold text-zinc-400 hover:text-white uppercase tracking-wider">
+                                <Button size="sm" variant="outline" className="h-7 gap-1.5 px-3 rounded-full border-border dark:border-white/10 bg-secondary/50 dark:bg-white/5 hover:bg-secondary dark:hover:bg-white/10 hover:border-blue-500/50 text-[10px] font-bold text-muted-foreground hover:text-foreground uppercase tracking-wider">
                                     <Plus className="h-3 w-3" /> Adjust
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="sm:max-w-[425px] bg-zinc-950 border-white/10">
+                            <DialogContent className="sm:max-w-[425px] bg-background dark:bg-zinc-950 border-border dark:border-white/10">
                                 <DialogHeader>
                                     <DialogTitle className="text-xl font-bold tracking-tight">Sync Your Skills</DialogTitle>
                                 </DialogHeader>
@@ -140,7 +161,7 @@ export default function SkillRadarChart() {
                                     {data.map((item) => (
                                         <div key={item.original} className="space-y-2.5">
                                             <div className="flex justify-between items-center px-1">
-                                                <Label className="capitalize text-xs font-medium text-zinc-300">
+                                                <Label className="capitalize text-xs font-medium text-foreground">
                                                     {item.subject.toLowerCase()}
                                                 </Label>
                                                 <Badge variant="outline" className="h-5 px-2 text-[10px] font-mono border-blue-500/30 text-blue-400">
@@ -162,11 +183,11 @@ export default function SkillRadarChart() {
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                         {data.slice(0, 4).map((item) => (
-                            <div key={item.original} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2 flex flex-col gap-1 hover:bg-white/[0.05] transition-colors">
-                                <span className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold">{item.subject.toLowerCase()}</span>
+                            <div key={item.original} className="rounded-lg bg-secondary/30 dark:bg-white/[0.03] border border-border/50 dark:border-white/[0.05] p-2 flex flex-col gap-1 hover:bg-secondary/50 dark:hover:bg-white/[0.05] transition-colors">
+                                <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">{item.subject.toLowerCase()}</span>
                                 <div className="flex items-end justify-between">
-                                    <span className="text-xs font-bold text-zinc-200">{Math.round(item.A)}%</span>
-                                    <div className="h-1 w-12 bg-white/5 rounded-full overflow-hidden">
+                                    <span className="text-xs font-bold text-foreground">{Math.round(item.A)}%</span>
+                                    <div className="h-1 w-12 bg-secondary dark:bg-white/5 rounded-full overflow-hidden">
                                         <div className="h-full bg-blue-500" style={{ width: `${item.A}%` }} />
                                     </div>
                                 </div>
@@ -174,7 +195,7 @@ export default function SkillRadarChart() {
                         ))}
                     </div>
                     <div className="flex items-center justify-between pt-1">
-                        <span className="text-[9px] text-zinc-600 italic">Last sync {lastUpdated ? new Date(lastUpdated).toLocaleDateString() : "Never"}</span>
+                        <span className="text-[9px] text-muted-foreground italic">Last sync {lastUpdated ? new Date(lastUpdated).toLocaleDateString() : "Never"}</span>
                         <div className="flex gap-1.5">
                             <div className="h-1 w-8 rounded-full bg-blue-500/20" />
                             <div className="h-1 w-8 rounded-full bg-blue-500/10" />
