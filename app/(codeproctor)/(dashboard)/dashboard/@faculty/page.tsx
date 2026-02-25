@@ -2,6 +2,8 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import DashboardLoading from "../loading";
+import { AnimatedNumber } from "@/components/ui/animated-number";
 import {
   Card,
   CardContent,
@@ -129,30 +131,11 @@ export default function FacultyDashboard() {
   }, []);
   const { data: session } = useSession();
   const user = session?.user;
+
   if (loading) {
-    return (
-      <div className="space-y-8 p-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="h-8 w-64 bg-muted animate-pulse rounded"></div>
-            <div className="h-4 w-96 bg-muted animate-pulse rounded"></div>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="pb-2">
-                <div className="h-4 w-24 bg-muted animate-pulse rounded"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
+    return <DashboardLoading />;
   }
+
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -169,35 +152,35 @@ export default function FacultyDashboard() {
   }
   const statsCards = data
     ? [
-        {
-          title: "My Courses",
-          value: data.statistics.n_courses,
-          icon: BookOpen,
-          color: "text-blue-600",
-        },
-        {
-          title: "Sections",
-          value: data.statistics.n_sections,
-          icon: Users,
-          color: "text-green-600",
-        },
-        {
-          title: "Students",
-          value: data.statistics.n_students,
-          icon: GraduationCap,
-          color: "text-purple-600",
-        },
-        {
-          title: "Problems",
-          value: data.statistics.n_problems,
-          icon: FileText,
-          color: "text-orange-600",
-        },
-      ]
+      {
+        title: "My Courses",
+        value: data.statistics.n_courses,
+        icon: BookOpen,
+        color: "text-blue-600",
+      },
+      {
+        title: "Sections",
+        value: data.statistics.n_sections,
+        icon: Users,
+        color: "text-green-600",
+      },
+      {
+        title: "Students",
+        value: data.statistics.n_students,
+        icon: GraduationCap,
+        color: "text-purple-600",
+      },
+      {
+        title: "Problems",
+        value: data.statistics.n_problems,
+        icon: FileText,
+        color: "text-orange-600",
+      },
+    ]
     : [];
   return (
     <div className="space-y-8 p-6">
-      {}
+      { }
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -207,12 +190,19 @@ export default function FacultyDashboard() {
             Here's an overview of your courses and recent activity.
           </p>
         </div>
-        <Badge variant="secondary" className="flex items-center gap-2">
-          <GraduationCap className="h-4 w-4" />
-          Faculty Dashboard
-        </Badge>
+        <div className="relative group inline-flex h-9 items-center justify-center overflow-hidden rounded-full border border-orange-500/30 bg-orange-500/10 px-4 shadow-sm transition-colors hover:bg-orange-500/20">
+          <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 dark:via-white/10 to-transparent animate-[shimmer_2.5s_infinite]"></span>
+          <span className="flex items-center gap-2 relative z-10 text-orange-700 dark:text-orange-400 font-semibold text-sm">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500"></span>
+            </span>
+            <GraduationCap className="h-4 w-4" />
+            Faculty Dashboard
+          </span>
+        </div>
       </div>
-      {}
+      { }
       {data && (
         <div>
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -223,7 +213,7 @@ export default function FacultyDashboard() {
             {statsCards.map((stat, index) => {
               const IconComponent = stat.icon;
               return (
-                <Card key={index} className="hover:shadow-md transition-shadow">
+                <Card key={index} className="hover:scale-[1.02] hover:shadow-lg transition-all duration-200">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       {stat.title}
@@ -232,7 +222,7 @@ export default function FacultyDashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {stat.value.toLocaleString()}
+                      <AnimatedNumber value={stat.value} duration={1200} />
                     </div>
                   </CardContent>
                 </Card>
@@ -241,7 +231,7 @@ export default function FacultyDashboard() {
           </div>
         </div>
       )}
-      {}
+      { }
       {data && data.courses.length > 0 && (
         <div>
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -252,14 +242,14 @@ export default function FacultyDashboard() {
             {data.courses.map((course, index) => (
               <Card
                 key={index}
-                className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
+                className="group hover:shadow-lg transition-[box-shadow,transform] duration-200 hover:-translate-y-1"
               >
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/20">
                       <BookOpen className="h-6 w-6 text-blue-600" />
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-transform" />
                   </div>
                   <CardTitle className="text-lg line-clamp-2">
                     {course.name}
@@ -290,7 +280,7 @@ export default function FacultyDashboard() {
           </div>
         </div>
       )}
-      {}
+      { }
       <div>
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
           <TrendingUp className="h-6 w-6" />
@@ -302,18 +292,20 @@ export default function FacultyDashboard() {
             return (
               <Card
                 key={index}
-                className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
+                className="group hover:shadow-lg transition-[box-shadow,transform] duration-200 hover:-translate-y-1"
               >
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className={`p-2 rounded-lg ${action.bgColor}`}>
-                      <IconComponent
-                        className={`h-6 w-6 ${action.iconColor}`}
-                      />
+                  <div className="flex items-baseline justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${action.bgColor}`}>
+                        <IconComponent
+                          className={`h-6 w-6 ${action.iconColor}`}
+                        />
+                      </div>
+                      <CardTitle className="text-lg leading-none m-0">{action.title}</CardTitle>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-transform" />
                   </div>
-                  <CardTitle className="text-lg">{action.title}</CardTitle>
                   <CardDescription>{action.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -326,26 +318,17 @@ export default function FacultyDashboard() {
           })}
         </div>
       </div>
-      {}
+      { }
       {data && data.courses.length === 0 && (
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              No Courses Assigned
-            </CardTitle>
-            <CardDescription>
-              You don't have any courses assigned yet. Contact your
-              administrator to get started.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-center py-8">
-              Once courses are assigned, you'll see them here with quick access
-              to problems and students.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center p-12 mt-4 text-center border-2 border-dashed rounded-xl bg-muted/10 hover:bg-muted/30 transition-colors">
+          <div className="bg-primary/10 p-5 rounded-full mb-5">
+            <BookOpen className="h-10 w-10 text-primary opacity-80" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">No Courses Assigned</h3>
+          <p className="text-muted-foreground max-w-sm">
+            You don't have any courses assigned yet. Once your administrator assigns a course to you, it will show up right here! 📚
+          </p>
+        </div>
       )}
     </div>
   );

@@ -7,15 +7,15 @@ import Image from "next/image";
 export function Header() {
   const { data: session } = useSession();
   return (
-    <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="px-2 py-4 flex justify-between items-center">
+    <header className="px-6 py-4">
+      <div className="flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <Code className="w-6 h-6 text-primary" />
           <Link href={"/"}>
             <h1 className="text-2xl font-bold text-foreground">Hack.io</h1>
           </Link>
         </div>
-        {}
+        { }
         {session ? (
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
@@ -46,7 +46,8 @@ export function Header() {
             </Button>
           </div>
         ) : (
-          <Button variant="default" onClick={() => signIn("google")}>
+          <Button variant="outline" onClick={() => signIn("google")} className="gap-2">
+            <Image src="/google.svg" alt="Google" width={20} height={20} />
             Sign in
           </Button>
         )}

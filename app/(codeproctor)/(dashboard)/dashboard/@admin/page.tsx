@@ -2,6 +2,8 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import DashboardLoading from "../loading";
+import { AnimatedNumber } from "@/components/ui/animated-number";
 import {
   Card,
   CardContent,
@@ -93,55 +95,60 @@ export default function AdminDashboard() {
   }, []);
   const { data: session } = useSession();
   const user = session?.user;
+
+  if (!data) {
+    return <DashboardLoading />;
+  }
+
   const statsCards = data
     ? [
-        {
-          title: "Total Users",
-          value: data.n_users,
-          icon: Users,
-          color: "text-blue-600",
-        },
-        {
-          title: "Total Courses",
-          value: data.n_courses,
-          icon: BookOpen,
-          color: "text-green-600",
-        },
-        {
-          title: "Total Departments",
-          value: data.n_departments,
-          icon: Building2,
-          color: "text-purple-600",
-        },
-        {
-          title: "Total Instructors",
-          value: data.n_instructors,
-          icon: GraduationCap,
-          color: "text-orange-600",
-        },
-        {
-          title: "Total Problems",
-          value: data.n_problems,
-          icon: FileText,
-          color: "text-red-600",
-        },
-        {
-          title: "Total Semesters",
-          value: data.n_semesters,
-          icon: Calendar,
-          color: "text-indigo-600",
-        },
-        {
-          title: "Total Sections",
-          value: data.n_sections,
-          icon: Layout,
-          color: "text-pink-600",
-        },
-      ]
+      {
+        title: "Total Users",
+        value: data.n_users,
+        icon: Users,
+        color: "text-blue-600",
+      },
+      {
+        title: "Total Courses",
+        value: data.n_courses,
+        icon: BookOpen,
+        color: "text-green-600",
+      },
+      {
+        title: "Total Departments",
+        value: data.n_departments,
+        icon: Building2,
+        color: "text-purple-600",
+      },
+      {
+        title: "Total Instructors",
+        value: data.n_instructors,
+        icon: GraduationCap,
+        color: "text-orange-600",
+      },
+      {
+        title: "Total Problems",
+        value: data.n_problems,
+        icon: FileText,
+        color: "text-red-600",
+      },
+      {
+        title: "Total Semesters",
+        value: data.n_semesters,
+        icon: Calendar,
+        color: "text-indigo-600",
+      },
+      {
+        title: "Total Sections",
+        value: data.n_sections,
+        icon: Layout,
+        color: "text-pink-600",
+      },
+    ]
     : [];
   return (
     <div className="space-y-8 p-6">
-      {}
+      { }
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -151,12 +158,19 @@ export default function AdminDashboard() {
             Here's what's happening in your CodeProctor system today.
           </p>
         </div>
-        <Badge variant="secondary" className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4" />
-          Admin Dashboard
-        </Badge>
+        <div className="relative group inline-flex h-9 items-center justify-center overflow-hidden rounded-full border border-green-500/30 bg-green-500/10 px-4 shadow-sm transition-colors hover:bg-green-500/20">
+          <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 dark:via-white/10 to-transparent animate-[shimmer_2.5s_infinite]"></span>
+          <span className="flex items-center gap-2 relative z-10 text-green-700 dark:text-green-400 font-semibold text-sm">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+            </span>
+            <TrendingUp className="h-4 w-4" />
+            Admin Dashboard
+          </span>
+        </div>
       </div>
-      {}
+      { }
       {data && (
         <div>
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -167,7 +181,7 @@ export default function AdminDashboard() {
             {statsCards.map((stat, index) => {
               const IconComponent = stat.icon;
               return (
-                <Card key={index} className="hover:shadow-md transition-shadow">
+                <Card key={index} className="hover:scale-[1.02] hover:shadow-lg transition-all duration-200">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       {stat.title}
@@ -176,7 +190,7 @@ export default function AdminDashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {stat.value.toLocaleString()}
+                      <AnimatedNumber value={stat.value} duration={1200} />
                     </div>
                   </CardContent>
                 </Card>
@@ -185,7 +199,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
-      {}
+      { }
       <div>
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
           <Layout className="h-6 w-6" />
@@ -197,16 +211,18 @@ export default function AdminDashboard() {
             return (
               <Card
                 key={index}
-                className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
+                className="group hover:shadow-lg transition-[box-shadow,transform] duration-200 hover:-translate-y-1"
               >
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className={`p-2 rounded-lg ${page.bgColor}`}>
-                      <IconComponent className={`h-6 w-6 ${page.iconColor}`} />
+                  <div className="flex items-baseline justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${page.bgColor}`}>
+                        <IconComponent className={`h-6 w-6 ${page.iconColor}`} />
+                      </div>
+                      <CardTitle className="text-lg leading-none m-0">{page.title}</CardTitle>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-transform" />
                   </div>
-                  <CardTitle className="text-lg">{page.title}</CardTitle>
                   <CardDescription>{page.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">

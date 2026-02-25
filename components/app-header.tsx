@@ -6,6 +6,8 @@ import { SidebarTrigger } from "./ui/sidebar";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { ThemeToggle } from "./theme-toggle";
+
 export function AppHeader() {
   const { data: session } = useSession();
   const [points, setPoints] = useState<number | null>(null);
@@ -35,8 +37,9 @@ export function AppHeader() {
       window.removeEventListener("pointsUpdated", onPointsUpdated);
     };
   }, [session]);
+
   return (
-    <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="px-2 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <SidebarTrigger />
@@ -45,7 +48,7 @@ export function AppHeader() {
             <h1 className="text-2xl font-bold text-foreground">Hack.io</h1>
           </Link>
         </div>
-        {}
+        { }
         {session ? (
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
@@ -79,7 +82,7 @@ export function AppHeader() {
                       <span className="text-white">🔥</span>
                       <span> {points ?? "-"} </span>
                     </button>
-                    {}
+                    { }
                     {open && (
                       <div className="absolute right-0 mt-12 w-56 z-50 bg-card border rounded-md shadow-lg p-3 text-sm">
                         <div className="flex items-center justify-between">
@@ -107,19 +110,24 @@ export function AppHeader() {
                 </div>
               </div>
             </div>
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"
               onClick={() => signOut({ callbackUrl: "/" })}
+              className="cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
               Sign out
             </Button>
           </div>
         ) : (
-          <Button variant="default" onClick={() => signIn("google")}>
-            Sign in
-          </Button>
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
+            <Button variant="default" onClick={() => signIn("google")}>
+              Sign in
+            </Button>
+          </div>
         )}
       </div>
     </header>

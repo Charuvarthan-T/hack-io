@@ -91,12 +91,12 @@ const sidebarItems: SidebarItem[] = [
     label: "My Courses",
     href: "/my-courses",
     icon: BookOpen,
-    role: ["faculty","student","admin"],
+    role: ["faculty", "student", "admin"],
   }
 ];
 export default function AppSidebar() {
   const { data: session } = useSession();
-  if(!session?.user){
+  if (!session?.user) {
     return;
   }
   const user = session?.user;

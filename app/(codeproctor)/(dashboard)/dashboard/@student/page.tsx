@@ -2,6 +2,8 @@
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import DashboardLoading from "../loading";
+import { AnimatedNumber } from "@/components/ui/animated-number";
 import {
   Card,
   CardContent,
@@ -11,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   BookOpen,
   FileText,
@@ -103,30 +106,11 @@ export default function StudentDashboard() {
   }, []);
   const { data: session } = useSession();
   const user = session?.user;
+
   if (loading) {
-    return (
-      <div className="space-y-8 p-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="h-8 w-64 bg-muted animate-pulse rounded"></div>
-            <div className="h-4 w-96 bg-muted animate-pulse rounded"></div>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="pb-2">
-                <div className="h-4 w-24 bg-muted animate-pulse rounded"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
+    return <DashboardLoading />;
   }
+
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -143,36 +127,36 @@ export default function StudentDashboard() {
   }
   const statsCards = data
     ? [
-        {
-          title: "Problems Solved",
-          value: data.statistics.problems_solved,
-          icon: CheckCircle,
-          color: "text-green-600",
-        },
-        {
-          title: "Total Attempted",
-          value: data.statistics.problems_attempted,
-          icon: Target,
-          color: "text-blue-600",
-        },
-        {
-          title: "Available Problems",
-          value: data.statistics.total_available,
-          icon: FileText,
-          color: "text-purple-600",
-        },
-      ]
+      {
+        title: "Problems Solved",
+        value: data.statistics.problems_solved,
+        icon: CheckCircle,
+        color: "text-green-600",
+      },
+      {
+        title: "Total Attempted",
+        value: data.statistics.problems_attempted,
+        icon: Target,
+        color: "text-blue-600",
+      },
+      {
+        title: "Available Problems",
+        value: data.statistics.total_available,
+        icon: FileText,
+        color: "text-purple-600",
+      },
+    ]
     : [];
   const solveRate =
     data && data.statistics.total_available > 0
       ? Math.round(
-          (data.statistics.problems_solved / data.statistics.total_available) *
-            100
-        )
+        (data.statistics.problems_solved / data.statistics.total_available) *
+        100
+      )
       : 0;
   return (
     <div className="space-y-8 p-6">
-      {}
+      { }
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">
@@ -185,22 +169,29 @@ export default function StudentDashboard() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="flex items-center gap-2">
-            <GraduationCap className="h-4 w-4" />
-            Student Dashboard
-          </Badge>
+          <div className="relative group inline-flex h-9 items-center justify-center overflow-hidden rounded-full border border-blue-500/30 bg-blue-500/10 px-4 shadow-sm transition-colors hover:bg-blue-500/20">
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 dark:via-white/10 to-transparent animate-[shimmer_2.5s_infinite]"></span>
+            <span className="flex items-center gap-2 relative z-10 text-blue-700 dark:text-blue-400 font-semibold text-sm">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+              </span>
+              <GraduationCap className="h-4 w-4" />
+              Student Dashboard
+            </span>
+          </div>
         </div>
       </div>
-      {}
+      { }
       <div className="flex flex-col xl:flex-row gap-6">
         <div className="flex-1">
-           <SkillRadarChart />
+          <SkillRadarChart />
         </div>
         <div className="w-full xl:w-[350px] space-y-4">
-           {}
+          { }
         </div>
       </div>
-      {}
+      { }
       {data && (
         <div>
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -211,7 +202,7 @@ export default function StudentDashboard() {
             {statsCards.map((stat, index) => {
               const IconComponent = stat.icon;
               return (
-                <Card key={index} className="hover:shadow-md transition-shadow">
+                <Card key={index} className="hover:scale-[1.02] hover:shadow-lg transition-all duration-200">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium text-muted-foreground">
                       {stat.title}
@@ -220,7 +211,7 @@ export default function StudentDashboard() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {stat.value.toLocaleString()}
+                      <AnimatedNumber value={stat.value} duration={1200} />
                     </div>
                   </CardContent>
                 </Card>
@@ -229,7 +220,7 @@ export default function StudentDashboard() {
           </div>
         </div>
       )}
-      {}
+      { }
       {data?.student_info.section && (
         <Card>
           <CardHeader>
@@ -259,7 +250,7 @@ export default function StudentDashboard() {
           </CardContent>
         </Card>
       )}
-      {}
+      { }
       {data && data.courses.length > 0 && (
         <div>
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
@@ -275,14 +266,14 @@ export default function StudentDashboard() {
               return (
                 <Card
                   key={index}
-                  className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
+                  className="group hover:shadow-lg transition-[box-shadow,transform] duration-200 hover:-translate-y-1"
                 >
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="p-2 rounded-lg bg-green-50 dark:bg-green-950/20">
                         <BookOpen className="h-6 w-6 text-green-600" />
                       </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-transform" />
                     </div>
                     <CardTitle className="text-lg line-clamp-2">
                       {course.name}
@@ -291,7 +282,14 @@ export default function StudentDashboard() {
                       {course.section_name} • {course.semester_name}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="pt-0 space-y-3">
+                  <CardContent className="pt-0 space-y-4">
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs text-muted-foreground font-medium">
+                        <span>Progress</span>
+                        <span>{Math.round(progressPercentage)}%</span>
+                      </div>
+                      <Progress value={progressPercentage} />
+                    </div>
                     <Button
                       asChild
                       className="w-full"
@@ -314,7 +312,7 @@ export default function StudentDashboard() {
           </div>
         </div>
       )}
-      {}
+      { }
       <div>
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
           <Target className="h-6 w-6" />
@@ -326,18 +324,20 @@ export default function StudentDashboard() {
             return (
               <Card
                 key={index}
-                className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
+                className="group hover:shadow-lg transition-[box-shadow,transform] duration-200 hover:-translate-y-1"
               >
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className={`p-2 rounded-lg ${action.bgColor}`}>
-                      <IconComponent
-                        className={`h-6 w-6 ${action.iconColor}`}
-                      />
+                  <div className="flex items-baseline justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${action.bgColor}`}>
+                        <IconComponent
+                          className={`h-6 w-6 ${action.iconColor}`}
+                        />
+                      </div>
+                      <CardTitle className="text-lg leading-none m-0">{action.title}</CardTitle>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-all" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-1 transition-transform" />
                   </div>
-                  <CardTitle className="text-lg">{action.title}</CardTitle>
                   <CardDescription>{action.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -350,26 +350,17 @@ export default function StudentDashboard() {
           })}
         </div>
       </div>
-      {}
+      { }
       {data && data.courses.length === 0 && (
-        <Card className="border-dashed">
-          <CardHeader>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              No Courses Enrolled
-            </CardTitle>
-            <CardDescription>
-              You're not enrolled in any courses yet. Contact your instructor or
-              administrator.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-center py-8">
-              Once you're enrolled in courses, you'll see them here with your
-              progress and quick access to problems.
-            </p>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center p-12 mt-4 text-center border-2 border-dashed rounded-xl bg-muted/10 hover:bg-muted/30 transition-colors">
+          <div className="bg-primary/10 p-5 rounded-full mb-5">
+            <BookOpen className="h-10 w-10 text-primary opacity-80" />
+          </div>
+          <h3 className="text-xl font-semibold mb-2">No Courses Enrolled</h3>
+          <p className="text-muted-foreground max-w-sm">
+            Once you are enrolled in courses by your instructors, they will automatically appear here. Looks like it's time to take a restful break for now! ☕
+          </p>
+        </div>
       )}
     </div>
   );
