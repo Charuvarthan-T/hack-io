@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { updateHackathonDiscordSettings, getHackathonById } from "@/repository/hackathon.repository";
+import { updateHackathonDiscordSettings, getHackathonById, getUserRole } from "@/repository/hackathon.repository";
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const session = await getServerSession(authOptions);
@@ -14,7 +14,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         if (!hackathon) {
             return NextResponse.json({ error: "Hackathon not found" }, { status: 404 });
         }
-        if (hackathon.created_by !== session.user.id) {
+        
+        let canEdit = false;
+        if (session.user.role === "admin") {
+            canEdit = true;
+        } else {
+            const role = await getUserRole(id, session.user.id);
+            if (role === "ORGANIZER") {
+                canEdit = true;
+            }
+        }
+        
+        if (!canEdit) {
              return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
         const updated = await updateHackathonDiscordSettings(id, body);

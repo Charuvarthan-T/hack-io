@@ -13,6 +13,7 @@ interface BlindSubmission {
     id: string;
     repo_url: string;
     ppt_object_key: string;
+    ppt_url?: string;
     hackathon_title: string;
     submitted_at: string;
 }
@@ -167,9 +168,15 @@ export default function EvaluationPage() {
                                 <div className="p-2 bg-secondary/30 rounded-md mt-1 break-all text-xs font-mono">
                                     {submission.ppt_object_key}
                                 </div>
-                                <a href="#" onClick={(e) => { e.preventDefault(); toast.info("Demo link would open here"); }} className="flex items-center gap-2 text-primary hover:underline mt-2 text-sm font-semibold">
-                                    View Link <ExternalLink className="h-3 w-3" />
-                                </a>
+                                {submission.ppt_url ? (
+                                    <a href={submission.ppt_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline mt-2 text-sm font-semibold">
+                                        View File <ExternalLink className="h-3 w-3" />
+                                    </a>
+                                ) : (
+                                    <span className="flex items-center gap-2 text-muted-foreground mt-2 text-sm font-semibold">
+                                        No preview available
+                                    </span>
+                                )}
                             </div>
                         </CardContent>
                         <CardFooter className="flex flex-col gap-4 border-t pt-6 bg-primary/5">

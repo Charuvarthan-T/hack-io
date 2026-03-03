@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getSubmissionForBlindJudging, getAssignedSubmissionsForJudge } from "@/repository/hackathon.repository";
+import { storage } from "@/lib/storage";
 export async function GET(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> }
@@ -14,6 +15,15 @@ export async function GET(
         const submissionId = searchParams.get("submissionId");
         if (submissionId) {
             const submission = await getSubmissionForBlindJudging(submissionId);
+            if (submission && submission.ppt_object_key) {
+                try {
+                    const signedUrl = await storage.getSignedUrl(submission.ppt_object_key, 3600 * 24); // 24 hours
+                    return NextResponse.json({ ...submission, ppt_url: signedUrl });
+                } catch (err) {
+                    console.error("Failed to generate signed URL:", err);
+                    return NextResponse.json({ ...submission, ppt_url: null });
+                }
+            }
             return NextResponse.json(submission);
         } else {
             const submissions = await getAssignedSubmissionsForJudge(hackathonId, session.user.id);

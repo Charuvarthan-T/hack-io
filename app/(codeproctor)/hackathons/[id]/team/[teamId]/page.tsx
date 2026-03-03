@@ -140,7 +140,7 @@ export default function TeamWorkspacePage({ params }: { params: Promise<{ id: st
                                         className="bg-[#5865F2] hover:bg-[#4752C4]"
                                         onClick={() => {
                                             const link = hackathonSettings.discord_server_type === "INTERNAL"
-                                                ? "https://discord.gg/BRwWs4Nj"
+                                                ? "https://discord.gg/GTMEHs9PZ7"
                                                 : hackathonSettings.discord_invite_link;
                                             if (link) window.open(link, "_blank");
                                             else toast.error("Discord link is currently unavailable.");
