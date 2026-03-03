@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft, ExternalLink, ShieldCheck, Save, Send, ArrowRight } from "lucide-react";
+import { ArrowLeft, ExternalLink, ShieldCheck, Save, Send, ArrowRight, Sparkles } from "lucide-react";
 interface BlindSubmission {
     id: string;
     repo_url: string;
@@ -43,11 +43,26 @@ export default function EvaluationPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const [readOnly, setReadOnly] = useState(false);
+    const [aiInsight, setAiInsight] = useState<string | null>(null);
+    const [loadingInsight, setLoadingInsight] = useState(false);
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const subRes = await fetch(`/api/hackathons/${params.id}/judge/submissions?submissionId=${params.submissionId}`);
-                if (subRes.ok) setSubmission(await subRes.json());
+                if (subRes.ok) {
+                    const subData = await subRes.json();
+                    setSubmission(subData);
+
+                    // Fetch AI Insight after we know the submission exists
+                    setLoadingInsight(true);
+                    fetch(`/api/hackathons/${params.id}/judge/evaluate/${params.submissionId}/insights`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.insight) setAiInsight(data.insight);
+                        })
+                        .catch(err => console.error("Failed to fetch insight:", err))
+                        .finally(() => setLoadingInsight(false));
+                }
                 const evalRes = await fetch(`/api/hackathons/${params.id}/evaluations?submissionId=${params.submissionId}`);
                 if (evalRes.ok) {
                     const data = await evalRes.json();
@@ -146,7 +161,7 @@ export default function EvaluationPage() {
                 </div>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {}
+                { }
                 <div className="lg:col-span-1 space-y-6">
                     <Card className="sticky top-24">
                         <CardHeader>
@@ -186,8 +201,33 @@ export default function EvaluationPage() {
                             </div>
                         </CardFooter>
                     </Card>
+
+                    <Card className="sticky top-[28rem]">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-md flex items-center gap-2 text-primary">
+                                <Sparkles className="h-5 w-5" /> AI Project Insight
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {loadingInsight ? (
+                                <div className="space-y-2 animate-pulse">
+                                    <div className="h-4 bg-primary/20 rounded w-full"></div>
+                                    <div className="h-4 bg-primary/20 rounded w-5/6"></div>
+                                    <div className="h-4 bg-primary/20 rounded w-4/6"></div>
+                                </div>
+                            ) : aiInsight ? (
+                                <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                                    {aiInsight}
+                                </p>
+                            ) : (
+                                <p className="text-sm text-muted-foreground italic">
+                                    No AI insights could be generated for this project.
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
-                {}
+                { }
                 <div className="lg:col-span-2 space-y-6">
                     <Card>
                         <CardHeader>
