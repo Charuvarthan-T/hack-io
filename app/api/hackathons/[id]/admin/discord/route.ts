@@ -15,6 +15,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             return NextResponse.json({ error: "Hackathon not found" }, { status: 404 });
         }
         
+        
         let canEdit = false;
         if (session.user.role === "admin") {
             canEdit = true;
