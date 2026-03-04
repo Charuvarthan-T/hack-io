@@ -78,7 +78,7 @@ export async function GET(
 
         try {
             const genAI = new GoogleGenerativeAI(geminiApiKey);
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
             const prompt = `You are an AI assistant helping a hackathon judge quickly understand a project submission.
 Based on the following README file from the project's GitHub repository, please provide a concise insight (2-3 sentences max).
@@ -105,14 +105,14 @@ ${trimmedReadme}
 
         } catch (geminiError: any) {
             console.error("Gemini API Error details:", geminiError?.message || geminiError);
-            
+
             let userMessage = "AI analysis is currently unavailable due to an API error.";
             if (geminiError?.message?.includes("429") || geminiError?.status === 429) {
                 userMessage = "AI analysis is temporarily paused because the current free-tier quota limit has been reached. Please try again later.";
             } else if (geminiError?.message?.includes("403") || geminiError?.status === 403) {
-                 userMessage = "AI analysis is unavailable (API Key restricted or lacks permissions).";
+                userMessage = "AI analysis is unavailable (API Key restricted or lacks permissions).";
             }
-            
+
             // Return a 200 with the error message as the insight so the UI handles it gracefully
             return NextResponse.json({ insight: userMessage });
         }

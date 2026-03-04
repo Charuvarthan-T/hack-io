@@ -47,6 +47,7 @@ export default function EvaluationPage() {
     const [readOnly, setReadOnly] = useState(false);
     const [aiInsight, setAiInsight] = useState<string | null>(null);
     const [loadingInsight, setLoadingInsight] = useState(false);
+    const [loadingAutoScore, setLoadingAutoScore] = useState(false);
     useEffect(() => {
         setOpen(false);
         const fetchData = async () => {
@@ -112,6 +113,44 @@ export default function EvaluationPage() {
         } catch (error) {
             toast.error("Evaluation saved, but failed to find next submission.");
             router.push(`/hackathons/${params.id}/judge`);
+        }
+    };
+
+    const handleAutoScore = async () => {
+        if (readOnly) return;
+        setLoadingAutoScore(true);
+        toast.info("AI is analyzing the repository to generate scores...");
+        try {
+            const res = await fetch(`/api/hackathons/${params.id}/judge/evaluate/${params.submissionId}/auto-score`, {
+                method: "POST"
+            });
+            const data = await res.json();
+            if (res.ok && data.result) {
+                const aiScores = data.result.scores;
+                setScores(prev => ({
+                    ...prev,
+                    innovation: aiScores.innovation ?? prev.innovation,
+                    technical_complexity: aiScores.technical_complexity ?? prev.technical_complexity,
+                    implementation_quality: aiScores.implementation_quality ?? prev.implementation_quality,
+                    ui_ux: aiScores.ui_ux ?? prev.ui_ux,
+                    impact: aiScores.impact ?? prev.impact,
+                    presentation_quality: aiScores.presentation_quality ?? prev.presentation_quality,
+                    ui: aiScores.ui ?? prev.ui,
+                    backend: aiScores.backend ?? prev.backend,
+                    graphs: aiScores.graphs ?? prev.graphs,
+                    discord_interaction: aiScores.discord_interaction ?? prev.discord_interaction
+                }));
+                if (data.result.feedback) {
+                    setFeedback(prev => prev ? prev + "\n\n--- AI Suggestions ---\n" + data.result.feedback : "--- AI Suggestions ---\n" + data.result.feedback);
+                }
+                toast.success("AI has successfully evaluated the submission and populated the rubric.");
+            } else {
+                toast.error(`Automated Evaluation failed: ${data.error || "Unknown error"}`);
+            }
+        } catch (error) {
+            toast.error("Failed to connect to the Auto-Score API.");
+        } finally {
+            setLoadingAutoScore(false);
         }
     };
     const handleSubmit = async (final: boolean) => {
@@ -236,7 +275,21 @@ export default function EvaluationPage() {
                         <CardHeader>
                             <div className="flex justify-between items-center">
                                 <CardTitle className="text-2xl font-black tracking-tight">Scoring Rubric</CardTitle>
-                                {readOnly && <Badge variant="default" className="bg-green-600 px-3 py-1">Evaluated</Badge>}
+                                <div className="flex items-center gap-2">
+                                    {readOnly && <Badge variant="default" className="bg-green-600 px-3 py-1">Evaluated</Badge>}
+                                    {!readOnly && (
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="gap-2 border-amber-500/30 text-amber-600 hover:bg-amber-50"
+                                            onClick={handleAutoScore}
+                                            disabled={loadingAutoScore}
+                                        >
+                                            <Sparkles className="h-4 w-4" />
+                                            {loadingAutoScore ? "AI Evaluating..." : "AI Auto-Evaluate"}
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                             <CardDescription>Slide to award points. Your final score will be saved for this anonymized team.</CardDescription>
                         </CardHeader>
@@ -270,7 +323,7 @@ export default function EvaluationPage() {
                                 <Textarea
                                     disabled={readOnly}
                                     placeholder="Add any specific observations or feedback for the organizers/participants..."
-                                    className="min-h-[150px] bg-secondary/10 border-secondary focus:bg-background transition-all"
+                                    className="min-h-[200px] bg-secondary/10 border-secondary focus:bg-background transition-all"
                                     value={feedback}
                                     onChange={(e) => setFeedback(e.target.value)}
                                 />
