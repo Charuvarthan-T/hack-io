@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { ArrowLeft, ExternalLink, ShieldCheck, Save, Send, ArrowRight, Sparkles } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
 interface BlindSubmission {
     id: string;
     repo_url: string;
@@ -32,6 +33,7 @@ const RUBRIC = [
 export default function EvaluationPage() {
     const params = useParams();
     const router = useRouter();
+    const { setOpen } = useSidebar();
     const [submission, setSubmission] = useState<BlindSubmission | null>(null);
     const [scores, setScores] = useState<Record<string, number>>({
         innovation: 0, technical_complexity: 0, implementation_quality: 0,
@@ -46,6 +48,7 @@ export default function EvaluationPage() {
     const [aiInsight, setAiInsight] = useState<string | null>(null);
     const [loadingInsight, setLoadingInsight] = useState(false);
     useEffect(() => {
+        setOpen(false);
         const fetchData = async () => {
             try {
                 const subRes = await fetch(`/api/hackathons/${params.id}/judge/submissions?submissionId=${params.submissionId}`);
@@ -91,7 +94,7 @@ export default function EvaluationPage() {
             }
         };
         fetchData();
-    }, [params.id, params.submissionId]);
+    }, [params.id, params.submissionId, setOpen]);
     const handleScoreChange = (id: string, value: number[]) => {
         if (readOnly) return;
         setScores(prev => ({ ...prev, [id]: value[0] }));
@@ -237,17 +240,17 @@ export default function EvaluationPage() {
                             </div>
                             <CardDescription>Slide to award points. Your final score will be saved for this anonymized team.</CardDescription>
                         </CardHeader>
-                        <CardContent className="space-y-10 pt-4">
-                            <div className="grid grid-cols-1 gap-12">
+                        <CardContent className="space-y-6 pt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                 {RUBRIC.map((item) => (
-                                    <div key={item.id} className="space-y-4">
+                                    <div key={item.id} className="space-y-2">
                                         <div className="flex justify-between items-end">
-                                            <div className="space-y-1">
-                                                <Label className="text-lg font-bold">{item.label}</Label>
-                                                <p className="text-sm text-muted-foreground">{item.description}</p>
+                                            <div className="space-y-0.5">
+                                                <Label className="text-base font-bold">{item.label}</Label>
+                                                <p className="text-xs text-muted-foreground">{item.description}</p>
                                             </div>
                                             <div className="flex flex-col items-end">
-                                                <span className="text-3xl font-black text-primary leading-none">{scores[item.id]}</span>
+                                                <span className="text-2xl font-black text-primary leading-none">{scores[item.id]}</span>
                                                 <span className="text-[10px] font-bold text-muted-foreground uppercase">pts</span>
                                             </div>
                                         </div>
@@ -257,7 +260,7 @@ export default function EvaluationPage() {
                                             max={10}
                                             step={1}
                                             onValueChange={(val) => handleScoreChange(item.id, val)}
-                                            className="py-4"
+                                            className="py-1"
                                         />
                                     </div>
                                 ))}

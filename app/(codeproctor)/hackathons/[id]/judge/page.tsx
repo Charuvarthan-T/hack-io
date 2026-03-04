@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Clock, CheckCircle, AlertCircle, ArrowRight, Trophy } from "lucide-react";
+import { useSidebar } from "@/components/ui/sidebar";
 interface SubmissionSummary {
     id: string;
     submitted_at: string;
@@ -17,6 +18,7 @@ export default function JudgeDashboardPage() {
     const params = useParams();
     const router = useRouter();
     const { data: session } = useSession();
+    const { setOpen } = useSidebar();
     const [submissions, setSubmissions] = useState<SubmissionSummary[]>([]);
     const [loading, setLoading] = useState(true);
     const fetchSubmissions = async () => {
@@ -35,10 +37,11 @@ export default function JudgeDashboardPage() {
         }
     };
     useEffect(() => {
+        setOpen(false);
         if (params.id) {
             fetchSubmissions();
         }
-    }, [params.id]);
+    }, [params.id, setOpen]);
     const stats = {
         total: submissions.length,
         completed: submissions.filter(s => s.evaluation_id && !s.is_draft).length,
@@ -52,21 +55,22 @@ export default function JudgeDashboardPage() {
                     <h1 className="text-3xl font-bold">Judge Dashboard</h1>
                     <p className="text-muted-foreground">Evaluation Phase - Hackathon Submissions</p>
                 </div>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap items-center gap-4">
                     <Button
                         variant="outline"
-                        className="bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 font-bold"
+                        className="h-10 bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 font-bold"
                         onClick={() => router.push(`/hackathons/${params.id}/leaderboard`)}
                     >
-                        <Trophy className="mr-2 h-4 w-4" /> View Leaderboard
+                        <Trophy className="mr-2 h-4 w-4 shrink-0" />
+                        <span className="whitespace-nowrap">View Leaderboard</span>
                     </Button>
-                    <Card className="px-4 py-2 flex items-center gap-2 bg-secondary/30">
-                        <AlertCircle className="h-4 w-4 text-yellow-500" />
-                        <span className="text-sm font-medium">{stats.pending} Pending</span>
+                    <Card className="h-10 px-4 py-0 flex flex-row items-center justify-center gap-2 bg-secondary/30">
+                        <AlertCircle className="h-4 w-4 text-yellow-500 shrink-0" />
+                        <span className="text-sm font-medium whitespace-nowrap">{stats.pending} Pending</span>
                     </Card>
-                    <Card className="px-4 py-2 flex items-center gap-2 bg-green-500/10">
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                        <span className="text-sm font-medium">{stats.completed} Completed</span>
+                    <Card className="h-10 px-4 py-0 flex flex-row items-center justify-center gap-2 bg-green-500/10 border-green-500/20">
+                        <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+                        <span className="text-sm font-medium whitespace-nowrap">{stats.completed} Completed</span>
                     </Card>
                 </div>
             </div>
