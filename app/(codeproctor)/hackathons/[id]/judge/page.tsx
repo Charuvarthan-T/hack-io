@@ -14,6 +14,7 @@ interface SubmissionSummary {
     evaluation_id: string | null;
     is_draft: boolean | null;
 }
+
 export default function JudgeDashboardPage() {
     const params = useParams();
     const router = useRouter();
@@ -21,6 +22,7 @@ export default function JudgeDashboardPage() {
     const { setOpen } = useSidebar();
     const [submissions, setSubmissions] = useState<SubmissionSummary[]>([]);
     const [loading, setLoading] = useState(true);
+
     const fetchSubmissions = async () => {
         try {
             const res = await fetch(`/api/hackathons/${params.id}/judge/submissions`);
@@ -36,6 +38,7 @@ export default function JudgeDashboardPage() {
             setLoading(false);
         }
     };
+
     useEffect(() => {
         setOpen(false);
         if (params.id) {
